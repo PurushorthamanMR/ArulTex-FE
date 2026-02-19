@@ -1,0 +1,235 @@
+$pos-dark: #212121;
+$gray-700: #374151;
+$gray-300: #d1d5db;
+$pos-blue: #35b6e3;
+$light-bg: white;
+$light-text: black;
+$dark-bg: #212121;
+$dark-text: white;
+
+.price-check-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.price-check-popup {
+  background-color: $light-bg;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s, color 0.3s;
+  text-align: center;
+
+  &.dark-mode {
+    background-color: $dark-bg !important;
+    color: $dark-text !important;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: $light-text;
+    .price-check-popup.dark-mode & {
+      color: $dark-text !important;
+    }
+  }
+}
+
+.price-check-content {
+  &.dark-mode {
+    .barcode-input {
+      label {
+        color: $dark-text !important;
+      }
+
+      .barcode-field {
+        background-color: $dark-bg !important;
+        border-color: $gray-700 !important;
+        color: $dark-text !important;
+
+        &::placeholder {
+          color: lighten($gray-700, 20%) !important;
+        }
+      }
+    }
+
+    .error-message {
+      color: #ff5555 !important;
+    }
+
+    .item-details table {
+      background-color: $dark-bg !important;
+      color: $dark-text !important;
+
+      td {
+        border-color: $gray-700 !important;
+
+        &:first-child {
+          background-color: lighten($gray-700, 10%) !important;
+        }
+      }
+    }
+
+    .close-btn {
+      background-color: $pos-blue !important;
+      color: $dark-text !important;
+
+      &:hover {
+        background-color: darken($pos-blue, 10%) !important;
+      }
+    }
+  }
+
+  .barcode-input {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid $gray-300;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: $pos-blue;
+        box-shadow: 0 0 0 2px rgba($pos-blue, 0.2);
+      }
+    }
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .item-details {
+    margin-bottom: 1rem;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+      background-color: $light-bg;
+
+      td {
+        padding: 0.5rem;
+        text-align: left;
+        border-bottom: 1px solid $gray-300;
+      }
+
+      td:first-child {
+        font-weight: 600;
+        width: 30%;
+        background-color: lighten($gray-300, 10%);
+      }
+
+      td:last-child {
+        font-weight: 500;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow: visible;
+      }
+    }
+  }
+
+  .close-btn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: $pos-blue;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+
+    &:hover {
+      background-color: darken($pos-blue, 10%);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .price-check-popup {
+    padding: 1rem;
+    max-width: 400px;
+  }
+
+  .price-check-content {
+    .barcode-input {
+      input {
+        padding: 0.4rem;
+      }
+    }
+
+    .close-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    .item-details {
+      table {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .price-check-popup {
+    margin: 0 1rem;
+    padding: 1rem;
+    max-width: 300px;
+  }
+
+  .price-check-content {
+    .barcode-input {
+      input {
+        padding: 0.3rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    .close-btn {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .item-details {
+      table {
+        font-size: 0.85rem;
+        td:last-child {
+          white-space: normal;
+          word-wrap: break-word;
+          overflow: visible;
+        }
+      }
+    }
+  }
+}

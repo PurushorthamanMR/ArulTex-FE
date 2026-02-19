@@ -1,0 +1,1400 @@
+@import "../../utils/variables";
+
+.pos-category-grid-container {
+  // Define SCSS variables
+  $pos-blue: #2EB6E8;
+  $blue-500: #0095ff;
+  $blue-900: #2eb6e8;
+  $pos-teal: #26A69A;
+  $teal-500: #4DB6AC;
+  $teal-900: #00695C;
+  $radius: 0.5rem;
+  $bg-gray-600: #4b5563;
+  $bg-gray-700: #374151;
+  $text-gray-600: #6b7280;
+  $text-black: #000000;
+  $light-bg: #ffffff;
+  $dark-bg: #212121;
+  $dark-text: #ffffff;
+  $green-500: #34D399;
+  $green-600: #10B981;
+  $red-500: #EF4444;
+  $red-600: #DC2626;
+  $orange-500: #F59E0B;
+  $orange-600: #D97706;
+  $popup-bg: #f8f9fa;
+  $table-header-bg: #2EB6E8;
+  $table-border: #dee2e6;
+
+  .grid {
+    display: grid;
+  }
+
+  .grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .gap-2 {
+    gap: 0.25rem;
+  }
+
+  .size {
+    height: 40vh;
+  }
+
+  .category-btn {
+    padding: 1rem;
+    min-width: 6rem;
+    min-height: 13vh;
+    border-radius: $radius;
+    text-align: center;
+    background-color: $pos-blue;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      transform: scale(1.02);
+      background-color: $blue-500;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        background-color: $blue-900;
+      }
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &.non-scan-btn {
+      background-color: #FFB74D;
+      
+      &:hover {
+        background-color: #FFA726;
+      }
+    }
+  }
+
+  .quick-access-btn {
+    padding: 1rem;
+    min-width: 6rem;
+    min-height: 13vh;
+    border-radius: $radius;
+    text-align: center;
+    background-color: $pos-teal;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      transform: scale(1.02);
+      background-color: $teal-500;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        background-color: $teal-900;
+      }
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .mb-1 {
+    margin-bottom: 0.25rem;
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+
+  .text-sm {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .px-1 {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  .sales-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+
+  .sales-popup {
+    background-color: $popup-bg;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 1400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: none;
+    height: 90vh;
+  }
+
+  .sales-popup-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $text-black;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid $pos-blue;
+    padding-bottom: 0.5rem;
+  }
+
+  .sales-table-container {
+    max-height: 65vh;
+    overflow-y: auto;
+    border-radius: 0.5rem;
+    background-color: $light-bg;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .sales-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid $table-border;
+    }
+
+    th {
+      background-color: $table-header-bg;
+      color: $dark-text;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr.even-row {
+      background-color: #f2f2f2;
+    }
+
+    tr.odd-row {
+      background-color: $light-bg;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .action-btn {
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      border: none;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+
+      &.print-btn {
+        background-color: $orange-500;
+        color: $dark-text;
+
+        &:hover {
+          background-color: $orange-600;
+        }
+      }
+
+      &.view-btn {
+        background-color: $blue-500;
+        color: $dark-text;
+
+        &:hover {
+          background-color: $blue-900;
+        }
+      }
+
+      .action-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .dropdown-details {
+    padding: 1rem;
+    background-color: #f1f3f5;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+  }
+
+  .details-section {
+    margin-bottom: 1.5rem;
+
+    h6 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $pos-blue;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  .details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+
+    th,
+    td {
+      padding: 0.75rem;
+      text-align: left;
+      border: 1px solid $table-border;
+    }
+
+    &.items-table {
+      th {
+        background-color: $pos-teal;
+        color: $dark-text;
+        font-weight: 500;
+      }
+
+      tr {
+        background-color: $light-bg;
+
+        &:hover {
+          background-color: #e6f3f2;
+        }
+      }
+    }
+
+    &.payment-table {
+      th {
+        background-color: $green-500;
+        color: $dark-text;
+        font-weight: 500;
+      }
+
+      tr {
+        background-color: $light-bg;
+
+        &:hover {
+          background-color: #e9f7ef;
+        }
+      }
+    }
+
+    .no-data {
+      text-align: center;
+      color: $text-gray-600;
+      font-style: italic;
+    }
+  }
+
+  .sales-popup-message {
+    font-size: 1rem;
+    color: $text-gray-600;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .sales-footer {
+    margin-top: 1.5rem;
+  }
+
+  .sales-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    .pagination-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .pagination-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.3rem;
+      background-color: $blue-500;
+      color: $dark-text;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: $blue-900;
+      }
+
+      &:disabled {
+        background-color: $bg-gray-600;
+        cursor: not-allowed;
+      }
+
+      &.close-btn {
+        background-color: $red-500;
+
+        &:hover {
+          background-color: $red-600;
+        }
+      }
+    }
+
+    span {
+      font-size: 1rem;
+      color: $text-black;
+    }
+  }
+
+  .pagination-center {
+    span {
+      color: #000000;
+    }
+  }
+
+  .purchase-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+
+  .purchase-popup {
+    background-color: $light-bg;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+    width: 600px;
+    max-width: 90%;
+    max-height: 70vh;
+    border: 4px solid #bfdbfe;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+
+    &.dark-mode {
+      background-color: $dark-bg;
+      color: $dark-text;
+      border-color: $bg-gray-600;
+
+      .purchase-popup-input,
+      .purchase-popup-button {
+        border-color: $bg-gray-600;
+        background-color: $dark-bg;
+        color: $dark-text;
+      }
+
+      .purchase-popup-status {
+        color: $text-gray-600;
+      }
+    }
+
+    &.simple-popup {
+      background-color: $popup-bg;
+      border-color: $table-border;
+      width: 90%;
+      max-width: 1200px;
+      overflow-y: auto;
+
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+
+        .card-body {
+          padding: 20px;
+        }
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: -15px;
+
+        > * {
+          padding: 15px;
+        }
+      }
+
+      .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+      }
+
+      .col-12 {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
+      h4 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      p {
+        margin-bottom: 8px;
+        color: #666;
+
+        strong {
+          color: #333;
+          font-weight: 600;
+        }
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+
+      .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #212529;
+        border-collapse: collapse;
+
+        &.table-bordered {
+          border: 1px solid $table-border;
+
+          th,
+          td {
+            border: 1px solid $table-border;
+            padding: 12px;
+          }
+        }
+
+        &.table-striped tbody tr:nth-of-type(odd) {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        th {
+          background-color: #f8f9fa;
+          font-weight: 600;
+          border-bottom: 2px solid $table-border;
+        }
+      }
+
+      .d-flex {
+        display: flex;
+      }
+
+      .justify-content-between {
+        justify-content: space-between;
+      }
+
+      .align-items-center {
+        align-items: center;
+      }
+
+      .mb-3 {
+        margin-bottom: 1rem;
+      }
+
+      .mt-3 {
+        margin-top: 1rem;
+      }
+
+      .mt-4 {
+        margin-top: 1.5rem;
+      }
+
+      .me-2 {
+        margin-right: 0.5rem;
+      }
+    }
+
+    .purchase-popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .purchase-popup-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $text-black;
+      text-align: center;
+      flex: 1;
+    }
+
+    .purchase-popup-close {
+      background-color: $red-500;
+      color: $dark-text;
+      border: none;
+      border-radius: 0.25rem;
+      width: 30px;
+      height: 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: $red-600;
+      }
+    }
+
+    .purchase-popup-input-container {
+      .purchase-popup-input {
+        border: 2px solid $bg-gray-600;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        width: 100%;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+        &:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+      }
+
+      .purchase-popup-status {
+        font-size: 0.9rem;
+        color: $text-gray-600;
+        margin-top: 0.5rem;
+        text-align: center;
+      }
+    }
+
+    .purchase-popup-table-container {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .purchase-popup-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid $bg-gray-600;
+        color: $text-black;
+      }
+
+      th {
+        background-color: $bg-gray-700;
+        color: $dark-text;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      tr {
+        cursor: pointer;
+
+        &:hover {
+          background-color: #F5F5F5;
+        }
+      }
+
+      .selected {
+        background-color: #bfdbfe;
+      }
+
+      .no-data {
+        text-align: center;
+        color: $text-gray-600;
+        font-style: italic;
+      }
+    }
+
+    .purchase-popup-details {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid $bg-gray-600;
+      border-radius: 0.5rem;
+      background-color: #f3f4f6;
+      color: $text-black;
+    }
+
+    .purchase-popup-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.5rem;
+
+      .purchase-popup-actions-left {
+        flex: 1;
+      }
+
+      .purchase-popup-actions-right {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .purchase-popup-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        width: 120px;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+
+        &:hover {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        &.add {
+          background-color: $green-500;
+          color: $dark-text;
+
+          &:hover {
+            background-color: $green-600;
+            transform: scale(1.015);
+          }
+        }
+
+        &.clear {
+          background-color: $red-500;
+          color: $dark-text;
+
+          &:hover {
+            background-color: $red-600;
+            transform: scale(1.015);
+          }
+
+          &:disabled {
+            background-color: $bg-gray-700;
+            color: $dark-text;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+
+        &.print {
+          background-color: $orange-500;
+          color: $dark-text;
+
+          &:hover {
+            background-color: $orange-600;
+            transform: scale(1.015);
+          }
+
+          &:disabled {
+            background-color: $bg-gray-700;
+            color: $dark-text;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+
+  .x-report-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .grid-cols-5 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sales-popup {
+      width: 95%;
+    }
+
+    .purchase-popup.simple-popup {
+      .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .grid-cols-5 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 1400px) {
+    .text-2xl {
+      font-size: 1.2rem;
+    }
+
+    .text-sm {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .text-2xl {
+      font-size: 1rem;
+    }
+
+    .text-sm {
+      font-size: 0.8rem;
+    }
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+
+    &.btn-added {
+      background-color: $orange-500;
+      color: $dark-text;
+
+      &:hover {
+        background-color: $orange-600;
+        transform: scale(1.015);
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+  height: 41vh;
+}
+
+.payout-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .payout-popup {
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+    
+    &.dark-mode {
+      background: #2d2d2d;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    h2 {
+      color: #2EB6E8;
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .amount-display {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      
+      h3 {
+        font-size: 2.2rem;
+        color: #28a745;
+        margin: 0;
+        font-weight: 700;
+      }
+    }
+
+    .category-selection {
+      margin-bottom: 2rem;
+
+      h4 {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 1rem;
+        font-weight: 500;
+      }
+    }
+
+    .payout-select {
+      margin-bottom: 1.5rem;
+      
+      .css-1s2u09g-control {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          border-color: #2EB6E8;
+        }
+      }
+    }
+
+    .payout-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+
+      button {
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        
+        &.confirm-btn {
+          background: #2EB6E8;
+          color: white;
+          
+          &:hover:not(:disabled) {
+            background: #2196F3;
+            transform: translateY(-1px);
+          }
+          
+          &:disabled {
+            background: #90caf9;
+            cursor: not-allowed;
+          }
+        }
+        
+        &.cancel-btn {
+          background: #f44336;
+          color: white;
+          
+          &:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+  }
+
+  // Dark mode styles
+  .dark-mode & {
+    .payout-popup {
+      .amount-display h3 {
+        color: #4CAF50;
+      }
+      
+      .category-selection h4 {
+        color: #ccc;
+      }
+      
+      .payout-actions {
+        button.confirm-btn {
+          background: #2196F3;
+          
+          &:hover:not(:disabled) {
+            background: #1976D2;
+          }
+        }
+      }
+    }
+  }
+}
+
+body.dark-mode {
+  .sales-popup-overlay {
+    background-color: rgba(0, 0, 0, 0.8); // Dark overlay background
+  }
+
+  .sales-popup {
+    background-color: #2d2d2d; // Dark background for the popup
+    color: #ffffff; // White text color
+
+    .sales-popup-title {
+      color: #ffffff; // White title color
+      border-bottom-color: #3b82f6; // Blue border for the title
+    }
+
+    .sales-table-container {
+      background-color: #1e1e1e; // Dark background for the table container
+      box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1); // Light shadow for contrast
+    }
+
+    .sales-table {
+      th {
+        background-color: #3b82f6; // Blue background for table headers
+        color: #ffffff; // White text for table headers
+      }
+
+      tr {
+        background-color: #2d2d2d; // Dark background for table rows
+
+        &:hover {
+          background-color: #3b82f6; // Blue hover background for rows
+        }
+
+        &.even-row {
+          background-color: #2d2d2d; // Blue background for even rows
+        }
+
+        &.odd-row {
+          background-color: #2d2d2d; // Dark background for odd rows
+        }
+      }
+
+      td {
+        color: #ffffff; // White text for table cells
+        border-bottom-color: #3b82f6; // Blue border for table cells
+      }
+
+      .action-buttons {
+        .action-btn {
+          &.print-btn {
+            background-color: #f59e0b; // Orange background for print button
+            color: #ffffff; // White text for print button
+
+            &:hover {
+              background-color: #d97706; // Darker orange hover background
+            }
+          }
+
+          &.view-btn {
+            background-color: #3b82f6; // Blue background for view button
+            color: #ffffff; // White text for view button
+
+            &:hover {
+              background-color: #2563eb; // Darker blue hover background
+            }
+          }
+        }
+      }
+    }
+
+    .dropdown-details {
+      background-color: #1e1e1e; // Dark background for dropdown details
+      color: #ffffff; // White text for dropdown details
+
+      .details-section {
+        h6 {
+          color: #3b82f6; // Blue color for section headers
+        }
+      }
+
+      .details-table {
+        th {
+          background-color: #3b82f6; // Blue background for table headers
+          color: #ffffff; // White text for table headers
+        }
+
+        td {
+          color: #ffffff; // White text for table cells
+          border-color: #3b82f6; // Blue border for table cells
+        }
+
+        &.items-table {
+          tr:hover {
+            background-color: #3b82f6; // Blue hover background for items table
+          }
+        }
+
+        &.payment-table {
+          tr:hover {
+            background-color: #3b82f6; // Blue hover background for payment table
+          }
+        }
+
+        .no-data {
+          color: #6b7280; // Gray color for no data message
+        }
+      }
+    }
+
+    .sales-pagination {
+
+      .pagination-center {
+        .span {
+          color: #229b34; // Blue background for pagination buttons
+        }
+      
+      .pagination-btn {
+        background-color: #3b82f6; // Blue background for pagination buttons
+        color: #ffffff; // White text for pagination buttons
+
+        &:hover {
+          background-color: #2563eb; // Darker blue hover background
+        }
+
+        &:disabled {
+          background-color: #6b7280; // Gray background for disabled buttons
+          cursor: not-allowed;
+        }
+
+        &.close-btn {
+          background-color: #ef4444;
+          color: #ffffff; // Red background for close button
+
+          &:hover {
+            color: #ffffff; // Darker red hover background
+          }
+        }
+      }
+    }
+    }
+  }
+  
+  .barcode-popup-overlay {
+    background: rgba(20, 20, 40, 0.85) !important;
+    z-index: 9999;
+  }
+  .barcode-popup {
+    background: $dark-card-bg !important;
+    border: 1px solid $dark-border-color !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.5) !important;
+    color: $dark-text-color !important;
+  }
+  .barcode-popup-content {
+    background: transparent !important;
+    color: $dark-text-color !important;
+  }
+  .barcode-popup-title {
+    color: $dark-text-color !important;
+    border-bottom: 1px solid $dark-border-color !important;
+  }
+  .barcode-popup-input-container {
+    .barcode-popup-input {
+      background: $dark-card-bg2 !important;
+      color: $dark-card-bg2 !important;
+      
+      &::placeholder {
+        color: $dark-muted-text !important;
+      }
+    }
+    .barcode-popup-button.submit {
+      background: $dark-card-bg2 !important;
+      color: $white !important;
+      border: none !important;
+      &:hover {
+      background: darken($primary, 10%);
+      }
+    }
+    .barcode-popup-status {
+      color: $dark-muted-text !important;
+    }
+  }
+  .barcode-popup-barcode {
+    background: $dark-card-bg;
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .barcode-popup-actions {
+    .barcode-popup-button.print {
+      background: $dark-success-color !important;
+      color: $white !important;
+      border: none !important;
+      &:hover {
+        background: darken($dark-success-color, 10%) !important;
+      }
+      &:disabled {
+        background: $dark-border-color !important;
+        color: $dark-muted-text !important;
+      }
+    }
+    .barcode-popup-button.close {
+      background: $dark-danger-color !important;
+      color: $white !important;
+      border: none !important;
+      &:hover {
+        background: darken($dark-danger-color, 10%) !important;
+      }
+    }
+  }
+  .purchase-popup-overlay {
+    background: rgba(20, 20, 40, 0.85) !important;
+    z-index: 9999;
+  }
+  .purchase-popup {
+    background: $dark-card-bg !important;
+    color: $dark-text-color !important;
+    border: 1px solid $dark-border-color !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.5) !important;
+
+    &.simple-popup {
+      background: $dark-card-bg !important;
+      color: $dark-text-color !important;
+      border: 1px solid $dark-border-color !important;
+
+      .card {
+        background: $dark-card-bg2 !important;
+        color: $dark-text-color !important;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        .card-body {
+          background: transparent !important;
+        }
+      }
+      h4, h2, .purchase-popup-title {
+        color: $dark-text-color !important;
+      }
+      p, strong {
+        color: $dark-muted-text !important;
+      }
+      .table {
+        background: $dark-card-bg2 !important;
+        color: $dark-text-color !important;
+        th, td {
+          background: $dark-card-bg2 !important;
+          color: $dark-text-color !important;
+          border-color: $dark-border-color !important;
+        }
+        th {
+          font-weight: 600;
+        }
+        tr {
+          background: $dark-card-bg2 !important;
+        }
+        .no-data {
+          color: $dark-muted-text !important;
+        }
+      }
+    }
+    .purchase-popup-header {
+      h2, .purchase-popup-title {
+        color: $dark-text-color !important;
+      }
+      .purchase-popup-close {
+        background: $dark-danger-color !important;
+        color: $white !important;
+        border: none !important;
+        &:hover {
+          background: darken($dark-danger-color, 10%) !important;
+        }
+      }
+    }
+    .purchase-popup-input-container {
+      .purchase-popup-input {
+        background: $dark-card-bg2 !important;
+        color: $dark-text-color !important;
+        border: 1px solid $dark-border-color !important;
+        &::placeholder {
+          color: $dark-muted-text !important;
+        }
+      }
+      .purchase-popup-status {
+        color: $dark-muted-text !important;
+      }
+    }
+    .purchase-popup-actions {
+      .purchase-popup-button {
+        background: $primary !important;
+        color: $white !important;
+
+        &:hover {
+          background: darken($primary, 10%) !important;
+        }
+        &.clear {
+          background: $dark-danger-color !important;
+          &:hover {
+            background: darken($dark-danger-color, 10%) !important;
+          }
+        }
+        &.add {
+          background: $dark-success-color !important;
+          &:hover {
+            background: darken($dark-success-color, 10%) !important;
+          }
+        }
+        &.print {
+          background: $primary !important;
+          &:hover {
+            background: darken($primary, 10%) !important;
+          }
+        }
+      }
+    }
+    .purchase-popup-table-container {
+      background: $dark-card-bg2 !important;
+      .purchase-popup-table {
+        background: $dark-card-bg2 !important;
+        color: $dark-text-color !important;
+        th, td {
+          background: $dark-card-bg2 !important;
+          color: $dark-text-color !important;
+          border-color: $dark-border-color !important;
+        }
+        .no-data {
+          color: $dark-muted-text !important;
+        }
+      }
+    }
+  }
+  .request-leave-popup-overlay {
+    background: rgba(20, 20, 40, 0.85) !important;
+    z-index: 9999;
+  }
+  .request-leave-popup {
+    background: $dark-card-bg !important;
+    color: $dark-text-color !important;
+    border: 1px solid $dark-border-color !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.5) !important;
+    padding: 2rem !important;
+    max-width: 500px;
+    margin: auto;
+    
+  }
+  .request-leave-popup {
+    .request-leave-header {
+      h2 {
+        color: $dark-text-color !important;
+      }
+    }
+  }
+  .request-leave-popup-title {
+    color: $dark-text-color !important;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .request-leave-popup-form {
+    .form-group {
+      label {
+        color: $dark-text-color !important;
+        border: none !important;
+      }
+      input,
+      textarea,
+      select {
+        background: $dark-card-bg2 !important;
+        color: $dark-text-color !important;
+        border: 1px solid $dark-border-color !important;
+        &::placeholder {
+          color: $dark-muted-text !important;
+        }
+      }
+    }
+  }
+  .request-leave-popup-status,
+  .request-leave-popup-error {
+    color: $dark-muted-text !important;
+    margin-top: 0.5rem;
+  }
+  .request-leave-popup .form-actions .btn.btn-submit {
+    background: #007bff !important;
+    color: $white !important;
+    border: none !important;
+    &:hover {
+      background: darken(#007bff, 10%) !important;
+    }
+  }
+  .request-leave-popup .form-actions .btn.btn-cancel {
+    background: #dc3545 !important;
+    color: $white !important;
+    border: none !important;
+    &:hover {
+      background: darken(#dc3545, 10%) !important;
+    }
+  }
+  .request-leave-popup .form-group label {
+    color: $dark-text-color !important;
+  }
+
+  .pos-category-grid-container .pagination-center span {
+    color: $white !important;
+  }
+
+  .card-body.add-product {
+    label {
+      border: none !important;
+      background: transparent !important;
+      color: $dark-text-color !important;
+    }
+  }
+
+  .admin-cards-container {
+    background: $dark-card-bg !important;
+    color: $dark-text-color !important;
+    
+    .admin-card {
+      background: $dark-card-bg !important;
+      border: 1px solid $dark-border-color !important;
+      
+      .card-header {
+        background: $dark-card-bg !important;
+        border-bottom: 1px solid $dark-border-color !important;
+        
+        h5, h6 {
+          color: $dark-text-color !important;
+        }
+      }
+      
+      .card-body {
+        background: $dark-card-bg !important;
+        
+        p, span, label {
+          color: $dark-text-color !important;
+        }
+        
+        .form-control, input, select, textarea {
+          background: $dark-sidebar-bg !important;
+          color: $dark-text-color !important;
+          border-color: $dark-border-color !important;
+          
+          &::placeholder {
+            color: $dark-muted-text !important;
+          }
+        }
+      }
+    }
+  }
+}

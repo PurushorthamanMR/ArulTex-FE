@@ -1,0 +1,294 @@
+.employee-discount-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 450px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  
+  &.dark-mode {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    
+    .popup-header {
+      background-color: #3a3a3a;
+      border-bottom: 1px solid #444;
+    }
+    
+    .employee-select, .search-input {
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      
+      option {
+        background-color: #3a3a3a;
+        color: #f0f0f0;
+      }
+    }
+    
+    .popup-footer {
+      border-top: 1px solid #444;
+    }
+    
+    .cancel-btn {
+      background-color: #444;
+      color: #f0f0f0;
+      border: 1px solid #555;
+      
+      &:hover {
+        background-color: #555;
+      }
+    }
+    
+    .discount-info {
+      background-color: #3a3a3a;
+      border: 1px solid #444;
+    }
+    
+    .selected-employee {
+      background-color: #3a3a3a;
+      border: 1px solid #444;
+      
+      .employee-avatar {
+        background-color: #007bff;
+        color: #fff;
+      }
+      
+      .employee-details {
+        h3 {
+          color: #f0f0f0;
+        }
+        
+        p {
+          color: #adb5bd;
+        }
+      }
+    }
+  }
+  
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #343a40;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6c757d;
+      transition: color 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      
+      &:hover {
+        color: #343a40;
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: rotate(90deg);
+      }
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+  
+  .popup-content {
+    padding: 24px;
+    
+    .form-group {
+      margin-bottom: 20px;
+      
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #495057;
+      }
+      
+      .employee-select, .search-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 15px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        
+        &:focus {
+          outline: none;
+          border-color: #80bdff;
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+      }
+    }
+    
+    .discount-info {
+      margin-bottom: 20px;
+      padding: 16px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      
+      p {
+        margin: 0;
+        font-size: 16px;
+        color: #495057;
+        
+        strong {
+          color: #007bff;
+          font-weight: 600;
+        }
+      }
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #6c757d;
+      font-size: 16px;
+      
+      .spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(0, 123, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #007bff;
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 15px;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    }
+    
+    .error {
+      color: #dc3545;
+      padding: 12px;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .error-message {
+      color: #dc3545;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    
+    .selected-employee {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      margin-bottom: 20px;
+      
+      .employee-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+        margin-right: 15px;
+      }
+      
+      .employee-details {
+        h3 {
+          margin: 0 0 5px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #343a40;
+        }
+        
+        p {
+          margin: 0;
+          font-size: 14px;
+          color: #6c757d;
+        }
+      }
+    }
+  }
+  
+  .popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 18px 24px;
+    border-top: 1px solid #e9ecef;
+    
+    button {
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 12px;
+      transition: all 0.2s;
+      
+      &.cancel-btn {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        color: #495057;
+        
+        &:hover {
+          background-color: #e9ecef;
+        }
+      }
+      
+      &.apply-btn {
+        background-color: #007bff;
+        border: none;
+        color: white;
+        
+        &:hover {
+          background-color: #0069d9;
+        }
+        
+        &:disabled {
+          background-color: #6c757d;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+} 

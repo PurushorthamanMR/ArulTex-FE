@@ -1,0 +1,283 @@
+$bg-gray-800: #1f2937;
+$bg-gray-700: #374151;
+$bg-gray-600: #4b5563;
+$text-gray-400: #9ca3af;
+$text-gray-600: #6b7280;
+$text-gray-900: #111827;
+$text-green-400: #4ade80;
+$text-white: #ffffff;
+$text-black: #000000;
+$dark-bg: #212121;
+$dark-text: #ffffff;
+$light-bg: #ffffff;
+$light-text: #000000;
+
+$blue-600: rgb(37, 99, 235);
+$blue-700: rgb(29, 78, 216);
+$green-500: rgb(34, 197, 94);
+$green-600: rgb(22, 163, 74);
+$gray-600: #4b5563;
+$gray-700: #6b7280;
+$gray-800: #4a5568;
+$orange-500: #ed8936;
+$orange-600: #dd6b20;
+$red-500: #ef4444;
+$red-600: #dc2626;
+
+.barcode-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.barcode-popup {
+  background-color: $light-bg;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  width: 700px;
+  height: 600px;
+  max-width: 100%;
+  border: 4px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+
+  &.dark-mode {
+    background-color: $light-bg; /* Keeping light-bg to match your preference */
+    color: $text-black;
+    border-color: #e2e8f0;
+
+    .barcode-popup-input,
+    .barcode-popup-button {
+      border-color: $bg-gray-600;
+      background-color: $dark-bg;
+      color: $dark-text;
+    }
+
+    .barcode-popup-status {
+      color: $text-gray-400;
+    }
+  }
+
+  .barcode-popup-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $text-black;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .barcode-popup-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    .barcode-popup-input-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .barcode-popup-input {
+        background-color: $light-bg;
+        border: 2px solid #e2e8f0;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        width: 100%;
+        max-width: 400px; /* Limit input width for better aesthetics */
+        font-size: 1.125rem;
+        outline: none;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        color: $text-black;
+
+        &:focus {
+          border-color: $blue-600;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+      }
+
+      .barcode-popup-status {
+        font-size: 1rem;
+        color: $text-gray-600;
+        margin-top: 0.75rem;
+        text-align: center;
+      }
+    }
+
+    .barcode-popup-barcode {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      margin-top: 1rem;
+
+      canvas,
+      svg {
+        max-width: 95%;
+        height: auto;
+      }
+    }
+  }
+
+  .barcode-popup-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-top: 2rem;
+
+    .barcode-popup-button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms ease;
+      width: 180px;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+
+      &:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+
+      &.submit { /* Changed from .generate to .submit to match JSX */
+        background-color: $blue-600;
+        color: $text-white;
+        border: none;
+
+        &:hover {
+          background-color: $blue-700;
+          transform: scale(1.05);
+        }
+      }
+
+      &.print {
+        background-color: $orange-500;
+        color: $text-white;
+        border: none;
+
+        &:hover {
+          background-color: $orange-600;
+          transform: scale(1.015);
+        }
+
+        &:disabled {
+          background-color: $gray-600;
+          color: $text-gray-400;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+      }
+
+      &.close {
+        background-color: $red-500;
+        color: $text-white;
+        border: none;
+
+        &:hover {
+          background-color: $red-600;
+          transform: scale(1.015);
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .barcode-popup {
+    width: 90%;
+    height: auto;
+    max-height: 90vh;
+    padding: 1.5rem;
+
+    .barcode-popup-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .barcode-popup-content {
+      gap: 1.5rem;
+
+      .barcode-popup-input-container {
+        .barcode-popup-input {
+          max-width: 100%;
+        }
+      }
+    }
+
+    .barcode-popup-actions {
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+
+      .barcode-popup-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .barcode-popup {
+    padding: 1rem;
+    width: 95%;
+
+    .barcode-popup-title {
+      font-size: 1.25rem;
+    }
+
+    .barcode-popup-input-container {
+      .barcode-popup-input {
+        padding: 0.75rem;
+        font-size: 1rem;
+      }
+
+      .barcode-popup-status {
+        font-size: 0.875rem;
+      }
+    }
+
+    .barcode-popup-actions {
+      .barcode-popup-button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .barcode-popup {
+    background-color: $light-bg; /* Keeping light-bg to match your preference */
+    color: $text-black;
+    border-color: #e2e8f0;
+
+    .barcode-popup-title {
+      color: $text-black;
+    }
+
+    .barcode-popup-input {
+      background-color: $light-bg;
+      color: $text-black;
+      border-color: #e2e8f0;
+
+      &:focus {
+        border-color: $blue-600;
+      }
+    }
+
+    .barcode-popup-status {
+      color: $text-gray-600;
+    }
+  }
+}

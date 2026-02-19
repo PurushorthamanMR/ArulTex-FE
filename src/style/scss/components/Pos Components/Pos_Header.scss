@@ -1,0 +1,373 @@
+$pos-dark: #212121;
+$gray-700: #374151;
+$gray-300: #d1d5db;
+$pos-blue: #35b6e3;
+$light-bg: white;
+$light-text: black;
+$dark-bg: #212121;
+$dark-text: white;
+
+.pos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 4rem;
+  padding: 0 1rem;
+  transition: background 0.3s, color 0.3s;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &.dark-header {
+    background-color: $dark-bg;
+    color: $dark-text;
+  }
+
+  &.light-header {
+    background-color: $light-bg;
+    color: $light-text;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.toggle-mode-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.3s, opacity 0.3s;
+  padding: 0.5rem;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.add-customer-btn {
+  background-color: $pos-blue;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  
+  &:hover {
+    background-color: darken($pos-blue, 10%);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: right;
+
+  .date {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  .time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $pos-blue;
+    letter-spacing: 1px;
+  }
+}
+
+.fullscreen-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: $pos-blue;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.3s;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .feather-icon {
+    margin-right: 0.5rem;
+  }
+
+  &.go-fullscreen,
+  &.exit-fullscreen {
+    color: $pos-blue;
+  }
+
+  .dark-header & {
+    color: $pos-blue;
+  }
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup {
+  background-color: $light-bg;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  .dark-header & {
+    background-color: $gray-700;
+    color: $dark-text;
+  }
+
+  .popup-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .popup-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .popup-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid $gray-300;
+    border-radius: 0.25rem;
+    
+    .dark-header & {
+      background-color: $dark-bg;
+      border-color: $gray-700;
+      color: $dark-text;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $pos-blue;
+      box-shadow: 0 0 0 2px rgba($pos-blue, 0.2);
+    }
+  }
+
+  .popup-error {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .popup-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+
+    .popup-btn-cancel {
+      padding: 0.5rem 1rem;
+      background-color: $gray-300;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      
+      &:hover {
+        background-color: darken($gray-300, 10%);
+      }
+    }
+
+    .popup-btn-save {
+      padding: 0.5rem 1rem;
+      background-color: $pos-blue;
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      
+      &:hover {
+        background-color: darken($pos-blue, 10%);
+      }
+    }
+  }
+}
+
+.banking-required {
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 15px;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: rgba(255, 0, 0, 0.1);
+  transition: opacity 0.5s ease;
+  
+  &.visible {
+    opacity: 1;
+  }
+  
+  &.hidden {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-header {
+    padding: 0 0.75rem;
+  }
+
+  .header-right {
+    gap: 0.75rem;
+  }
+
+  .time-display {
+    gap: 0.75rem;
+    .date {
+      font-size: 0.875rem;
+    }
+    .time {
+      font-size: 1.25rem;
+    }
+  }
+
+  .add-customer-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .fullscreen-btn {
+    padding: 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pos-header {
+    height: 3.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+  }
+
+  .time-display {
+    gap: 0.5rem;
+    .date {
+      font-size: 0.75rem;
+    }
+    .time {
+      font-size: 1rem;
+    }
+  }
+
+  .toggle-mode-btn {
+    font-size: 20px;
+    padding: 0.3rem;
+  }
+
+  .add-customer-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .fullscreen-btn {
+    padding: 0.3rem;
+    
+    .feather-icon {
+      margin-right: 0.3rem;
+    }
+  }
+
+  .popup {
+    margin: 0 1rem;
+    padding: 1rem;
+  }
+}
+
+.dark-header {
+  .popup-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .popup {
+    background-color: #2d2d2d;
+    color: #ffffff;
+
+    .popup-title {
+      color: #ffffff;
+      border-bottom-color: #3b82f6;
+    }
+
+    .popup-label {
+      color: #ffffff;
+    }
+
+    .popup-input {
+      background-color: #1e1e1e;
+      color: #ffffff;
+      border-color: #3b82f6;
+
+      &::placeholder {
+        color: #6b7280;
+      }
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+      }
+    }
+
+    .popup-error {
+      color: #ef4444;
+    }
+
+    .popup-buttons {
+      .popup-btn-cancel {
+        background-color: #6b7280;
+        color: #ffffff;
+
+        &:hover {
+          background-color: #4b5563;
+        }
+      }
+
+      .popup-btn-save {
+        background-color: #3b82f6;
+        color: #ffffff;
+
+        &:hover {
+          background-color: #2563eb;
+        }
+      }
+    }
+  }
+}
