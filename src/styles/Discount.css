@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.discount-container {
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  background-color: #F8F9FA;
+  min-height: calc(100vh - 60px);
+}
+
+.discount-container .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.discount-container .page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #343A40;
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.discount-container .page-subtitle {
+  font-size: 14px;
+  color: #6C757D;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.discount-container .header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.discount-container .action-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.discount-container .pdf-btn {
+  background-color: #DC3545;
+  color: #FFFFFF;
+}
+
+.discount-container .pdf-btn:hover {
+  background-color: #C82333;
+}
+
+.discount-container .excel-btn {
+  background-color: #28A745;
+  color: #FFFFFF;
+}
+
+.discount-container .excel-btn:hover {
+  background-color: #218838;
+}
+
+.discount-container .refresh-btn,
+.discount-container .upload-btn {
+  background-color: #6C757D;
+  color: #FFFFFF;
+}
+
+.discount-container .refresh-btn:hover,
+.discount-container .upload-btn:hover {
+  background-color: #5A6268;
+}
+
+.discount-container .add-btn {
+  background-color: #8A2BE2;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.discount-container .add-btn:hover {
+  background-color: #7B1FA2;
+}
+
+.discount-container .status-toggles {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.discount-container .status-toggle {
+  padding: 10px 24px;
+  border: 2px solid #8A2BE2;
+  background-color: #FFFFFF;
+  color: #8A2BE2;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.discount-container .status-toggle:hover {
+  background-color: #F8F9FA;
+}
+
+.discount-container .status-toggle.active {
+  background-color: #8A2BE2;
+  color: #FFFFFF;
+}
+
+.discount-container .filters-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.discount-container .search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.discount-container .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6C757D;
+  font-size: 14px;
+}
+
+.discount-container .search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #CED4DA;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+.discount-container .search-input:focus {
+  outline: none;
+  border-color: #8A2BE2;
+}
+
+.discount-filter-select {
+  padding: 10px 12px;
+  border: 1px solid #CED4DA;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #343A40;
+  background-color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.discount-filter-select:focus {
+  outline: none;
+  border-color: #8A2BE2;
+}
+
+.discount-container .table-container {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.discount-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.discount-table thead {
+  background-color: #F8F9FA;
+}
+
+.discount-table th {
+  padding: 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6C757D;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+  border-bottom: 2px solid #E9ECEF;
+}
+
+.discount-container .sort-icons {
+  margin-left: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0.5;
+}
+
+.discount-container .sort-icons svg {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.discount-table tbody tr {
+  border-bottom: 1px solid #E9ECEF;
+}
+
+.discount-table tbody tr:hover {
+  background-color: #F8F9FA;
+}
+
+.discount-table td {
+  padding: 16px;
+  font-size: 14px;
+  color: #343A40;
+  font-family: 'Inter', sans-serif;
+}
+
+.discount-container .no-data {
+  text-align: center;
+  padding: 60px 20px !important;
+}
+
+.discount-container .no-data-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.discount-container .no-data-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.discount-container .no-data-text {
+  font-size: 14px;
+  color: #6C757D;
+  font-family: 'Inter', sans-serif;
+}
+
+.discount-container .bottom-accent-line {
+  height: 4px;
+  background-color: #8A2BE2;
+  margin-top: 24px;
+  border-radius: 2px;
+}

@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.monthly-report-container {
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  background-color: #F8F9FA;
+  min-height: calc(100vh - 60px);
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #343A40;
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #6C757D;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.report-content {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.report-placeholder {
+  text-align: center;
+}
+
+.report-placeholder h2 {
+  font-size: 20px;
+  color: #343A40;
+  margin: 0 0 8px 0;
+}
+
+.report-placeholder p {
+  font-size: 14px;
+  color: #6C757D;
+  margin: 0;
+}

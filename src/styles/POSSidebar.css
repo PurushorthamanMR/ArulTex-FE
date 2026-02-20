@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.pos-sidebar {
+  width: 70px;
+  min-width: 70px;
+  flex-shrink: 0;
+  background-color: #F8F9FA;
+  height: calc(100vh - 60px);
+  position: fixed;
+  left: 0;
+  top: 60px;
+  z-index: 100;
+  border-right: 1px solid #E9ECEF;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+.pos-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pos-sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 54px;
+  margin: 0 auto;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6C757D;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pos-sidebar-item:hover {
+  background-color: #E9ECEF;
+  color: #8A2BE2;
+}
+
+.pos-sidebar-item .pos-sidebar-icon {
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.pos-sidebar-item span {
+  pointer-events: none;
+}
+
+.pos-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-sidebar-item.logout-item:hover {
+  color: #DC3545;
+}
+
+.pos-sidebar-item.logout-item:hover .pos-sidebar-icon {
+  color: #DC3545;
+}
