@@ -3,17 +3,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTh, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import '../styles/POSSidebar.css'
 
+const DASHBOARD_ROLES = ['ADMIN', 'MANAGER']
+
 function POSSidebar() {
   const navigate = useNavigate()
+  const userRole = (localStorage.getItem('userRole') || '').toUpperCase()
+  const canAccessDashboard = DASHBOARD_ROLES.includes(userRole)
 
   const handleDashboard = () => {
+    if (!canAccessDashboard) return
     navigate('/dashboard')
   }
 
-  const handleLogout = () => {
+  const clearAuthAndRedirect = () => {
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('userRole')
-    navigate('/signin')
+    localStorage.removeItem('userFirstName')
+    localStorage.removeItem('userLastName')
+    localStorage.removeItem('accessToken')
+    navigate('/signin', { replace: true })
   }
 
   return (
@@ -21,9 +29,10 @@ function POSSidebar() {
       <div className="pos-sidebar-top">
         <button
           type="button"
-          className="pos-sidebar-item"
+          className={`pos-sidebar-item ${!canAccessDashboard ? 'pos-sidebar-item--disabled' : ''}`}
           onClick={handleDashboard}
-          title="Dashboard"
+          disabled={!canAccessDashboard}
+          title={canAccessDashboard ? 'Dashboard' : 'Dashboard (not available for your role)'}
         >
           <FontAwesomeIcon icon={faTh} className="pos-sidebar-icon" />
           <span>Dashboard</span>
@@ -37,7 +46,7 @@ function POSSidebar() {
         <button
           type="button"
           className="pos-sidebar-item logout-item"
-          onClick={handleLogout}
+          onClick={clearAuthAndRedirect}
           title="Logout"
         >
           <FontAwesomeIcon icon={faSignOutAlt} className="pos-sidebar-icon" />

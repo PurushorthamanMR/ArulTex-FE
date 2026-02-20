@@ -39,8 +39,15 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated')
-    navigate('/signin')
+    localStorage.removeItem('userRole')
+    localStorage.removeItem('userFirstName')
+    localStorage.removeItem('userLastName')
+    localStorage.removeItem('accessToken')
+    navigate('/signin', { replace: true })
   }
+
+  const displayName = [localStorage.getItem('userFirstName'), localStorage.getItem('userLastName')].filter(Boolean).join(' ') || 'User'
+  const displayRole = (localStorage.getItem('userRole') || '').toUpperCase() || '—'
 
   return (
     <header className="header">
@@ -74,8 +81,8 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
             aria-label="User menu"
           >
             <div className="user-info">
-              <div className="user-name">User Demo</div>
-              <div className="user-role">ADMIN</div>
+              <div className="user-name">{displayName}</div>
+              <div className="user-role">{displayRole}</div>
             </div>
             <FontAwesomeIcon 
               icon={faChevronDown} 
@@ -86,8 +93,8 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
           {isDropdownOpen && (
             <div className="user-dropdown">
               <div className="dropdown-user-info">
-                <div className="user-name">User Demo</div>
-                <div className="user-role">ADMIN</div>
+                <div className="user-name">{displayName}</div>
+                <div className="user-role">{displayRole}</div>
               </div>
               <div className="dropdown-separator"></div>
               <button className="logout-btn" onClick={handleLogout}>

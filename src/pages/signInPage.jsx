@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { login as apiLogin, getByEmailAddress } from '../api/userApi'
 import '../styles/signInPage.css'
 
 function SignInPage() {
@@ -10,22 +11,40 @@ function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    
-    // Check credentials
-    if (email === 'admin@gmail.com' && password === '123') {
+    setLoading(true)
+
+    try {
+      const { accessToken } = await apiLogin({
+        username: email.trim(),
+        password
+      })
+
+      localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('userRole', 'admin')
-      navigate('/dashboard')
-    } else if (email === 'staff@gmail.com' && password === '123') {
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('userRole', 'staff')
-      navigate('/pos')
-    } else {
-      setError('Invalid email or password. Please try again.')
+
+      const users = await getByEmailAddress(email.trim())
+      const user = Array.isArray(users) && users.length > 0 ? users[0] : null
+      const role = user?.userRoleDto?.userRole || 'USER'
+      localStorage.setItem('userRole', role)
+      localStorage.setItem('userFirstName', user?.firstName || 'User')
+      localStorage.setItem('userLastName', user?.lastName || '')
+
+      const roleUpper = (role || '').toUpperCase()
+      // Dashboard for Admin and Manager only; POS for Staff and others
+      if (roleUpper === 'ADMIN' || roleUpper === 'MANAGER') {
+        navigate('/dashboard')
+      } else {
+        navigate('/pos')
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid email or password. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -105,8 +124,8 @@ function SignInPage() {
             </Link>
 
             {/* Sign In Button */}
-            <button type="submit" className="signin-button">
-              Sign In
+            <button type="submit" className="signin-button" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>

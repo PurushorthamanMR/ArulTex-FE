@@ -52,6 +52,13 @@
   color: #8A2BE2;
 }
 
+.pos-sidebar-item--disabled,
+.pos-sidebar-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .pos-sidebar-item .pos-sidebar-icon {
   font-size: 20px;
   pointer-events: none;
