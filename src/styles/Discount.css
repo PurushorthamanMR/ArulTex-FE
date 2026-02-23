@@ -3,7 +3,7 @@
 .discount-container {
   padding: 24px;
   font-family: 'Inter', sans-serif;
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
   min-height: calc(100vh - 60px);
 }
 
@@ -50,21 +50,21 @@
 }
 
 .discount-container .pdf-btn {
-  background-color: #DC3545;
+  background-color: #b91c1c;
   color: #FFFFFF;
 }
 
 .discount-container .pdf-btn:hover {
-  background-color: #C82333;
+  background-color: #5c0509;
 }
 
 .discount-container .excel-btn {
-  background-color: #28A745;
+  background-color: #0d9488;
   color: #FFFFFF;
 }
 
 .discount-container .excel-btn:hover {
-  background-color: #218838;
+  background-color: #3d5010;
 }
 
 .discount-container .refresh-btn,
@@ -79,13 +79,13 @@
 }
 
 .discount-container .add-btn {
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   color: #FFFFFF;
   font-weight: 600;
 }
 
 .discount-container .add-btn:hover {
-  background-color: #7B1FA2;
+  background-color: #3d5010;
 }
 
 .discount-container .status-toggles {
@@ -96,9 +96,9 @@
 
 .discount-container .status-toggle {
   padding: 10px 24px;
-  border: 2px solid #8A2BE2;
+  border: 2px solid #0d9488;
   background-color: #FFFFFF;
-  color: #8A2BE2;
+  color: #0d9488;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -108,11 +108,11 @@
 }
 
 .discount-container .status-toggle:hover {
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
 }
 
 .discount-container .status-toggle.active {
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   color: #FFFFFF;
 }
 
@@ -149,7 +149,7 @@
 
 .discount-container .search-input:focus {
   outline: none;
-  border-color: #8A2BE2;
+  border-color: #0d9488;
 }
 
 .discount-filter-select {
@@ -166,7 +166,7 @@
 
 .discount-filter-select:focus {
   outline: none;
-  border-color: #8A2BE2;
+  border-color: #0d9488;
 }
 
 .discount-container .table-container {
@@ -182,7 +182,7 @@
 }
 
 .discount-table thead {
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
 }
 
 .discount-table th {
@@ -215,7 +215,7 @@
 }
 
 .discount-table tbody tr:hover {
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
 }
 
 .discount-table td {
@@ -248,9 +248,25 @@
   font-family: 'Inter', sans-serif;
 }
 
+.discount-container .action-icon-btn {
+  padding: 8px 10px;
+  margin: 0 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.discount-container .action-icon-btn:hover {
+  color: #0d9488;
+  border-color: #0d9488;
+}
+
 .discount-container .bottom-accent-line {
   height: 4px;
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   margin-top: 24px;
   border-radius: 2px;
 }

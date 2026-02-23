@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
@@ -8,13 +8,33 @@ import {
   faArrowUp,
   faPlus,
   faSortUp,
-  faSortDown
+  faSortDown,
+  faEdit,
+  faTrash
 } from '@fortawesome/free-solid-svg-icons'
+import { discountsMock } from '../api/mockData'
+import { downloadTablePdf } from '../utils/pdfExport'
 import '../styles/Discount.css'
 
 function Discount() {
   const navigate = useNavigate()
   const [activeStatus, setActiveStatus] = useState('Active')
+
+  const filteredList = useMemo(() => {
+    return discountsMock.filter((d) =>
+      activeStatus === 'Active' ? d.isActive === true : d.isActive === false
+    )
+  }, [activeStatus])
+
+  const handleDownloadPdf = () => {
+    downloadTablePdf({
+      title: 'Discount',
+      subtitle: 'Manage your discounts',
+      columns: ['Discount', 'Status'],
+      rows: filteredList.map((d) => [`${d.discountLabel} (${d.percentage}%)`, d.isActive ? 'Active' : 'Inactive']),
+      filename: `Discount_${new Date().toISOString().slice(0, 10)}.pdf`
+    })
+  }
 
   return (
     <div className="discount-container">
@@ -25,7 +45,7 @@ function Discount() {
           <p className="page-subtitle">Manage your discounts</p>
         </div>
         <div className="header-actions">
-          <button className="action-btn pdf-btn" title="Export PDF">
+          <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
           <button className="action-btn excel-btn" title="Export Excel">
@@ -86,14 +106,33 @@ function Discount() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td colSpan="3" className="no-data">
-                <div className="no-data-content">
-                  <div className="no-data-icon">📦</div>
-                  <div className="no-data-text">No data</div>
-                </div>
-              </td>
-            </tr>
+            {filteredList.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="no-data">
+                  <div className="no-data-content">
+                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-text">No data</div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredList.map((d) => (
+                <tr key={d.id}>
+                  <td>
+                    {d.discountLabel} ({d.percentage}%)
+                  </td>
+                  <td>{d.isActive ? 'Active' : 'Inactive'}</td>
+                  <td>
+                    <button type="button" className="action-icon-btn" title="Edit" aria-label="Edit">
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button type="button" className="action-icon-btn" title="Delete" aria-label="Delete">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

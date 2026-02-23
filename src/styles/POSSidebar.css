@@ -4,7 +4,7 @@
   width: 70px;
   min-width: 70px;
   flex-shrink: 0;
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
   height: calc(100vh - 60px);
   position: fixed;
   left: 0;
@@ -49,7 +49,7 @@
 
 .pos-sidebar-item:hover {
   background-color: #E9ECEF;
-  color: #8A2BE2;
+  color: #0d9488;
 }
 
 .pos-sidebar-item--disabled,
@@ -76,9 +76,9 @@
 }
 
 .pos-sidebar-item.logout-item:hover {
-  color: #DC3545;
+  color: #b91c1c;
 }
 
 .pos-sidebar-item.logout-item:hover .pos-sidebar-icon {
-  color: #DC3545;
+  color: #b91c1c;
 }

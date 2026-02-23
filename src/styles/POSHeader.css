@@ -1,19 +1,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .pos-header {
-  height: 60px;
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #E9ECEF;
+  --pos-header-height: 64px;
+  --pos-header-bg-start: #0d9488;
+  --pos-header-bg-end: #0f766e;
+  --pos-header-text: #fff;
+  --pos-header-text-muted: rgba(255, 255, 255, 0.88);
+  --pos-header-accent: rgba(255, 255, 255, 0.12);
+
+  height: var(--pos-header-height);
+  background: linear-gradient(135deg, var(--pos-header-bg-start) 0%, var(--pos-header-bg-end) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 24px;
+  justify-content: space-between;
+  padding: 0 28px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(15, 118, 110, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.pos-header-logo {
+  height: 42px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  margin-right: 16px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.pos-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pos-header-text);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .pos-header-spacer {
@@ -23,7 +51,7 @@
 .pos-header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .pos-date-time {
@@ -31,17 +59,26 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+  padding: 8px 14px;
+  background: var(--pos-header-accent);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .pos-date {
-  font-size: 13px;
-  color: #6C757D;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pos-header-text-muted);
   font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .pos-time {
-  font-size: 16px;
-  font-weight: 600;
-  color: #343A40;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pos-header-text);
   font-family: 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
 }

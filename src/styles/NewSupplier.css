@@ -3,7 +3,7 @@
 .new-supplier-container {
   padding: 24px;
   font-family: 'Inter', sans-serif;
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
   min-height: calc(100vh - 60px);
 }
 
@@ -31,7 +31,7 @@
 
 .back-btn {
   padding: 10px 20px;
-  background-color: #0056B3;
+  background-color: #0d9488;
   color: #FFFFFF;
   border: none;
   border-radius: 6px;
@@ -43,7 +43,16 @@
 }
 
 .back-btn:hover {
-  background-color: #004494;
+  background-color: #0f766e;
+}
+
+.supplier-form-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
 }
 
 .supplier-form {
@@ -82,7 +91,7 @@
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #8A2BE2;
+  border-color: #0d9488;
 }
 
 .form-actions {
@@ -113,7 +122,7 @@
 
 .save-btn {
   padding: 12px 24px;
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   color: #FFFFFF;
   border: none;
   border-radius: 6px;
@@ -125,5 +134,5 @@
 }
 
 .save-btn:hover {
-  background-color: #7B1FA2;
+  background-color: #3d5010;
 }

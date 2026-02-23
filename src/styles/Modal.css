@@ -53,7 +53,7 @@
 .modal-content .form-input:focus,
 .modal-content .form-select:focus {
   outline: none;
-  border-color: #8A2BE2;
+  border-color: #0d9488;
 }
 
 .modal-content .form-actions {
@@ -84,7 +84,7 @@
 
 .modal-content .save-btn {
   padding: 12px 24px;
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   color: #FFFFFF;
   border: none;
   border-radius: 6px;
@@ -96,5 +96,5 @@
 }
 
 .modal-content .save-btn:hover {
-  background-color: #7B1FA2;
+  background-color: #3d5010;
 }

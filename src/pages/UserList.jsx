@@ -11,6 +11,7 @@ import {
   faSortUp,
   faSortDown
 } from '@fortawesome/free-solid-svg-icons'
+import { downloadTablePdf } from '../utils/pdfExport'
 import '../styles/UserList.css'
 
 function UserList() {
@@ -18,6 +19,16 @@ function UserList() {
   const [activeStatus, setActiveStatus] = useState('Active')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState('')
+
+  const handleDownloadPdf = () => {
+    downloadTablePdf({
+      title: 'User List',
+      subtitle: 'Manage your users',
+      columns: ['Name', 'Phone', 'Email', 'Address', 'Role', 'Status'],
+      rows: [],
+      filename: `Users_${new Date().toISOString().slice(0, 10)}.pdf`
+    })
+  }
 
   return (
     <div className="user-list-container">
@@ -28,7 +39,7 @@ function UserList() {
           <p className="page-subtitle">Manage Your Users</p>
         </div>
         <div className="header-actions">
-          <button className="action-btn pdf-btn" title="Export PDF">
+          <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
           <button className="action-btn excel-btn" title="Export Excel">
@@ -69,6 +80,9 @@ function UserList() {
       {/* Filters */}
       <div className="filters-container">
         <div className="search-wrapper">
+          <span className="search-icon-wrap" aria-hidden="true">
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          </span>
           <input
             type="text"
             className="search-input"
@@ -76,9 +90,6 @@ function UserList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className="search-btn">
-            <FontAwesomeIcon icon={faSearch} />
-          </button>
         </div>
         <select 
           className="filter-select"

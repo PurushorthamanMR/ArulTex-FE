@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import * as categoryApi from '../api/categoryApi'
 import '../styles/Modal.css'
 
 function CategoryModal({ isOpen, onClose, onSave }) {
@@ -6,6 +7,8 @@ function CategoryModal({ isOpen, onClose, onSave }) {
     categoryName: '',
     status: 'Active'
   })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -13,13 +16,26 @@ function CategoryModal({ isOpen, onClose, onSave }) {
       ...prev,
       [name]: value
     }))
+    setError(null)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave(formData)
-    setFormData({ categoryName: '', status: 'Active' })
-    onClose()
+    setSaving(true)
+    setError(null)
+    try {
+      const saved = await categoryApi.save({
+        categoryName: formData.categoryName.trim(),
+        isActive: formData.status === 'Active'
+      })
+      onSave(saved)
+      setFormData({ categoryName: '', status: 'Active' })
+      onClose()
+    } catch (err) {
+      setError(err.message || 'Failed to save category')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleCancel = () => {
@@ -33,6 +49,7 @@ function CategoryModal({ isOpen, onClose, onSave }) {
     <div className="modal-overlay" onClick={handleCancel}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <form onSubmit={handleSubmit}>
+          {error && <div className="modal-error">{error}</div>}
           <div className="form-group">
             <label htmlFor="categoryName">Category Name</label>
             <input
@@ -65,8 +82,8 @@ function CategoryModal({ isOpen, onClose, onSave }) {
             <button type="button" className="cancel-btn" onClick={handleCancel}>
               Cancel
             </button>
-            <button type="submit" className="save-btn">
-              Save Category
+            <button type="submit" className="save-btn" disabled={saving}>
+              {saving ? 'Saving...' : 'Save Category'}
             </button>
           </div>
         </form>

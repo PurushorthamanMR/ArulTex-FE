@@ -3,7 +3,7 @@
 .new-discount-container {
   padding: 24px;
   font-family: 'Inter', sans-serif;
-  background-color: #F8F9FA;
+  background-color: #f8fafc;
   min-height: calc(100vh - 60px);
 }
 
@@ -31,7 +31,7 @@
 
 .new-discount-container .back-btn {
   padding: 10px 20px;
-  background-color: #0056B3;
+  background-color: #0d9488;
   color: #FFFFFF;
   border: none;
   border-radius: 6px;
@@ -43,7 +43,7 @@
 }
 
 .new-discount-container .back-btn:hover {
-  background-color: #004494;
+  background-color: #0f766e;
 }
 
 .discount-form {
@@ -82,7 +82,7 @@
 .new-discount-container .form-input:focus,
 .new-discount-container .form-select:focus {
   outline: none;
-  border-color: #8A2BE2;
+  border-color: #0d9488;
 }
 
 .new-discount-container .form-actions {
@@ -113,7 +113,7 @@
 
 .new-discount-container .save-btn {
   padding: 12px 24px;
-  background-color: #8A2BE2;
+  background-color: #0d9488;
   color: #FFFFFF;
   border: none;
   border-radius: 6px;
@@ -125,5 +125,5 @@
 }
 
 .new-discount-container .save-btn:hover {
-  background-color: #7B1FA2;
+  background-color: #3d5010;
 }

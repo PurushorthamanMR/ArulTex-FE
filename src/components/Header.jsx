@@ -53,7 +53,7 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
     <header className="header">
       <div className="header-left">
         <div className="logo">
-          <span className="logo-text">AruntexPOS</span>
+          <img src="/logo.jpg" alt="Aruntex & Fancy Palace" className="logo-img" />
         </div>
         <button 
           className="sidebar-toggle"
