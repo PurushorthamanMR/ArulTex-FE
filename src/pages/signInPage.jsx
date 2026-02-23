@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
@@ -12,6 +12,15 @@ function SignInPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  /* Lock body scroll so sign-in page never scrolls */
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -50,15 +59,17 @@ function SignInPage() {
 
   return (
     <div className="signin-container">
-      <div className="signin-content">
-        {/* Sign In Form */}
-        <div className="signin-form">
-          <h1 className="signin-heading">Sign In</h1>
-          <p className="signin-description">
-            Access the Yarltech AruntexPOS panel using your email and password.
-          </p>
+      <div className="signin-card">
+        <div className="signin-content">
+          {/* Logo */}
+          <div className="signin-logo-wrap">
+            <img src="/logo.jpg" alt="Aruntex & Fancy Palace" className="signin-logo-img" />
+          </div>
+          {/* Sign In Form */}
+          <div className="signin-form">
+            <h1 className="signin-heading">Sign In</h1>
 
-          <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
             {/* Email Field */}
             <div className="input-group">
               <label htmlFor="email">Email</label>
@@ -69,6 +80,9 @@ function SignInPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field"
+                  placeholder="Enter your email"
+                  autoComplete="email"
+                  required
                 />
                 <svg className="input-icon email-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2.25 4.5L9 9.75L15.75 4.5M2.25 4.5H15.75M2.25 4.5V13.5C2.25 14.325 2.925 15 3.75 15H14.25C15.075 15 15.75 14.325 15.75 13.5V4.5" stroke="#CED4DA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -86,6 +100,9 @@ function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
                 />
                 <button
                   type="button"
@@ -93,7 +110,6 @@ function SignInPage() {
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    console.log('Password toggle clicked, current state:', showPassword)
                     setShowPassword(!showPassword)
                   }}
                   onMouseDown={(e) => {
@@ -125,19 +141,22 @@ function SignInPage() {
 
             {/* Sign In Button */}
             <button type="submit" className="signin-button" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <>
+                  <span className="signin-button-spinner" aria-hidden="true" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
         </div>
-
-        {/* Copyright */}
-        <div className="copyright">
-          Copyright © 2026 Yarltech AruntexPOS. All rights reserved
-        </div>
+      </div>
       </div>
 
-      {/* Purple Accent Line */}
-      <div className="accent-line"></div>
+      {/* Accent line */}
+      <div className="signin-accent-line" aria-hidden="true" />
     </div>
   )
 }

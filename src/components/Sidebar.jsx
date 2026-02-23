@@ -1,36 +1,21 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { 
-  faTh, 
-  faShoppingCart, 
-  faBox, 
-  faWrench, 
-  faChartBar, 
-  faChartLine, 
-  faHexagon, 
-  faFileAlt, 
-  faTag,
+import {
+  faTh,
+  faShoppingCart,
+  faBox,
+  faChartLine,
+  faHexagon,
   faFileInvoice,
-  faCreditCard,
-  faMoneyBillWave,
-  faTimesCircle,
   faShoppingBag,
-  faUsers,
   faUserFriends,
-  faBuilding,
-  faExchangeAlt,
-  faCalendarPlus,
-  faChartColumn,
-  faClock,
-  faCog,
   faUserCheck,
-  faUser,
   faBook,
   faCalendarDay,
   faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons'
 import '../styles/Sidebar.css'
 
-function Sidebar({ onNavigate, currentPage, isCollapsed }) {
+function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
   const handleMenuClick = (path) => {
     if (onNavigate) {
       onNavigate(path)
@@ -43,12 +28,12 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
     if (path === '/products' || path === '/products/new') return 'Products'
     if (path === '/low-stocks') return 'Low Stocks'
     if (path === '/category') return 'Category'
-    if (path === '/tax') return 'Tax'
     if (path === '/discount' || path === '/discount/new') return 'Discount'
+    if (path === '/purchase') return 'Purchase'
+    if (path === '/inventory-ledger') return 'Inventory Ledger'
     if (path === '/transaction') return 'Transaction'
     if (path === '/reports/daily') return 'Daily Report'
     if (path === '/reports/monthly') return 'Monthly Report'
-    if (path === '/customers') return 'Customers'
     if (path === '/suppliers') return 'Suppliers'
     if (path === '/users') return 'Users'
     return ''
@@ -81,7 +66,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
 
       {/* Inventory Section */}
       <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">Product Pricing & Stocks</h3>}
+        {!isCollapsed && <h3 className="sidebar-section-title">Inventory</h3>}
         <ul className="sidebar-menu">
           <li 
             className={`sidebar-menu-item ${currentPage === 'Products' ? 'active' : ''}`}
@@ -94,10 +79,32 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
           <li 
             className={`sidebar-menu-item ${currentPage === 'Low Stocks' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/low-stocks')}
-            title="Low Stocks"
+            title={lowStockCount > 0 ? `Low Stocks (${lowStockCount})` : 'Low Stocks'}
           >
             <FontAwesomeIcon icon={faChartLine} className="menu-icon" />
-            {!isCollapsed && <span>Low Stocks</span>}
+            {!isCollapsed && (
+              <span className="sidebar-label-wrap">
+                <span>Low Stocks</span>
+                {lowStockCount > 0 && (
+                  <span className="sidebar-badge notification-badge" aria-label={`${lowStockCount} low stock`}>
+                    {lowStockCount > 99 ? '99+' : lowStockCount}
+                  </span>
+                )}
+              </span>
+            )}
+            {isCollapsed && lowStockCount > 0 && (
+              <span className="sidebar-badge notification-badge collapsed-badge" aria-label={`${lowStockCount} low stock`}>
+                {lowStockCount > 99 ? '99+' : lowStockCount}
+              </span>
+            )}
+          </li>
+          <li 
+            className={`sidebar-menu-item ${currentPage === 'Inventory Ledger' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/inventory-ledger')}
+            title="Stock Details"
+          >
+            <FontAwesomeIcon icon={faBook} className="menu-icon" />
+            {!isCollapsed && <span>Stock Details</span>}
           </li>
           <li 
             className={`sidebar-menu-item ${currentPage === 'Category' ? 'active' : ''}`}
@@ -108,20 +115,12 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
             {!isCollapsed && <span>Category</span>}
           </li>
           <li 
-            className={`sidebar-menu-item ${currentPage === 'Tax' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/tax')}
-            title="Tax"
+            className={`sidebar-menu-item ${(currentPage === 'Purchases' || currentPage === 'Purchase') ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/purchases')}
+            title="Purchase"
           >
-            <FontAwesomeIcon icon={faFileAlt} className="menu-icon" />
-            {!isCollapsed && <span>Tax</span>}
-          </li>
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Discount' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/discount')}
-            title="Discount"
-          >
-            <FontAwesomeIcon icon={faTag} className="menu-icon" />
-            {!isCollapsed && <span>Discount</span>}
+            <FontAwesomeIcon icon={faShoppingBag} className="menu-icon" />
+            {!isCollapsed && <span>Purchase</span>}
           </li>
         </ul>
       </div>
@@ -145,14 +144,6 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
       <div className="sidebar-section">
         {!isCollapsed && <h3 className="sidebar-section-title">People</h3>}
         <ul className="sidebar-menu">
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Customers' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/customers')}
-            title="Customers"
-          >
-            <FontAwesomeIcon icon={faUser} className="menu-icon" />
-            {!isCollapsed && <span>Customers</span>}
-          </li>
           <li 
             className={`sidebar-menu-item ${currentPage === 'Suppliers' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/suppliers')}
@@ -187,21 +178,6 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
         </ul>
       </div>
 
-      {/* Settings Section */}
-      <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">Settings</h3>}
-        <ul className="sidebar-menu">
-          <li className="sidebar-menu-item" title="Manager Settings">
-            <FontAwesomeIcon icon={faCog} className="menu-icon" />
-            {!isCollapsed && <span>Manager Settings</span>}
-          </li>
-          <li className="sidebar-menu-item" title="Admin Settings">
-            <FontAwesomeIcon icon={faUserCheck} className="menu-icon" />
-            {!isCollapsed && <span>Admin Settings</span>}
-          </li>
-        </ul>
-      </div>
-
       {/* User Management Section */}
       <div className="sidebar-section">
         {!isCollapsed && <h3 className="sidebar-section-title">User Management</h3>}
@@ -213,21 +189,6 @@ function Sidebar({ onNavigate, currentPage, isCollapsed }) {
           >
             <FontAwesomeIcon icon={faUserCheck} className="menu-icon" />
             {!isCollapsed && <span>Users</span>}
-          </li>
-          <li className="sidebar-menu-item" title="Admin Details">
-            <FontAwesomeIcon icon={faUserCheck} className="menu-icon" />
-            {!isCollapsed && <span>Admin Details</span>}
-          </li>
-        </ul>
-      </div>
-
-      {/* Documentation Section */}
-      <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">Documentation</h3>}
-        <ul className="sidebar-menu">
-          <li className="sidebar-menu-item" title="User Manual">
-            <FontAwesomeIcon icon={faBook} className="menu-icon" />
-            {!isCollapsed && <span>User Manual</span>}
           </li>
         </ul>
       </div>

@@ -8,11 +8,7 @@ import NewProduct from './pages/NewProduct'
 import LowStocks from './pages/LowStocks'
 import Category from './pages/Category'
 import NewCategory from './pages/NewCategory'
-import Tax from './pages/Tax'
-import NewTax from './pages/NewTax'
 import TransactionReport from './pages/TransactionReport'
-import CustomerList from './pages/CustomerList'
-import NewCustomer from './pages/NewCustomer'
 import SupplierList from './pages/SupplierList'
 import NewSupplier from './pages/NewSupplier'
 import UserList from './pages/UserList'
@@ -20,6 +16,8 @@ import NewUser from './pages/NewUser'
 import POSPage from './pages/POSPage'
 import DailyReport from './pages/DailyReport'
 import MonthlyReport from './pages/MonthlyReport'
+import Purchase from './pages/Purchase'
+import InventoryLedger from './pages/InventoryLedger'
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -64,7 +62,23 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
+        path: '/products/edit/:id',
+        element: <Dashboard />
+      },
+      {
         path: '/low-stocks',
+        element: <Dashboard />
+      },
+      {
+        path: '/purchases',
+        element: <Dashboard />
+      },
+      {
+        path: '/purchase',
+        element: <Dashboard />
+      },
+      {
+        path: '/inventory-ledger',
         element: <Dashboard />
       },
       {
@@ -76,11 +90,7 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
-        path: '/tax',
-        element: <Dashboard />
-      },
-      {
-        path: '/tax/new',
+        path: '/category/edit/:id',
         element: <Dashboard />
       },
       {
@@ -104,19 +114,15 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
-        path: '/customers',
-        element: <Dashboard />
-      },
-      {
-        path: '/customers/new',
-        element: <Dashboard />
-      },
-      {
         path: '/suppliers',
         element: <Dashboard />
       },
       {
         path: '/suppliers/new',
+        element: <Dashboard />
+      },
+      {
+        path: '/suppliers/edit/:id',
         element: <Dashboard />
       },
       {

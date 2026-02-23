@@ -9,12 +9,23 @@ import {
   faSortUp,
   faSortDown
 } from '@fortawesome/free-solid-svg-icons'
+import { downloadTablePdf } from '../utils/pdfExport'
 import '../styles/TransactionReport.css'
 
 function TransactionReport() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBranch, setSelectedBranch] = useState('')
   const [selectedUser, setSelectedUser] = useState('')
+
+  const handleDownloadPdf = () => {
+    downloadTablePdf({
+      title: 'Transaction Report',
+      subtitle: 'Manage your transaction report',
+      columns: ['Transaction ID', 'Branch Name', 'Shop Name', 'User Name', 'Customer Name', 'Total Amount', 'Date Time'],
+      rows: [],
+      filename: `TransactionReport_${new Date().toISOString().slice(0, 10)}.pdf`
+    })
+  }
 
   return (
     <div className="transaction-report-container">
@@ -25,7 +36,7 @@ function TransactionReport() {
           <p className="page-subtitle">Manage Your Transaction Report</p>
         </div>
         <div className="header-actions">
-          <button className="action-btn pdf-btn" title="Export PDF">
+          <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
           <button className="action-btn excel-btn" title="Export Excel">
@@ -43,7 +54,9 @@ function TransactionReport() {
       {/* Filters */}
       <div className="filters-container">
         <div className="search-wrapper">
-          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          <span className="search-icon-wrap" aria-hidden="true">
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          </span>
           <input
             type="text"
             className="search-input"

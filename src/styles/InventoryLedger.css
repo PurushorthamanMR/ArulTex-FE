@@ -1,0 +1,101 @@
+.inventory-ledger-container {
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 60px);
+}
+
+.inventory-ledger-container .filters-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.inventory-ledger-container .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inventory-ledger-container .form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.inventory-ledger-container .form-input,
+.inventory-ledger-container .form-select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 160px;
+}
+
+.table-container {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger-table thead {
+  background: #f1f5f9;
+}
+
+.ledger-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.ledger-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #334155;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ledger-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.movement-type {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.movement-type.in {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.movement-type.out {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
+
+.bottom-accent-line {
+  height: 4px;
+  background-color: #0d9488;
+  margin-top: 24px;
+  border-radius: 2px;
+}
