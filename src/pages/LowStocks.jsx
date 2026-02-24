@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { 
-  faFilePdf, 
-  faFileExcel, 
-  faSyncAlt, 
+import {
+  faFilePdf,
+  faFileExcel,
+  faSyncAlt,
   faArrowUp,
   faPrint,
   faSearch,
@@ -77,8 +77,8 @@ function LowStocks() {
         p.productName || '',
         p.barcode || '',
         p.category || '',
-        `₹${Number(p.purchasedPrice ?? p.costPrice).toFixed(2)}`,
-        `₹${Number(p.pricePerUnit ?? p.sellingPrice).toFixed(2)}`,
+        `LKR ${Number(p.purchasedPrice ?? p.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`,
+        `LKR ${Number(p.pricePerUnit ?? p.sellingPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`,
         String(p.quantity ?? ''),
         String(p.lowStock ?? '')
       ]),
@@ -210,13 +210,13 @@ function LowStocks() {
                   <td>{p.productName}</td>
                   <td>{p.barcode ?? p.barCode}</td>
                   <td>
-                  <span className="category-cell-with-icon">
-                    <FontAwesomeIcon icon={getCategoryIcon(p.categoryId)} className="category-icon" />
-                    {p.category}
-                  </span>
-                </td>
-                  <td>₹{Number(p.purchasedPrice ?? p.costPrice).toFixed(2)}</td>
-                  <td>₹{Number(p.pricePerUnit ?? p.sellingPrice).toFixed(2)}</td>
+                    <span className="category-cell-with-icon">
+                      <FontAwesomeIcon icon={getCategoryIcon(p.categoryId)} className="category-icon" />
+                      {p.category}
+                    </span>
+                  </td>
+                  <td>LKR {Number(p.purchasedPrice ?? p.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                  <td>LKR {Number(p.pricePerUnit ?? p.sellingPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                   <td>{p.quantity ?? p.stockQty}</td>
                   <td>{p.lowStock ?? p.minStockLevel}</td>
                 </tr>

@@ -85,7 +85,13 @@
   font-size: 14px;
   font-family: 'Inter', sans-serif;
   color: #343A40;
+  background-color: #ffffff;
   transition: border-color 0.2s ease;
+}
+
+#address {
+  background-color: #ffffff;
+  color: #343A40;
 }
 
 .form-input:focus,

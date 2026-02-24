@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faEllipsisH, faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import POSHeader from '../components/POSHeader'
 import POSSidebar from '../components/POSSidebar'
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
+import * as salesApi from '../api/salesApi'
 import '../styles/POSPage.css'
 
 function POSPage() {
@@ -16,6 +17,7 @@ function POSPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cash')
   const [searchError, setSearchError] = useState('')
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const searchInputRef = useRef(null)
   const searchErrorTimerRef = useRef(null)
 
@@ -61,7 +63,19 @@ function POSPage() {
     const pid = normId(product.id)
     const price = productApi.calcFinalPrice(product.pricePerUnit, 0)
     const name = normName(product)
+
+    // Check if enough stock available
+    const stockAvailable = product.quantity ?? 0
     const existing = cart.find((c) => c.productId === pid)
+    const currentInCart = existing ? existing.quantity : 0
+
+    if (currentInCart + qty > stockAvailable) {
+      setSearchError(`Insufficient stock! (Available: ${stockAvailable})`)
+      if (searchErrorTimerRef.current) clearTimeout(searchErrorTimerRef.current)
+      searchErrorTimerRef.current = setTimeout(() => setSearchError(''), 3000)
+      return
+    }
+
     if (existing) {
       setCart((prev) => prev.map((c) => c.productId === pid ? { ...c, quantity: c.quantity + qty, lineTotal: (c.quantity + qty) * c.price } : c))
     } else {
@@ -71,9 +85,20 @@ function POSPage() {
 
   const updateQty = (productId, delta) => {
     const pid = normId(productId)
+    const product = products.find(p => normId(p.id) === pid)
+    const stockAvailable = product ? (product.quantity ?? 0) : 999999
+
     setCart((prev) => prev.map((c) => {
       if (c.productId !== pid) return c
       const q = Math.max(0, c.quantity + delta)
+
+      if (delta > 0 && q > stockAvailable) {
+        setSearchError(`Insufficient stock! (Available: ${stockAvailable})`)
+        if (searchErrorTimerRef.current) clearTimeout(searchErrorTimerRef.current)
+        searchErrorTimerRef.current = setTimeout(() => setSearchError(''), 3000)
+        return c
+      }
+
       if (q === 0) return null
       return { ...c, quantity: q, lineTotal: q * c.price }
     }).filter(Boolean))
@@ -92,12 +117,12 @@ function POSPage() {
 
   const filteredProducts = searchTrimmed
     ? products.filter((p) => {
-        const name = (p.productName ?? p.name) || ''
-        const barcode = getProductBarcode(p)
-        const matchName = name.toLowerCase().includes(searchLower)
-        const matchBarcode = barcode !== '' && (barcode.toLowerCase().includes(searchLower) || barcode === searchTrimmed)
-        return matchName || matchBarcode
-      })
+      const name = (p.productName ?? p.name) || ''
+      const barcode = getProductBarcode(p)
+      const matchName = name.toLowerCase().includes(searchLower)
+      const matchBarcode = barcode !== '' && (barcode.toLowerCase().includes(searchLower) || barcode === searchTrimmed)
+      return matchName || matchBarcode
+    })
     : categoryFiltered
 
   const filteredCategories = searchTrimmed && !selectedCategory
@@ -158,6 +183,45 @@ function POSPage() {
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const handlePlaceOrder = async () => {
+    if (cart.length === 0 || isPlacingOrder) return
+
+    setIsPlacingOrder(true)
+    try {
+      const saleData = {
+        invoiceNo,
+        paymentMethod,
+        items: cart.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          discountAmount: 0 // Currently not handled individually
+        }))
+      }
+
+      await salesApi.save(saleData)
+
+      // Successfully saved!
+      alert('Order Placed Successfully!')
+
+      // Print the bill automatically
+      handlePrint()
+
+      // Clear cart for next sale
+      setCart([])
+      setPaymentMethod('cash')
+
+      // REFRESH PRODUCTS to see updated stock
+      fetchProducts()
+
+    } catch (error) {
+      console.error('Error placing order:', error)
+      alert(error.message || 'Failed to place order. Please try again.')
+    } finally {
+      setIsPlacingOrder(false)
+    }
   }
 
   return (
@@ -230,7 +294,12 @@ function POSPage() {
                           )}
                           {inCart && <span className="pos-product-cart-badge">In cart: {inCart.quantity}</span>}
                           <span className="pos-product-name">{normName(p)}</span>
-                          <span className="pos-product-price">₹{productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                          <div className="pos-product-footer-info">
+                            <span className="pos-product-price">LKR {productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                            <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
+                              Stock: {p.quantity}
+                            </span>
+                          </div>
                         </button>
                       )
                     })}
@@ -279,7 +348,12 @@ function POSPage() {
                           )}
                           {inCart && <span className="pos-product-cart-badge">In cart: {inCart.quantity}</span>}
                           <span className="pos-product-name">{normName(p)}</span>
-                          <span className="pos-product-price">₹{productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                          <div className="pos-product-footer-info">
+                            <span className="pos-product-price">LKR {productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                            <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
+                              Stock: {p.quantity}
+                            </span>
+                          </div>
                         </button>
                       )
                     })}
@@ -292,74 +366,82 @@ function POSPage() {
             </div>
 
             <div className="pos-right">
-              <div className="pos-cart">
-                <div className="pos-cart-header">
-                  <h3 className="pos-cart-title">Current Sale</h3>
-                  {cart.length > 0 && <span className="pos-cart-badge">{cart.length} item{cart.length !== 1 ? 's' : ''}</span>}
+              <div className="pos-cart-container">
+                <div className="pos-cart-header-new">
+                  <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faChevronLeft} /></button>
+                  <div className="pos-receipt-title">
+                    <div className="pos-receipt-label">Purchase Receipt</div>
+                    <div className="pos-receipt-id">#546294</div>
+                  </div>
+                  <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faEllipsisH} /></button>
                 </div>
-                {cart.length === 0 ? (
-                  <p className="pos-cart-empty">Cart is empty</p>
-                ) : (
-                  <div className="pos-cart-bill-wrap">
-                    <table className="pos-cart-table">
-                      <thead>
-                        <tr>
-                          <th className="pos-cart-th-item">Item</th>
-                          <th className="pos-cart-th-qty">Qty</th>
-                          <th className="pos-cart-th-price">Price</th>
-                          <th className="pos-cart-th-total">Total</th>
-                          <th className="pos-cart-th-action"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cart.map((c) => (
-                          <tr key={c.productId} className="pos-cart-tr">
-                            <td className="pos-cart-td-item">{c.productName}</td>
-                            <td className="pos-cart-td-qty">
-                              <div className="pos-cart-qty">
-                                <button type="button" onClick={() => updateQty(c.productId, -1)} aria-label="Decrease"><FontAwesomeIcon icon={faMinus} /></button>
+
+                <div className="pos-payment-tabs">
+                  <button
+                    className={`pos-payment-tab ${paymentMethod === 'cash' ? 'active' : ''}`}
+                    onClick={() => setPaymentMethod('cash')}
+                  >Cash</button>
+                  <button
+                    className={`pos-payment-tab ${paymentMethod === 'card' ? 'active' : ''}`}
+                    onClick={() => setPaymentMethod('card')}
+                  >Card</button>
+                </div>
+
+                <div className="pos-orders-list-label">Orders List</div>
+                <div className="pos-orders-scroll-area">
+                  {cart.length === 0 ? (
+                    <p className="pos-cart-empty">Cart is empty</p>
+                  ) : (
+                    <div className="pos-cart-items-list">
+                      {cart.map((c) => (
+                        <div key={c.productId} className="pos-cart-item-card">
+                          <div className="pos-item-info">
+                            <div className="pos-item-name">{c.productName}</div>
+                            <div className="pos-item-footer">
+                              <div className="pos-item-qty-picker">
+                                <button type="button" onClick={() => updateQty(c.productId, -1)}><FontAwesomeIcon icon={faMinus} /></button>
                                 <span>{c.quantity}</span>
-                                <button type="button" onClick={() => updateQty(c.productId, 1)} aria-label="Increase"><FontAwesomeIcon icon={faPlus} /></button>
+                                <button type="button" onClick={() => updateQty(c.productId, 1)}><FontAwesomeIcon icon={faPlus} /></button>
                               </div>
-                            </td>
-                            <td className="pos-cart-td-price">₹{c.price.toFixed(2)}</td>
-                            <td className="pos-cart-td-total">₹{c.lineTotal.toFixed(2)}</td>
-                            <td className="pos-cart-td-action">
-                              <button type="button" className="pos-cart-remove" onClick={() => removeFromCart(c.productId)} title="Remove"><FontAwesomeIcon icon={faTrash} /></button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                <div className="pos-cart-footer">
-                  <div className="pos-total-block">
-                    <div className="pos-subtotal">
-                      <span>Subtotal</span>
-                      <span>₹{subtotal.toFixed(2)}</span>
+                              <div className="pos-item-price">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="pos-total">
-                      <span>Total</span>
-                      <span className="pos-total-amount">₹{total.toFixed(2)}</span>
+                  )}
+                </div>
+
+                <div className="pos-payment-summary">
+                  <div className="pos-summary-header">Payment Details</div>
+                  <div className="pos-summary-row">
+                    <span>Subtotal</span>
+                    <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="pos-summary-row total">
+                    <span>Total</span>
+                    <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+
+                <div className="pos-cart-actions-row">
+                  <button
+                    className="pos-place-order-btn"
+                    disabled={cart.length === 0 || isPlacingOrder}
+                    onClick={handlePlaceOrder}
+                  >
+                    <div className="pos-btn-circle">
+                      {isPlacingOrder ? <div className="pos-spinner" /> : <FontAwesomeIcon icon={faChevronRight} />}
                     </div>
-                  </div>
-                  <div className="pos-payment-method">
-                    <label>Payment method</label>
-                    <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="pos-payment-select">
-                      <option value="cash">Cash</option>
-                      <option value="card">Card</option>
-                      <option value="upi">UPI</option>
-                    </select>
-                  </div>
-                  <div className="pos-cart-actions">
-                    <button type="button" className="pos-complete-btn" disabled={cart.length === 0}>
-                      Complete Sale
-                    </button>
-                    <button type="button" className="pos-print-btn" onClick={handlePrint} disabled={cart.length === 0}>
-                      <FontAwesomeIcon icon={faPrint} /> Print Invoice
-                    </button>
-                  </div>
+                    <span>{isPlacingOrder ? 'Processing...' : `Place Order LKR ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
+                    <div className="pos-btn-arrows">
+                      <FontAwesomeIcon icon={faChevronRight} />
+                      <FontAwesomeIcon icon={faChevronRight} />
+                    </div>
+                  </button>
+                  <button type="button" className="pos-cart-print-icon-btn" onClick={handlePrint} disabled={cart.length === 0} title="Print Invoice">
+                    <FontAwesomeIcon icon={faPrint} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -369,64 +451,64 @@ function POSPage() {
 
       <div id="pos-invoice-print" className="pos-invoice-print" aria-hidden="true">
         <div className="pos-invoice-paper">
-          <div className="pos-invoice-head">
-            <img src="/logo.jpg" alt="Logo" className="pos-invoice-logo" />
-            <div className="pos-invoice-brand">
-              <h1 className="pos-invoice-title">Aruntex & Fancy Palace</h1>
-              <p className="pos-invoice-place">Nelliady</p>
-            </div>
+          <div className="pos-invoice-header-center">
+            <img src="/logo.jpg" alt="Logo" className="pos-invoice-logo-center" />
+            <p className="pos-invoice-welcome">Welcome to ArulTex</p>
+            <h1 className="pos-invoice-store-name">ArulTex & Fancy Palace</h1>
+            <p className="pos-invoice-address">
+              Nelliady, Jaffna,<br />
+              Sri Lanka (40000)<br />
+              tin no 1234567
+            </p>
+            <p className="pos-invoice-meta-info">
+              Date : {new Date().toLocaleDateString('en-LK')} Time: {new Date().toLocaleTimeString('en-LK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}<br />
+              Order Id #{invoiceNo.split('-').pop()}
+            </p>
           </div>
-          <div className="pos-invoice-meta">
-            <div className="pos-invoice-meta-row">
-              <span className="pos-invoice-label">Invoice No:</span>
-              <span className="pos-invoice-value">{invoiceNo}</span>
-            </div>
-            <div className="pos-invoice-meta-row">
-              <span className="pos-invoice-label">Date:</span>
-              <span className="pos-invoice-value">{new Date().toLocaleDateString('en-IN')}</span>
-            </div>
-            <div className="pos-invoice-meta-row">
-              <span className="pos-invoice-label">Time:</span>
-              <span className="pos-invoice-value">{new Date().toLocaleTimeString('en-IN', { hour12: true, hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-          </div>
-          <table className="pos-invoice-table">
+
+          <table className="pos-invoice-table-new">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Total</th>
+                <th>Product</th>
+                <th className="text-center">Qty</th>
+                <th className="text-right">Price</th>
+                <th className="text-right">Amount</th>
               </tr>
             </thead>
             <tbody>
-              {cart.map((c, idx) => (
+              {cart.map((c) => (
                 <tr key={c.productId}>
-                  <td>{idx + 1}</td>
                   <td>{c.productName}</td>
-                  <td>{c.quantity}</td>
-                  <td>₹{c.price.toFixed(2)}</td>
-                  <td>₹{c.lineTotal.toFixed(2)}</td>
+                  <td className="text-center">{c.quantity}</td>
+                  <td className="text-right">LKR {c.price.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</td>
+                  <td className="text-right">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="pos-invoice-totals">
-            <div className="pos-invoice-total-row">
-              <span className="pos-invoice-total-label">Subtotal</span>
-              <span className="pos-invoice-total-value">₹{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="pos-invoice-total-row pos-invoice-grand">
-              <span className="pos-invoice-total-label">Total</span>
-              <span className="pos-invoice-total-value">₹{total.toFixed(2)}</span>
-            </div>
-            <div className="pos-invoice-payment">
-              <span className="pos-invoice-label">Payment:</span>
-              <span className="pos-invoice-value">{paymentMethod.toUpperCase()}</span>
+
+          <div className="pos-invoice-summary-new">
+            <div className="pos-invoice-summary-row">
+              <div className="pos-summary-left">
+                <strong>Total Quantity</strong>
+                <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
+              </div>
+              <div className="pos-summary-right">
+                <div className="pos-summary-line">
+                  <strong>Sub-Total</strong>
+                  <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</span>
+                </div>
+                <div className="pos-summary-line">
+                  <strong>Grand-Total</strong>
+                  <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <p className="pos-invoice-thanks">Thank you for your purchase</p>
+
+          <p className="pos-invoice-footer-msg">
+            Please share your love again by visiting our store "arultex.com"
+          </p>
         </div>
       </div>
     </div>

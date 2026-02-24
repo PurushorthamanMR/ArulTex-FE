@@ -99,9 +99,9 @@ function ProductList({ onAddNew }) {
         p.productName || '',
         p.barcode || '',
         p.category || '',
-        `₹${p.purchasedPrice ?? ''}`,
-        `₹${p.pricePerUnit ?? ''}`,
-        `₹${finalPrice(p)}`,
+        `LKR ${p.purchasedPrice ?? ''}`,
+        `LKR ${p.pricePerUnit ?? ''}`,
+        `LKR ${finalPrice(p)}`,
         String(p.quantity ?? ''),
         String(p.lowStock ?? ''),
         p.isActive ? 'Active' : 'Inactive'
@@ -222,9 +222,9 @@ function ProductList({ onAddNew }) {
                       {p.category}
                     </span>
                   </td>
-                  <td>₹{p.purchasedPrice}</td>
-                  <td>₹{p.pricePerUnit}</td>
-                  <td>₹{finalPrice(p)}</td>
+                  <td>LKR {p.purchasedPrice}</td>
+                  <td>LKR {p.pricePerUnit}</td>
+                  <td>LKR {finalPrice(p)}</td>
                   <td>{p.quantity}</td>
                   <td>{p.lowStock}</td>
                   <td>

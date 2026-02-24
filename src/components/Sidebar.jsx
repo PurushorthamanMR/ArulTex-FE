@@ -11,7 +11,8 @@ import {
   faUserCheck,
   faBook,
   faCalendarDay,
-  faCalendarAlt
+  faCalendarAlt,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons'
 import '../styles/Sidebar.css'
 
@@ -31,9 +32,8 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
     if (path === '/discount' || path === '/discount/new') return 'Discount'
     if (path === '/purchase') return 'Purchase'
     if (path === '/inventory-ledger') return 'Inventory Ledger'
-    if (path === '/transaction') return 'Transaction'
-    if (path === '/reports/daily') return 'Daily Report'
-    if (path === '/reports/monthly') return 'Monthly Report'
+    if (path === '/transaction') return 'Transaction Report'
+    if (path === '/analysis') return 'Sales Analysis'
     if (path === '/suppliers') return 'Suppliers'
     if (path === '/users') return 'Users'
     return ''
@@ -45,7 +45,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
       <div className="sidebar-section">
         {!isCollapsed && <h3 className="sidebar-section-title">Main</h3>}
         <ul className="sidebar-menu">
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'Dashboard' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/dashboard')}
             title="Dashboard"
@@ -53,7 +53,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
             <FontAwesomeIcon icon={faTh} className="menu-icon" />
             {!isCollapsed && <span>Dashboard</span>}
           </li>
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'POS' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/pos')}
             title="POS"
@@ -68,7 +68,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
       <div className="sidebar-section">
         {!isCollapsed && <h3 className="sidebar-section-title">Inventory</h3>}
         <ul className="sidebar-menu">
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'Products' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/products')}
             title="Products"
@@ -76,7 +76,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
             <FontAwesomeIcon icon={faBox} className="menu-icon" />
             {!isCollapsed && <span>Products</span>}
           </li>
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'Low Stocks' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/low-stocks')}
             title={lowStockCount > 0 ? `Low Stocks (${lowStockCount})` : 'Low Stocks'}
@@ -98,15 +98,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
               </span>
             )}
           </li>
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Inventory Ledger' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/inventory-ledger')}
-            title="Stock Details"
-          >
-            <FontAwesomeIcon icon={faBook} className="menu-icon" />
-            {!isCollapsed && <span>Stock Details</span>}
-          </li>
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'Category' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/category')}
             title="Category"
@@ -114,7 +106,22 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
             <FontAwesomeIcon icon={faHexagon} className="menu-icon" />
             {!isCollapsed && <span>Category</span>}
           </li>
-          <li 
+        </ul>
+      </div>
+
+      {/* Purchase Section */}
+      <div className="sidebar-section">
+        {!isCollapsed && <h3 className="sidebar-section-title">Purchase</h3>}
+        <ul className="sidebar-menu">
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Suppliers' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/suppliers')}
+            title="Suppliers"
+          >
+            <FontAwesomeIcon icon={faUserFriends} className="menu-icon" />
+            {!isCollapsed && <span>Suppliers</span>}
+          </li>
+          <li
             className={`sidebar-menu-item ${(currentPage === 'Purchases' || currentPage === 'Purchase') ? 'active' : ''}`}
             onClick={() => handleMenuClick('/purchases')}
             title="Purchase"
@@ -125,55 +132,33 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
         </ul>
       </div>
 
-      {/* Sales Section */}
+      {/* Reports & History Section */}
       <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">Sales</h3>}
+        {!isCollapsed && <h3 className="sidebar-section-title">Reports & History</h3>}
         <ul className="sidebar-menu">
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Transaction' ? 'active' : ''}`}
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Transaction Report' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/transaction')}
-            title="Transaction"
+            title="Transaction Report"
           >
             <FontAwesomeIcon icon={faFileInvoice} className="menu-icon" />
-            {!isCollapsed && <span>Transaction</span>}
+            {!isCollapsed && <span>Transaction Report</span>}
           </li>
-        </ul>
-      </div>
-
-      {/* People Section */}
-      <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">People</h3>}
-        <ul className="sidebar-menu">
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Suppliers' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/suppliers')}
-            title="Suppliers"
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Inventory Ledger' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/inventory-ledger')}
+            title="Inventory Ledger"
           >
-            <FontAwesomeIcon icon={faUserFriends} className="menu-icon" />
-            {!isCollapsed && <span>Suppliers</span>}
+            <FontAwesomeIcon icon={faBook} className="menu-icon" />
+            {!isCollapsed && <span>Inventory Ledger</span>}
           </li>
-        </ul>
-      </div>
-
-      {/* Reports Section */}
-      <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">Reports</h3>}
-        <ul className="sidebar-menu">
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Daily Report' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/reports/daily')}
-            title="Daily Report"
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Sales Analysis' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/analysis')}
+            title="Sales Analysis"
           >
-            <FontAwesomeIcon icon={faCalendarDay} className="menu-icon" />
-            {!isCollapsed && <span>Daily Report</span>}
-          </li>
-          <li 
-            className={`sidebar-menu-item ${currentPage === 'Monthly Report' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/reports/monthly')}
-            title="Monthly Report"
-          >
-            <FontAwesomeIcon icon={faCalendarAlt} className="menu-icon" />
-            {!isCollapsed && <span>Monthly Report</span>}
+            <FontAwesomeIcon icon={faChartBar} className="menu-icon" />
+            {!isCollapsed && <span>Sales Analysis</span>}
           </li>
         </ul>
       </div>
@@ -182,7 +167,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
       <div className="sidebar-section">
         {!isCollapsed && <h3 className="sidebar-section-title">User Management</h3>}
         <ul className="sidebar-menu">
-          <li 
+          <li
             className={`sidebar-menu-item ${currentPage === 'Users' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/users')}
             title="Users"

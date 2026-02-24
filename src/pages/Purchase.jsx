@@ -188,7 +188,7 @@ function Purchase() {
             <div className="product-search-list">
               {filteredProducts.slice(0, 8).map((p) => (
                 <button type="button" key={p.id} className="product-search-item" onClick={() => addLine(p)}>
-                  <FontAwesomeIcon icon={faPlus} /> {p.productName ?? p.name} — ₹{p.purchasedPrice ?? p.pricePerUnit ?? 0}
+                  <FontAwesomeIcon icon={faPlus} /> {p.productName ?? p.name} — LKR {p.purchasedPrice ?? p.pricePerUnit ?? 0}
                 </button>
               ))}
             </div>
@@ -219,7 +219,7 @@ function Purchase() {
                       <td>
                         <input type="number" min="0" step="0.01" value={l.costPrice} onChange={(e) => updateLineCostPrice(l.productId, e.target.value)} className="qty-input price-input" />
                       </td>
-                      <td>₹{Number(l.totalPrice).toFixed(2)}</td>
+                      <td>LKR {Number(l.totalPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                       <td>
                         <button type="button" className="remove-line-btn" onClick={() => removeLine(l.productId)} title="Remove">
                           <FontAwesomeIcon icon={faTrash} />
@@ -232,7 +232,7 @@ function Purchase() {
             )}
             {lines.length > 0 && (
               <div className="purchase-total">
-                <strong>Grand Total: ₹{totalAmount.toFixed(2)}</strong>
+                <strong>Grand Total: LKR {totalAmount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong>
               </div>
             )}
           </div>
