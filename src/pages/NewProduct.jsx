@@ -208,11 +208,11 @@ function NewProduct({ onBack, onSave }) {
                 <input type="number" id="quantity" name="quantity" min="0" value={formData.quantity} onChange={handleInputChange} placeholder="Enter Quantity" className="form-input" />
               </div>
               <div className="form-group">
-                <label htmlFor="purchasedPrice">Purchased Price (₹)</label>
+                <label htmlFor="purchasedPrice">Purchased Price (LKR)</label>
                 <input type="number" id="purchasedPrice" name="purchasedPrice" min="0" step="0.01" value={formData.purchasedPrice} onChange={handleInputChange} placeholder="Enter Purchased Price" className="form-input" />
               </div>
               <div className="form-group">
-                <label htmlFor="pricePerUnit">Price Per Unit (₹)</label>
+                <label htmlFor="pricePerUnit">Price Per Unit (LKR)</label>
                 <input type="number" id="pricePerUnit" name="pricePerUnit" min="0" step="0.01" value={formData.pricePerUnit} onChange={handleInputChange} placeholder="Enter Price Per Unit" className="form-input" />
               </div>
               <div className="form-group">
@@ -232,7 +232,7 @@ function NewProduct({ onBack, onSave }) {
               </div>
               <div className="form-group">
                 <label>Final Price (after discount)</label>
-                <div className="final-price-display">₹{finalPrice.toFixed(2)}</div>
+                <div className="final-price-display">LKR {finalPrice.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
               </div>
               <div className="form-group">
                 <label htmlFor="lowStock">Low Stock Threshold</label>

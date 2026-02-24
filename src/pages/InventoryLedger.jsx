@@ -84,28 +84,46 @@ function InventoryLedger() {
             <tr>
               <th>Product</th>
               <th>Type</th>
-              <th>Quantity</th>
+              <th>Qty Change</th>
+              <th>Prev. Stock</th>
+              <th>New Stock</th>
               <th>Date</th>
-              <th>Reference</th>
+              <th>Note/Reference</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className="no-data">Loading...</td></tr>
+              <tr><td colSpan="7" className="no-data">Loading...</td></tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan="5" className="no-data">No movements found</td>
+                <td colSpan="7" className="no-data">No movements found</td>
               </tr>
             ) : (
               filtered.map((m) => (
                 <tr key={m.id}>
-                  <td>{m.product?.productName ?? m.productId}</td>
                   <td>
-                    <span className={`movement-type ${(m.transactionType || '').toLowerCase()}`}>{m.transactionType || '-'}</span>
+                    <div className="product-info-cell">
+                      <span className="product-name">{m.product?.productName ?? m.productId}</span>
+                      <span className="product-id">ID: {m.productId}</span>
+                    </div>
                   </td>
-                  <td>{m.quantity}</td>
-                  <td>{m.createdAt ? new Date(m.createdAt).toLocaleString() : '-'}</td>
-                  <td>{m.note ?? m.referenceId ?? '-'}</td>
+                  <td>
+                    <span className={`movement-type ${m.transactionType?.toLowerCase()}`}>
+                      {m.transactionType || '-'}
+                    </span>
+                  </td>
+                  <td className={`qty-cell ${m.quantity > 0 ? 'qty-plus' : 'qty-minus'}`}>
+                    {m.quantity > 0 ? '+' : ''}{m.quantity}
+                  </td>
+                  <td className="stock-cell">{m.previousStock ?? '-'}</td>
+                  <td className="stock-cell highlight">{m.newStock ?? '-'}</td>
+                  <td>
+                    <div className="date-cell">
+                      <span className="date-primary">{m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-'}</span>
+                      <span className="date-secondary">{m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    </div>
+                  </td>
+                  <td className="note-cell">{m.note ?? m.referenceId ?? '-'}</td>
                 </tr>
               ))
             )}

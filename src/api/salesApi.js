@@ -47,3 +47,42 @@ export async function getReportByCategory(fromDate, toDate) {
   const list = await handleResponse(res)
   return Array.isArray(list) ? list : []
 }
+/** POST /sales/save - create a new sale */
+export async function save(saleData) {
+  const res = await fetch(`${BASE_URL}/sales/save`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(saleData)
+  })
+  return handleResponse(res)
+}
+/** GET /sales/getById?id=... */
+export async function getById(id) {
+  const res = await fetch(`${BASE_URL}/sales/getById?id=${id}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/yearly?year=YYYY */
+export async function getReportYearly(year) {
+  const y = year ?? new Date().getFullYear()
+  const res = await fetch(`${BASE_URL}/sales/report/yearly?year=${y}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/trends */
+export async function getTrends() {
+  const res = await fetch(`${BASE_URL}/sales/report/trends`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}

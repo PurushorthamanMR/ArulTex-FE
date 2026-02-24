@@ -56,7 +56,7 @@ function DailyReport() {
         </div>
         <div className="report-card">
           <div className="report-card-label">Total Sales</div>
-          <div className="report-card-value">₹{totalSales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+          <div className="report-card-value">LKR {totalSales.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
         </div>
         <div className="report-card">
           <div className="report-card-label">Total Transactions</div>
@@ -71,7 +71,7 @@ function DailyReport() {
             <tr>
               <th>Invoice No</th>
               <th>Date</th>
-              <th>Amount (₹)</th>
+              <th>Amount (LKR)</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -85,7 +85,7 @@ function DailyReport() {
                 <tr key={s.id}>
                   <td>{s.invoiceNo}</td>
                   <td>{s.saleDate ? new Date(s.saleDate).toLocaleString() : '-'}</td>
-                  <td>₹{(s.totalAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td>LKR {(s.totalAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                   <td>{s.status ?? '-'}</td>
                 </tr>
               ))

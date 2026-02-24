@@ -14,10 +14,9 @@ import NewSupplier from './pages/NewSupplier'
 import UserList from './pages/UserList'
 import NewUser from './pages/NewUser'
 import POSPage from './pages/POSPage'
-import DailyReport from './pages/DailyReport'
-import MonthlyReport from './pages/MonthlyReport'
 import Purchase from './pages/Purchase'
 import InventoryLedger from './pages/InventoryLedger'
+import SalesAnalysis from './pages/SalesAnalysis'
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -106,11 +105,7 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
-        path: '/reports/daily',
-        element: <Dashboard />
-      },
-      {
-        path: '/reports/monthly',
+        path: '/analysis',
         element: <Dashboard />
       },
       {

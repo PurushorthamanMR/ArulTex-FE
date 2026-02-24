@@ -48,7 +48,7 @@ function PurchaseList() {
         p.purchaseNo || '',
         p.supplier?.supplierName || '',
         p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString() : '',
-        `₹${Number(p.totalAmount ?? 0).toFixed(2)}`,
+        `LKR ${Number(p.totalAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`,
         p.status || ''
       ]),
       filename: `Purchases_${new Date().toISOString().slice(0, 10)}.pdf`
@@ -160,7 +160,7 @@ function PurchaseList() {
                   <td>{p.purchaseNo}</td>
                   <td>{p.supplier?.supplierName ?? '—'}</td>
                   <td>{p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—'}</td>
-                  <td>₹{Number(p.totalAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td>LKR {Number(p.totalAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                   <td>
                     <span className={`status-badge status-${(p.status || '').toLowerCase()}`}>
                       {p.status || '—'}
@@ -192,7 +192,7 @@ function PurchaseList() {
               <p><strong>Supplier:</strong> {viewDetail.supplier?.supplierName ?? '—'}</p>
               <p><strong>Date:</strong> {viewDetail.purchaseDate ? new Date(viewDetail.purchaseDate).toLocaleString() : '—'}</p>
               <p><strong>Status:</strong> {viewDetail.status}</p>
-              <p><strong>Total:</strong> ₹{Number(viewDetail.totalAmount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+              <p><strong>Total:</strong> LKR {Number(viewDetail.totalAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</p>
               {viewDetail.items?.length > 0 && (
                 <table className="purchase-detail-items">
                   <thead>
@@ -208,8 +208,8 @@ function PurchaseList() {
                       <tr key={it.id}>
                         <td>{it.product?.productName ?? `Product #${it.productId}`}</td>
                         <td>{it.quantity}</td>
-                        <td>₹{Number(it.costPrice ?? 0).toFixed(2)}</td>
-                        <td>₹{Number(it.totalPrice ?? 0).toFixed(2)}</td>
+                        <td>LKR {Number(it.costPrice ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                        <td>LKR {Number(it.totalPrice ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                       </tr>
                     ))}
                   </tbody>
