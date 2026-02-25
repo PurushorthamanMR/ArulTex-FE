@@ -16,6 +16,7 @@ import {
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/ProductList.css'
 
@@ -110,6 +111,25 @@ function ProductList({ onAddNew }) {
     })
   }
 
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Products',
+      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock', 'Status'],
+      rows: products.map((p) => [
+        p.productName || '',
+        p.barcode || '',
+        p.category || '',
+        p.purchasedPrice ?? '',
+        p.pricePerUnit ?? '',
+        finalPrice(p),
+        p.quantity ?? '',
+        p.lowStock ?? '',
+        p.isActive ? 'Active' : 'Inactive'
+      ]),
+      filename: `Products_${new Date().toISOString().slice(0, 10)}.xlsx`
+    })
+  }
+
   return (
     <div className="product-list-container">
       <div className="page-header">
@@ -121,7 +141,7 @@ function ProductList({ onAddNew }) {
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
-          <button className="action-btn excel-btn" title="Export Excel">
+          <button type="button" className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}>
             <FontAwesomeIcon icon={faFileExcel} />
           </button>
           <button className="action-btn refresh-btn" title="Refresh" onClick={() => fetchProducts()} disabled={loading}>

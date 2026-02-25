@@ -9,7 +9,6 @@ function NewSupplier() {
   const isEdit = Boolean(id)
   const [formData, setFormData] = useState({
     supplierName: '',
-    contactPerson: '',
     email: '',
     mobileNumber: '',
     address: '',
@@ -27,7 +26,6 @@ function NewSupplier() {
       if (!cancelled) {
         setFormData({
           supplierName: s.supplierName || '',
-          contactPerson: s.contactPerson || '',
           email: s.email || '',
           mobileNumber: s.phone || '',
           address: s.address || '',
@@ -56,7 +54,6 @@ function NewSupplier() {
     try {
       const payload = {
         supplierName: formData.supplierName,
-        contactPerson: formData.contactPerson,
         email: formData.email,
         phone: formData.mobileNumber,
         address: formData.address,
@@ -90,16 +87,12 @@ function NewSupplier() {
           <input type="text" id="supplierName" name="supplierName" value={formData.supplierName} onChange={handleInputChange} placeholder="Enter Supplier Name" className="form-input" required />
         </div>
         <div className="form-group">
-          <label htmlFor="contactPerson">Contact Person</label>
-          <input type="text" id="contactPerson" name="contactPerson" value={formData.contactPerson} onChange={handleInputChange} placeholder="Contact Person" className="form-input" />
-        </div>
-        <div className="form-group">
           <label htmlFor="email">Email</label>
-          <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Enter Email" className="form-input" required />
+          <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Enter Email" className="form-input" />
         </div>
         <div className="form-group">
           <label htmlFor="mobileNumber">Phone / Mobile</label>
-          <input type="tel" id="mobileNumber" name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} placeholder="Enter Mobile Number" className="form-input" />
+          <input type="tel" id="mobileNumber" name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} placeholder="Enter Mobile Number" className="form-input" required />
         </div>
         <div className="form-group">
           <label htmlFor="address">Address</label>

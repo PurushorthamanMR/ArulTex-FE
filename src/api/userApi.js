@@ -77,3 +77,72 @@ export async function getAllPage(params = {}) {
   })
   return handleResponse(res)
 }
+
+/**
+ * POST /user/register - create a new user.
+ * @param {Object} userDto
+ * @returns {Promise<Object>} The created user DTO
+ */
+export async function register(userDto) {
+  const res = await fetch(`${BASE_URL}/user/register`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(userDto)
+  })
+  return handleResponse(res)
+}
+
+/**
+ * GET /userRole/getAll - get all user roles.
+ * @returns {Promise<Array>} Array of role objects
+ */
+export async function getAllRoles() {
+  const res = await fetch(`${BASE_URL}/userRole/getAll`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/**
+ * POST /user/update - update user details.
+ * @param {Object} userDto
+ * @returns {Promise<Object>} The updated user DTO
+ */
+export async function update(userDto) {
+  const res = await fetch(`${BASE_URL}/user/update`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(userDto)
+  })
+  return handleResponse(res)
+}
+
+/**
+ * PUT /user/updateStatus - update user active/inactive status.
+ * @param {number} userId
+ * @param {boolean} status
+ * @returns {Promise<Object>} Updated user DTO
+ */
+export async function updateStatus(userId, status) {
+  const res = await fetch(`${BASE_URL}/user/updateStatus?userId=${userId}&status=${status}`, {
+    method: 'PUT',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/**
+ * PUT /user/updatePassword - update user password.
+ * @param {number} userId
+ * @param {string} password
+ * @param {number} changedByUserId
+ * @returns {Promise<Object>} Updated user DTO
+ */
+export async function updatePassword(userId, password, changedByUserId) {
+  const res = await fetch(`${BASE_URL}/user/updatePassword?userId=${userId}&password=${password}&changedByUserId=${changedByUserId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}

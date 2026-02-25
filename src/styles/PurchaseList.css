@@ -294,6 +294,15 @@
   background-color: #99f6e4;
 }
 
+.purchase-list-container .action-icon-btn.edit-btn {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.purchase-list-container .action-icon-btn.edit-btn:hover {
+  background-color: #bfdbfe;
+}
+
 .purchase-list-container .action-icon-btn.delete-btn {
   background-color: #fee2e2;
   color: #b91c1c;

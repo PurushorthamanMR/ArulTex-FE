@@ -40,6 +40,7 @@ function SignInPage() {
       const user = Array.isArray(users) && users.length > 0 ? users[0] : null
       const role = user?.userRoleDto?.userRole || 'USER'
       localStorage.setItem('userRole', role)
+      localStorage.setItem('userId', user?.id || '')
       localStorage.setItem('userFirstName', user?.firstName || 'User')
       localStorage.setItem('userLastName', user?.lastName || '')
 
@@ -70,89 +71,89 @@ function SignInPage() {
             <h1 className="signin-heading">Sign In</h1>
 
             <form onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <div className="input-group">
-              <label htmlFor="email">Email</label>
-              <div className="input-wrapper">
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-field"
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                  required
-                />
-                <svg className="input-icon email-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2.25 4.5L9 9.75L15.75 4.5M2.25 4.5H15.75M2.25 4.5V13.5C2.25 14.325 2.925 15 3.75 15H14.25C15.075 15 15.75 14.325 15.75 13.5V4.5" stroke="#CED4DA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div className="input-group">
-              <label htmlFor="password">Password</label>
-              <div className="input-wrapper">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="password-icon-wrapper"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setShowPassword(!showPassword)
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <FontAwesomeIcon 
-                    icon={showPassword ? faEye : faEyeSlash}
-                    className="input-icon password-icon"
+              {/* Email Field */}
+              <div className="input-group">
+                <label htmlFor="email">Email</label>
+                <div className="input-wrapper">
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-field"
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    required
                   />
-                </button>
+                  <svg className="input-icon email-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.25 4.5L9 9.75L15.75 4.5M2.25 4.5H15.75M2.25 4.5V13.5C2.25 14.325 2.925 15 3.75 15H14.25C15.075 15 15.75 14.325 15.75 13.5V4.5" stroke="#CED4DA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </div>
-            </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                {error}
+              {/* Password Field */}
+              <div className="input-group">
+                <label htmlFor="password">Password</label>
+                <div className="input-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-field"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-icon-wrapper"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowPassword(!showPassword)
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <FontAwesomeIcon
+                      icon={showPassword ? faEyeSlash : faEye}
+                      className="input-icon password-icon"
+                    />
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* Forgot Password Link */}
-            <Link to="/forgot-password" className="forgot-password">
-              Forgot Password?
-            </Link>
-
-            {/* Sign In Button */}
-            <button type="submit" className="signin-button" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="signin-button-spinner" aria-hidden="true" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
+              {/* Error Message */}
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
               )}
-            </button>
-          </form>
+
+              {/* Forgot Password Link */}
+              <Link to="/forgot-password" className="forgot-password">
+                Forgot Password?
+              </Link>
+
+              {/* Sign In Button */}
+              <button type="submit" className="signin-button" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="signin-button-spinner" aria-hidden="true" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Accent line */}

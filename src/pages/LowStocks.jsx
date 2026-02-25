@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/LowStocks.css'
 
@@ -86,6 +87,23 @@ function LowStocks() {
     })
   }
 
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Low Stocks',
+      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Qty', 'Low Stock'],
+      rows: filteredList.map((p) => [
+        p.productName || '',
+        p.barcode || '',
+        p.category || '',
+        p.purchasedPrice ?? p.costPrice ?? 0,
+        p.pricePerUnit ?? p.sellingPrice ?? 0,
+        p.quantity ?? 0,
+        p.lowStock ?? 0
+      ]),
+      filename: `LowStocks_${new Date().toISOString().slice(0, 10)}.xlsx`
+    })
+  }
+
   return (
     <div className="low-stocks-container">
       {/* Page Header */}
@@ -101,7 +119,7 @@ function LowStocks() {
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
-          <button className="action-btn excel-btn" title="Export Excel">
+          <button type="button" className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}>
             <FontAwesomeIcon icon={faFileExcel} />
           </button>
           <button type="button" className="action-btn refresh-btn" title="Refresh" onClick={fetchLowStock} disabled={loading}>
