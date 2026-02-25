@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { 
-  faFilePdf, 
-  faFileExcel, 
-  faSyncAlt, 
+import {
+  faFilePdf,
+  faFileExcel,
+  faSyncAlt,
   faArrowUp,
   faPlus,
   faSortUp,
@@ -14,6 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { discountsMock } from '../api/mockData'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/Discount.css'
 
 function Discount() {
@@ -36,6 +37,15 @@ function Discount() {
     })
   }
 
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Discounts',
+      columns: ['Discount', 'Status'],
+      rows: filteredList.map((d) => [`${d.discountLabel} (${d.percentage}%)`, d.isActive ? 'Active' : 'Inactive']),
+      filename: `Discounts_${new Date().toISOString().slice(0, 10)}.xlsx`
+    })
+  }
+
   return (
     <div className="discount-container">
       {/* Page Header */}
@@ -48,7 +58,7 @@ function Discount() {
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
-          <button className="action-btn excel-btn" title="Export Excel">
+          <button type="button" className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}>
             <FontAwesomeIcon icon={faFileExcel} />
           </button>
           <button className="action-btn refresh-btn" title="Refresh">
@@ -57,7 +67,7 @@ function Discount() {
           <button className="action-btn upload-btn" title="Upload">
             <FontAwesomeIcon icon={faArrowUp} />
           </button>
-          <button 
+          <button
             className="action-btn add-btn"
             onClick={() => navigate('/discount/new')}
           >
@@ -69,13 +79,13 @@ function Discount() {
 
       {/* Status Toggles */}
       <div className="status-toggles">
-        <button 
+        <button
           className={`status-toggle ${activeStatus === 'Active' ? 'active' : ''}`}
           onClick={() => setActiveStatus('Active')}
         >
           Active
         </button>
-        <button 
+        <button
           className={`status-toggle ${activeStatus === 'Inactive' ? 'active' : ''}`}
           onClick={() => setActiveStatus('Inactive')}
         >

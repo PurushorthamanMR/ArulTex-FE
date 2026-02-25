@@ -431,3 +431,170 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 1024px) {
+  .dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Quick Shortcuts ── */
+.shortcuts-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.shortcut-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.shortcut-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--sc-color);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.shortcut-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: var(--sc-color);
+}
+
+.shortcut-card:hover::before {
+  opacity: 1;
+}
+
+.shortcut-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.shortcut-card:hover .shortcut-icon {
+  transform: scale(1.12);
+}
+
+.shortcut-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.shortcut-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shortcut-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.shortcut-arrow {
+  font-size: 11px;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.shortcut-card:hover .shortcut-arrow {
+  color: var(--sc-color);
+  transform: translateX(3px);
+}
+
+/* Sale Status Badge */
+.sale-status {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.sale-status.completed {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.sale-status.pending {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.sale-status.returned {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Alert badge variant */
+.badge-count-premium.alert {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* dashboard error */
+.dashboard-error {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 4px solid #dc2626;
+}
+
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}

@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faEye, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faEye, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import * as purchaseApi from '../api/purchaseApi'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/PurchaseList.css'
 
 function PurchaseList() {
@@ -55,6 +56,21 @@ function PurchaseList() {
     })
   }
 
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Purchases',
+      columns: ['Purchase No', 'Supplier', 'Date', 'Total Amount', 'Status'],
+      rows: purchases.map((p) => [
+        p.purchaseNo || '',
+        p.supplier?.supplierName || '',
+        p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString() : '',
+        p.totalAmount ?? 0,
+        p.status || ''
+      ]),
+      filename: `Purchases_${new Date().toISOString().slice(0, 10)}.xlsx`
+    })
+  }
+
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this purchase? This cannot be undone.')) return
     setDeletingId(id)
@@ -91,7 +107,7 @@ function PurchaseList() {
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
-          <button className="action-btn excel-btn" title="Export Excel">
+          <button type="button" className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}>
             <FontAwesomeIcon icon={faFileExcel} />
           </button>
           <button type="button" className="action-btn refresh-btn" title="Refresh" onClick={() => fetchPurchases()} disabled={loading}>
@@ -169,6 +185,9 @@ function PurchaseList() {
                   <td>
                     <button type="button" className="action-icon-btn view-btn" title="View" onClick={() => openDetail(p.id)}>
                       <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/purchases/edit/${p.id}`)}>
+                      <FontAwesomeIcon icon={faPencilAlt} />
                     </button>
                     <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === p.id} onClick={() => handleDelete(p.id)}>
                       <FontAwesomeIcon icon={faTrash} />

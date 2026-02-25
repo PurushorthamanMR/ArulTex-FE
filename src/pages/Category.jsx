@@ -16,6 +16,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import * as categoryApi from '../api/categoryApi'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/Category.css'
 
@@ -68,6 +69,15 @@ function Category() {
     })
   }
 
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Categories',
+      columns: ['Category', 'Status'],
+      rows: filteredCategories.map((c) => [c.categoryName || '', c.isActive ? 'Active' : 'Inactive']),
+      filename: `Categories_${new Date().toISOString().slice(0, 10)}.xlsx`
+    })
+  }
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return
     setDeletingId(id)
@@ -95,7 +105,7 @@ function Category() {
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}>
             <FontAwesomeIcon icon={faFilePdf} />
           </button>
-          <button className="action-btn excel-btn" title="Export Excel">
+          <button type="button" className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}>
             <FontAwesomeIcon icon={faFileExcel} />
           </button>
           <button className="action-btn refresh-btn" title="Refresh" onClick={handleRefresh} disabled={loading}>

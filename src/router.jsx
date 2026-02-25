@@ -77,6 +77,10 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
+        path: '/purchases/edit/:id',
+        element: <Dashboard />
+      },
+      {
         path: '/inventory-ledger',
         element: <Dashboard />
       },

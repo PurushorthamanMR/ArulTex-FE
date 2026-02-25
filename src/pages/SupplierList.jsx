@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faPen, faTrash } from '@fortawesome/free-solid-svg-icons'
 import * as supplierApi from '../api/supplierApi'
 import { downloadTablePdf } from '../utils/pdfExport'
+import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/SupplierList.css'
 
 function SupplierList() {
@@ -38,16 +39,30 @@ function SupplierList() {
     downloadTablePdf({
       title: 'Supplier List',
       subtitle: 'Manage your suppliers',
-      columns: ['Supplier Name', 'Contact Person', 'Phone', 'Email', 'Address', 'Status'],
+      columns: ['Supplier Name', 'Phone', 'Email', 'Address', 'Status'],
       rows: suppliers.map((s) => [
         s.supplierName || '',
-        s.contactPerson || '',
         s.phone || '',
         s.email || '',
         s.address || '',
         s.isActive ? 'Active' : 'Inactive'
       ]),
       filename: `Suppliers_${new Date().toISOString().slice(0, 10)}.pdf`
+    })
+  }
+
+  const handleDownloadExcel = () => {
+    downloadTableExcel({
+      title: 'Suppliers',
+      columns: ['Supplier Name', 'Phone', 'Email', 'Address', 'Status'],
+      rows: suppliers.map((s) => [
+        s.supplierName || '',
+        s.phone || '',
+        s.email || '',
+        s.address || '',
+        s.isActive ? 'Active' : 'Inactive'
+      ]),
+      filename: `Suppliers_${new Date().toISOString().slice(0, 10)}.xlsx`
     })
   }
 
@@ -73,7 +88,7 @@ function SupplierList() {
         </div>
         <div className="header-actions">
           <button type="button" className="action-btn pdf-btn" title="Export PDF" onClick={handleDownloadPdf}><FontAwesomeIcon icon={faFilePdf} /></button>
-          <button className="action-btn excel-btn" title="Export Excel"><FontAwesomeIcon icon={faFileExcel} /></button>
+          <button className="action-btn excel-btn" title="Export Excel" onClick={handleDownloadExcel}><FontAwesomeIcon icon={faFileExcel} /></button>
           <button className="action-btn refresh-btn" title="Refresh" onClick={() => fetchSuppliers()} disabled={loading}><FontAwesomeIcon icon={faSyncAlt} /></button>
           <button className="action-btn upload-btn" title="Upload"><FontAwesomeIcon icon={faArrowUp} /></button>
           <button className="action-btn add-btn" onClick={() => navigate('/suppliers/new')}>
@@ -104,7 +119,6 @@ function SupplierList() {
           <thead>
             <tr>
               <th>Supplier Name</th>
-              <th>Contact Person</th>
               <th>Phone</th>
               <th>Email</th>
               <th>Address</th>
@@ -114,10 +128,10 @@ function SupplierList() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="7" className="no-data">Loading...</td></tr>
+              <tr><td colSpan="6" className="no-data">Loading...</td></tr>
             ) : suppliers.length === 0 ? (
               <tr>
-                <td colSpan="7" className="no-data">
+                <td colSpan="6" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon">📦</div>
                     <div className="no-data-text">No suppliers found</div>
@@ -128,7 +142,6 @@ function SupplierList() {
               suppliers.map((s) => (
                 <tr key={s.id}>
                   <td>{s.supplierName}</td>
-                  <td>{s.contactPerson}</td>
                   <td>{s.phone}</td>
                   <td>{s.email}</td>
                   <td>{s.address}</td>

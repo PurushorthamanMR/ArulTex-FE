@@ -5,9 +5,7 @@ import {
   faSyncAlt,
   faSearch,
   faEye,
-  faPrint,
-  faTimes,
-  faUndoAlt
+  faTimes
 } from '@fortawesome/free-solid-svg-icons'
 import { downloadTablePdf } from '../utils/pdfExport'
 import * as salesApi from '../api/salesApi'
@@ -72,12 +70,7 @@ function TransactionReport() {
     }
   }
 
-  const handlePrintSale = (sale) => {
-    // Hidden print iframe strategy or shared print component logic
-    // For now, we can show a print-friendly view or just an alert
-    console.log('Printing sale:', sale.invoiceNo)
-    window.print() // This will print the whole page; in a real app, we'd trigger a specific invoice print
-  }
+
 
   const handleDownloadPdf = () => {
     downloadTablePdf({
@@ -147,19 +140,22 @@ function TransactionReport() {
         <table className="transaction-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Invoice No</th>
-              <th>Date & Time</th>
+              <th>Date</th>
+              <th>Cashier</th>
               <th>Payment</th>
-              <th>Total Amount</th>
-              <th>Actions</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className="loading-data">Loading transactions...</td></tr>
+              <tr><td colSpan="8" className="loading-data">Loading transactions...</td></tr>
             ) : filteredSales.length === 0 ? (
               <tr>
-                <td colSpan="5" className="no-data">
+                <td colSpan="8" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon">📁</div>
                     <div className="no-data-text">No transactions found</div>
@@ -167,21 +163,18 @@ function TransactionReport() {
                 </td>
               </tr>
             ) : (
-              filteredSales.map((s) => (
+              filteredSales.map((s, idx) => (
                 <tr key={s.id}>
-                  <td><strong>{s.invoiceNo}</strong></td>
-                  <td>{new Date(s.saleDate).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                  <td className="row-num">{idx + 1}</td>
+                  <td><strong style={{ color: '#0d9488' }}>{s.invoiceNo}</strong></td>
+                  <td>{new Date(s.saleDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                  <td>{s.user ? `${s.user.firstName} ${s.user.lastName}` : '—'}</td>
                   <td><span className={`payment-badge ${s.paymentMethod}`}>{s.paymentMethod?.toUpperCase()}</span></td>
                   <td className="amount-cell">LKR {(s.totalAmount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                  <td><span className={`status-pill ${s.status?.toLowerCase()}`}>{s.status || 'Completed'}</span></td>
                   <td className="actions-cell">
                     <button className="action-icon-btn view" title="View details" onClick={() => handleViewDetails(s.id)}>
                       <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button className="action-icon-btn print" title="Print Invoice" onClick={() => handlePrintSale(s)}>
-                      <FontAwesomeIcon icon={faPrint} />
-                    </button>
-                    <button className="action-icon-btn refund" title="Process Refund" disabled={s.status === 'Refunded'}>
-                      <FontAwesomeIcon icon={faUndoAlt} />
                     </button>
                   </td>
                 </tr>

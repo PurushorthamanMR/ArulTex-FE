@@ -86,3 +86,30 @@ export async function getTrends() {
   })
   return handleResponse(res)
 }
+
+/** GET /sales/report/top-products?limit=10 */
+export async function getTopProducts(limit = 10) {
+  const res = await fetch(`${BASE_URL}/sales/report/top-products?limit=${limit}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/profitability */
+export async function getProfitability() {
+  const res = await fetch(`${BASE_URL}/sales/report/profitability`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/low-stock */
+export async function getLowStock() {
+  const res = await fetch(`${BASE_URL}/sales/report/low-stock`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}

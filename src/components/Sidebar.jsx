@@ -39,6 +39,8 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
     return ''
   }
 
+  const currentUserRole = (localStorage.getItem('userRole') || '').toUpperCase()
+
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       {/* Main Section */}
@@ -164,19 +166,21 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
       </div>
 
       {/* User Management Section */}
-      <div className="sidebar-section">
-        {!isCollapsed && <h3 className="sidebar-section-title">User Management</h3>}
-        <ul className="sidebar-menu">
-          <li
-            className={`sidebar-menu-item ${currentPage === 'Users' ? 'active' : ''}`}
-            onClick={() => handleMenuClick('/users')}
-            title="Users"
-          >
-            <FontAwesomeIcon icon={faUserCheck} className="menu-icon" />
-            {!isCollapsed && <span>Users</span>}
-          </li>
-        </ul>
-      </div>
+      {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && (
+        <div className="sidebar-section">
+          {!isCollapsed && <h3 className="sidebar-section-title">User Management</h3>}
+          <ul className="sidebar-menu">
+            <li
+              className={`sidebar-menu-item ${currentPage === 'Users' ? 'active' : ''}`}
+              onClick={() => handleMenuClick('/users')}
+              title="Users"
+            >
+              <FontAwesomeIcon icon={faUserCheck} className="menu-icon" />
+              {!isCollapsed && <span>Users</span>}
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
