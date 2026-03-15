@@ -29,7 +29,15 @@ function SalesAnalysis() {
                 salesApi.getProfitability(),
                 salesApi.getLowStock()
             ])
-            setTrendData(trend)
+            setTrendData(
+                trend && typeof trend === 'object'
+                    ? {
+                        daily: Array.isArray(trend.daily) ? trend.daily : [],
+                        monthly: Array.isArray(trend.monthly) ? trend.monthly : [],
+                        yearly: Array.isArray(trend.yearly) ? trend.yearly : []
+                    }
+                    : { daily: [], monthly: [], yearly: [] }
+            )
             setTopProducts(Array.isArray(top) ? top : [])
             setProfitability(Array.isArray(profit) ? profit : [])
             setLowStock(Array.isArray(low) ? low : [])

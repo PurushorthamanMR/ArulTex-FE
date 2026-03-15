@@ -333,6 +333,18 @@
   color: #b91c1c;
 }
 
+/* Action buttons: horizontal layout */
+.product-list-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-list-actions .action-icon-btn {
+  margin-right: 0;
+}
+
 .action-icon-btn {
   padding: 8px 10px;
   border: none;

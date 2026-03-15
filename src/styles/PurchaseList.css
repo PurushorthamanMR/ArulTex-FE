@@ -276,13 +276,25 @@
   color: #b91c1c;
 }
 
+.purchase-list-container .action-cell {
+  white-space: nowrap;
+}
+
+.purchase-list-container .action-buttons-h {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
 .purchase-list-container .action-icon-btn {
   padding: 8px 10px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .purchase-list-container .action-icon-btn.view-btn {

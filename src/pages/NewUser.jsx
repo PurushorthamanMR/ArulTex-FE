@@ -37,7 +37,7 @@ function NewUser({ initialData, onSave, onBack }) {
         if (currentUserRole === 'MANAGER') {
           allowedRoles = data.filter(r => r.userRole.toUpperCase() === 'STAFF')
         } else if (currentUserRole === 'ADMIN') {
-          allowedRoles = data.filter(r => ['MANAGER', 'STAFF'].includes(r.userRole.toUpperCase()))
+          allowedRoles = data.filter(r => ['MANAGER', 'STAFF', 'DUMMY MANAGER'].includes(r.userRole.toUpperCase()))
         }
         setRoles(allowedRoles)
       }

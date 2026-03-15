@@ -47,7 +47,8 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
   }
 
   const displayName = [localStorage.getItem('userFirstName'), localStorage.getItem('userLastName')].filter(Boolean).join(' ') || 'User'
-  const displayRole = (localStorage.getItem('userRole') || '').toUpperCase() || '—'
+  const rawRole = (localStorage.getItem('userRole') || '').toUpperCase()
+  const displayRole = (rawRole === 'DUMMY MANAGER' || rawRole === 'DUMMY_MANAGER') ? 'Manager' : (rawRole || '—')
 
   return (
     <header className="header">

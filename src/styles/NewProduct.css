@@ -207,6 +207,12 @@
   display: block;
 }
 
+.form-input-readonly {
+  background: #f1f5f9;
+  cursor: default;
+  color: #475569;
+}
+
 /* Category Wrapper */
 .category-wrapper {
   display: flex;

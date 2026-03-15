@@ -15,6 +15,8 @@ import NewProduct from './NewProduct'
 import LowStocks from './LowStocks'
 import Category from './Category'
 import NewCategory from './NewCategory'
+import CustomerList from './CustomerList'
+import NewCustomer from './NewCustomer'
 import TransactionReport from './TransactionReport'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, AreaChart, Area
@@ -29,19 +31,20 @@ import Purchase from './Purchase'
 import PurchaseList from './PurchaseList'
 import InventoryLedger from './InventoryLedger'
 import SalesAnalysis from './SalesAnalysis'
+import BarcodePage from './BarcodePage'
 import '../styles/Dashboard.css'
 
 const SHORTCUTS = [
-  { label: 'New Sale', icon: faCashRegister, path: '/pos', color: '#0d9488', bg: '#f0fdfa', desc: 'Open POS', roles: ['ADMIN', 'MANAGER', 'STAFF'] },
-  { label: 'Add Product', icon: faBoxOpen, path: '/products/new', color: '#6366f1', bg: '#f5f3ff', desc: 'New inventory', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'New Purchase', icon: faTruck, path: '/purchase', color: '#f59e0b', bg: '#fffbeb', desc: 'Record purchase', roles: ['ADMIN', 'MANAGER'] },
+  { label: 'New Sale', icon: faCashRegister, path: '/pos', color: '#0d9488', bg: '#f0fdfa', desc: 'Open POS', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER', 'STAFF'] },
+  { label: 'Add Product', icon: faBoxOpen, path: '/products/new', color: '#6366f1', bg: '#f5f3ff', desc: 'New inventory', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
+  { label: 'New Purchase', icon: faTruck, path: '/purchase', color: '#f59e0b', bg: '#fffbeb', desc: 'Record purchase', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
   { label: 'Register User', icon: faUsers, path: '/users/new', color: '#ec4899', bg: '#fdf2f8', desc: 'Add staff/admin', roles: ['ADMIN'] },
-  { label: 'Add Supplier', icon: faShoppingBag, path: '/suppliers/new', color: '#14b8a6', bg: '#f0fdfa', desc: 'New supplier', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'New Category', icon: faTag, path: '/category/new', color: '#8b5cf6', bg: '#f5f3ff', desc: 'Product group', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Transactions', icon: faListAlt, path: '/transaction', color: '#2563eb', bg: '#eff6ff', desc: 'View all sales', roles: ['ADMIN', 'MANAGER', 'STAFF'] },
-  { label: 'Sales Analysis', icon: faChartBar, path: '/analysis', color: '#f97316', bg: '#fff7ed', desc: 'Reports', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Inventory', icon: faWarehouse, path: '/inventory-ledger', color: '#0891b2', bg: '#ecfeff', desc: 'Stock ledger', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Low Stocks', icon: faExclamationTriangle, path: '/low-stocks', color: '#dc2626', bg: '#fef2f2', desc: 'Alerts', roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+  { label: 'Add Supplier', icon: faShoppingBag, path: '/suppliers/new', color: '#14b8a6', bg: '#f0fdfa', desc: 'New supplier', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
+  { label: 'New Category', icon: faTag, path: '/category/new', color: '#8b5cf6', bg: '#f5f3ff', desc: 'Product group', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
+  { label: 'Transactions', icon: faListAlt, path: '/transaction', color: '#2563eb', bg: '#eff6ff', desc: 'View all sales', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER', 'STAFF'] },
+  { label: 'Sales Analysis', icon: faChartBar, path: '/analysis', color: '#f97316', bg: '#fff7ed', desc: 'Reports', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
+  { label: 'Inventory', icon: faWarehouse, path: '/inventory-ledger', color: '#0891b2', bg: '#ecfeff', desc: 'Stock ledger', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER'] },
+  { label: 'Low Stocks', icon: faExclamationTriangle, path: '/low-stocks', color: '#dc2626', bg: '#fef2f2', desc: 'Alerts', roles: ['ADMIN', 'MANAGER', 'DUMMY MANAGER', 'STAFF'] },
 ]
 
 function Dashboard() {
@@ -84,10 +87,14 @@ function Dashboard() {
     if (path.startsWith('/products/edit')) return 'NewProduct'
     if (path === '/products/new') return 'NewProduct'
     if (path === '/products') return 'Products'
+    if (path === '/barcode') return 'Barcode'
     if (path === '/low-stocks') return 'Low Stocks'
     if (path.startsWith('/category/edit')) return 'NewCategory'
     if (path === '/category/new') return 'NewCategory'
     if (path === '/category') return 'Category'
+    if (path.startsWith('/customer/edit')) return 'NewCustomer'
+    if (path === '/customer/new') return 'NewCustomer'
+    if (path === '/customer') return 'Customer'
     if (path === '/discount/new') return 'NewDiscount'
     if (path === '/discount') return 'Discount'
     if (path === '/purchases') return 'Purchases'
@@ -329,11 +336,14 @@ function Dashboard() {
 
           {currentPage === 'Products' && <ProductList onAddNew={() => handleNavigation('/products/new')} />}
           {currentPage === 'NewProduct' && <NewProduct onBack={() => handleNavigation('/products')} onSave={() => handleNavigation('/products')} />}
+          {currentPage === 'Barcode' && <BarcodePage />}
           {currentPage === 'Low Stocks' && <LowStocks />}
           {currentPage === 'Purchases' && <PurchaseList />}
           {currentPage === 'Purchase' && <Purchase />}
           {currentPage === 'Category' && <Category />}
           {currentPage === 'NewCategory' && <NewCategory />}
+          {currentPage === 'Customer' && <CustomerList />}
+          {currentPage === 'NewCustomer' && <NewCustomer />}
           {currentPage === 'Discount' && <Discount />}
           {currentPage === 'NewDiscount' && <NewDiscount />}
           {currentPage === 'Inventory Ledger' && <InventoryLedger />}

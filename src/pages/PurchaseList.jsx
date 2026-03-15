@@ -182,16 +182,18 @@ function PurchaseList() {
                       {p.status || '—'}
                     </span>
                   </td>
-                  <td>
-                    <button type="button" className="action-icon-btn view-btn" title="View" onClick={() => openDetail(p.id)}>
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/purchases/edit/${p.id}`)}>
-                      <FontAwesomeIcon icon={faPencilAlt} />
-                    </button>
-                    <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === p.id} onClick={() => handleDelete(p.id)}>
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                  <td className="action-cell">
+                    <div className="action-buttons-h">
+                      <button type="button" className="action-icon-btn view-btn" title="View" onClick={() => openDetail(p.id)}>
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                      <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/purchases/edit/${p.id}`)}>
+                        <FontAwesomeIcon icon={faPencilAlt} />
+                      </button>
+                      <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === p.id} onClick={() => handleDelete(p.id)}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

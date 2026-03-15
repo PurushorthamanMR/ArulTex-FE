@@ -21,7 +21,7 @@ function NewProduct({ onBack, onSave }) {
 
   const [formData, setFormData] = useState({
     productName: '',
-    barcode: '',
+    barcode: '', // only used for display on edit
     categoryId: '',
     quantity: '',
     purchasedPrice: '',
@@ -77,11 +77,6 @@ function NewProduct({ onBack, onSave }) {
     Number(formData.discountPercent) || 0
   )
 
-  const handleGenerateBarcode = () => {
-    const newBarcode = productApi.generateBarcode()
-    setFormData((prev) => ({ ...prev, barcode: newBarcode }))
-  }
-
   const handleSave = async (e) => {
     e.preventDefault()
     setSaveError(null)
@@ -95,7 +90,6 @@ function NewProduct({ onBack, onSave }) {
       }
       const payload = {
         productName: formData.productName,
-        barcode: (formData.barcode && String(formData.barcode).trim()) || undefined,
         categoryId,
         quantity: Number(formData.quantity) || 0,
         purchasedPrice: Number(formData.purchasedPrice) || 0,
@@ -151,16 +145,14 @@ function NewProduct({ onBack, onSave }) {
                 <label htmlFor="productName">Product Name</label>
                 <input type="text" id="productName" name="productName" value={formData.productName} onChange={handleInputChange} placeholder="Enter Product Name" className="form-input" required />
               </div>
-              <div className="form-group">
-                <label htmlFor="barcode">Barcode</label>
-                <div className="barcode-input-wrap">
-                  <input type="text" id="barcode" name="barcode" value={formData.barcode} onChange={handleInputChange} placeholder="Auto-generated if left blank" className="form-input" />
-                  <button type="button" className="barcode-generate-btn" onClick={handleGenerateBarcode} title="Generate barcode">
-                    Generate
-                  </button>
+              {isEdit && (
+                <div className="form-group">
+                  <label>Barcode</label>
+                  <div className="form-input form-input-readonly">
+                    {formData.barcode != null && formData.barcode !== '' ? formData.barcode : '— (generated on save)'}
+                  </div>
                 </div>
-                {!isEdit && <span className="form-hint">Leave blank to auto-generate on save</span>}
-              </div>
+              )}
               <div className="form-group">
                 <label htmlFor="categoryId">Category</label>
                 <div className="category-wrapper">

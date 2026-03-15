@@ -45,8 +45,8 @@ function SignInPage() {
       localStorage.setItem('userLastName', user?.lastName || '')
 
       const roleUpper = (role || '').toUpperCase()
-      // Dashboard for Admin and Manager only; POS for Staff and others
-      if (roleUpper === 'ADMIN' || roleUpper === 'MANAGER') {
+      // Dashboard for Admin, Manager, and Dummy Manager; POS for Staff and others
+      if (roleUpper === 'ADMIN' || roleUpper === 'MANAGER' || roleUpper === 'DUMMY MANAGER') {
         navigate('/dashboard')
       } else {
         navigate('/pos')

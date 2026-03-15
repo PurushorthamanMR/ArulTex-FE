@@ -5,6 +5,8 @@ import {
   faBox,
   faChartLine,
   faHexagon,
+  faBarcode,
+  faUser,
   faFileInvoice,
   faShoppingBag,
   faUserFriends,
@@ -27,6 +29,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
   const getPageName = (path) => {
     if (path === '/dashboard') return 'Dashboard'
     if (path === '/products' || path === '/products/new') return 'Products'
+    if (path === '/barcode') return 'Barcode'
     if (path === '/low-stocks') return 'Low Stocks'
     if (path === '/category') return 'Category'
     if (path === '/discount' || path === '/discount/new') return 'Discount'
@@ -79,6 +82,14 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
             {!isCollapsed && <span>Products</span>}
           </li>
           <li
+            className={`sidebar-menu-item ${currentPage === 'Barcode' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/barcode')}
+            title="Generate Barcode Labels"
+          >
+            <FontAwesomeIcon icon={faBarcode} className="menu-icon" />
+            {!isCollapsed && <span>Barcode</span>}
+          </li>
+          <li
             className={`sidebar-menu-item ${currentPage === 'Low Stocks' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/low-stocks')}
             title={lowStockCount > 0 ? `Low Stocks (${lowStockCount})` : 'Low Stocks'}
@@ -107,6 +118,14 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
           >
             <FontAwesomeIcon icon={faHexagon} className="menu-icon" />
             {!isCollapsed && <span>Category</span>}
+          </li>
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Customer' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/customer')}
+            title="Customer"
+          >
+            <FontAwesomeIcon icon={faUser} className="menu-icon" />
+            {!isCollapsed && <span>Customer</span>}
           </li>
         </ul>
       </div>
@@ -166,7 +185,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
       </div>
 
       {/* User Management Section */}
-      {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && (
+      {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER' || currentUserRole === 'DUMMY MANAGER') && (
         <div className="sidebar-section">
           {!isCollapsed && <h3 className="sidebar-section-title">User Management</h3>}
           <ul className="sidebar-menu">

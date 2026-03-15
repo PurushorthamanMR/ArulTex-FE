@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTh, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import '../styles/POSSidebar.css'
 
-const DASHBOARD_ROLES = ['ADMIN', 'MANAGER']
+const DASHBOARD_ROLES = ['ADMIN', 'MANAGER', 'DUMMY MANAGER']
 
 function POSSidebar() {
   const navigate = useNavigate()

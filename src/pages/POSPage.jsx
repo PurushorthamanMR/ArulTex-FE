@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faEllipsisH, faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faEllipsisH, faChevronRight, faChevronLeft, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import POSHeader from '../components/POSHeader'
 import POSSidebar from '../components/POSSidebar'
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
 import * as salesApi from '../api/salesApi'
+import * as customerApi from '../api/customerApi'
 import '../styles/POSPage.css'
 
 function POSPage() {
@@ -18,7 +19,18 @@ function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState('cash')
   const [searchError, setSearchError] = useState('')
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
+  const [customers, setCustomers] = useState([])
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null)
+  const [customersLoading, setCustomersLoading] = useState(false)
+  const [showCreateCustomerForm, setShowCreateCustomerForm] = useState(false)
+  const [newCustomerForm, setNewCustomerForm] = useState({ customerName: '', phone: '', email: '', address: '' })
+  const [createCustomerError, setCreateCustomerError] = useState('')
+  const [creatingCustomer, setCreatingCustomer] = useState(false)
+  const [orderToast, setOrderToast] = useState(null) // { type: 'success'|'error', message: string }
   const searchInputRef = useRef(null)
+  const orderToastTimerRef = useRef(null)
   const searchErrorTimerRef = useRef(null)
 
   const fetchProducts = useCallback(async () => {
@@ -47,8 +59,24 @@ function POSPage() {
   useEffect(() => {
     return () => {
       if (searchErrorTimerRef.current) clearTimeout(searchErrorTimerRef.current)
+      if (orderToastTimerRef.current) clearTimeout(orderToastTimerRef.current)
     }
   }, [])
+
+  const showOrderToast = (type, message) => {
+    if (orderToastTimerRef.current) clearTimeout(orderToastTimerRef.current)
+    setOrderToast({ type, message })
+    orderToastTimerRef.current = setTimeout(() => {
+      setOrderToast(null)
+      orderToastTimerRef.current = null
+    }, 4500)
+  }
+
+  const dismissOrderToast = () => {
+    if (orderToastTimerRef.current) clearTimeout(orderToastTimerRef.current)
+    orderToastTimerRef.current = null
+    setOrderToast(null)
+  }
 
   const normId = (id) => (id != null ? Number(id) : null)
   const normName = (p) => (p && (p.productName ?? p.name)) || 'Product'
@@ -61,7 +89,7 @@ function POSPage() {
 
   const addToCart = (product, qty = 1) => {
     const pid = normId(product.id)
-    const price = productApi.calcFinalPrice(product.pricePerUnit, 0)
+    const price = productApi.calcFinalPrice(product.pricePerUnit, product.discountPercent || 0)
     const name = normName(product)
 
     // Check if enough stock available
@@ -185,47 +213,104 @@ function POSPage() {
     window.print()
   }
 
-  const handlePlaceOrder = async () => {
+  const handleNextClick = () => {
     if (cart.length === 0 || isPlacingOrder) return
+    setSelectedCustomerId(null)
+    setCustomerSearch('')
+    setShowCreateCustomerForm(false)
+    setNewCustomerForm({ customerName: '', phone: '', email: '', address: '' })
+    setCreateCustomerError('')
+    setShowCustomerModal(true)
+    setCustomersLoading(true)
+    customerApi.getAll().then((list) => {
+      setCustomers(Array.isArray(list) ? list.filter((c) => c.isActive !== false) : [])
+    }).catch(() => setCustomers([])).finally(() => setCustomersLoading(false))
+  }
 
+  const handleNewCustomerChange = (e) => {
+    const { name, value } = e.target
+    setNewCustomerForm((prev) => ({ ...prev, [name]: value }))
+    if (createCustomerError) setCreateCustomerError('')
+  }
+
+  const handleCreateCustomer = async () => {
+    const name = (newCustomerForm.customerName || '').trim()
+    if (!name) {
+      setCreateCustomerError('Customer name is required.')
+      return
+    }
+    setCreatingCustomer(true)
+    setCreateCustomerError('')
+    try {
+      const saved = await customerApi.save({
+        customerName: name,
+        phone: (newCustomerForm.phone || '').trim() || null,
+        email: (newCustomerForm.email || '').trim() || null,
+        address: (newCustomerForm.address || '').trim() || null,
+        isActive: true
+      })
+      setCustomers((prev) => [...prev, saved])
+      setSelectedCustomerId(saved.id)
+      setShowCreateCustomerForm(false)
+      setNewCustomerForm({ customerName: '', phone: '', email: '', address: '' })
+    } catch (err) {
+      setCreateCustomerError(err.message || 'Failed to create customer.')
+    } finally {
+      setCreatingCustomer(false)
+    }
+  }
+
+  const filteredCustomers = customerSearch.trim()
+    ? customers.filter(
+        (c) =>
+          (c.customerName || '').toLowerCase().includes(customerSearch.trim().toLowerCase()) ||
+          (c.phone || '').includes(customerSearch.trim()) ||
+          (c.email || '').toLowerCase().includes(customerSearch.trim().toLowerCase())
+      )
+    : customers
+
+  const doPlaceOrder = async (customerId) => {
+    if (cart.length === 0 || isPlacingOrder) return
+    setShowCustomerModal(false)
     setIsPlacingOrder(true)
     try {
       const saleData = {
         invoiceNo,
         paymentMethod,
+        ...(customerId != null && { customerId }),
         items: cart.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.price,
-          discountAmount: 0 // Currently not handled individually
+          discountAmount: 0
         }))
       }
-
       await salesApi.save(saleData)
-
-      // Successfully saved!
-      alert('Order Placed Successfully!')
-
-      // Print the bill automatically
+      showOrderToast('success', 'Order placed successfully!')
       handlePrint()
-
-      // Clear cart for next sale
       setCart([])
       setPaymentMethod('cash')
-
-      // REFRESH PRODUCTS to see updated stock
       fetchProducts()
-
     } catch (error) {
       console.error('Error placing order:', error)
-      alert(error.message || 'Failed to place order. Please try again.')
+      showOrderToast('error', error.message || 'Failed to place order. Please try again.')
     } finally {
       setIsPlacingOrder(false)
     }
   }
 
+  const handleCustomerConfirm = () => {
+    doPlaceOrder(selectedCustomerId ?? null)
+  }
+
   return (
     <div className="pos-page">
+      {orderToast && (
+        <div className={`pos-order-toast pos-order-toast-${orderToast.type}`} role="alert">
+          <span className="pos-order-toast-message">{orderToast.message}</span>
+          <button type="button" className="pos-order-toast-dismiss" onClick={dismissOrderToast} aria-label="Dismiss">×</button>
+        </div>
+      )}
       <POSHeader />
       <div className="pos-layout">
         <POSSidebar />
@@ -428,12 +513,12 @@ function POSPage() {
                   <button
                     className="pos-place-order-btn"
                     disabled={cart.length === 0 || isPlacingOrder}
-                    onClick={handlePlaceOrder}
+                    onClick={handleNextClick}
                   >
                     <div className="pos-btn-circle">
                       {isPlacingOrder ? <div className="pos-spinner" /> : <FontAwesomeIcon icon={faChevronRight} />}
                     </div>
-                    <span>{isPlacingOrder ? 'Processing...' : `Place Order LKR ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
+                    <span>{isPlacingOrder ? 'Processing...' : `Next LKR ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
                     <div className="pos-btn-arrows">
                       <FontAwesomeIcon icon={faChevronRight} />
                       <FontAwesomeIcon icon={faChevronRight} />
@@ -448,6 +533,145 @@ function POSPage() {
           </div>
         </main>
       </div>
+
+      {showCustomerModal && (
+        <div className="pos-customer-modal-overlay" onClick={() => setShowCustomerModal(false)} role="dialog" aria-modal="true" aria-labelledby="pos-customer-modal-title">
+          <div className="pos-customer-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 id="pos-customer-modal-title" className="pos-customer-modal-title">
+              {showCreateCustomerForm ? 'Create Customer' : 'Select Customer'}
+            </h2>
+            <p className="pos-customer-modal-subtitle">
+              {showCreateCustomerForm ? 'Add a new customer and use for this sale.' : 'Choose a customer for this sale or continue as walk-in.'}
+            </p>
+
+            {showCreateCustomerForm ? (
+              <div className="pos-customer-create-form">
+                <div className="pos-customer-create-field">
+                  <label htmlFor="pos-new-customer-name">Customer Name *</label>
+                  <input
+                    id="pos-new-customer-name"
+                    type="text"
+                    name="customerName"
+                    value={newCustomerForm.customerName}
+                    onChange={handleNewCustomerChange}
+                    placeholder="Enter name"
+                    className="pos-customer-modal-input"
+                    autoFocus
+                  />
+                </div>
+                <div className="pos-customer-create-field">
+                  <label htmlFor="pos-new-customer-phone">Phone</label>
+                  <input
+                    id="pos-new-customer-phone"
+                    type="text"
+                    name="phone"
+                    value={newCustomerForm.phone}
+                    onChange={handleNewCustomerChange}
+                    placeholder="Phone number"
+                    className="pos-customer-modal-input"
+                  />
+                </div>
+                <div className="pos-customer-create-field">
+                  <label htmlFor="pos-new-customer-email">Email</label>
+                  <input
+                    id="pos-new-customer-email"
+                    type="email"
+                    name="email"
+                    value={newCustomerForm.email}
+                    onChange={handleNewCustomerChange}
+                    placeholder="Email"
+                    className="pos-customer-modal-input"
+                  />
+                </div>
+                <div className="pos-customer-create-field">
+                  <label htmlFor="pos-new-customer-address">Address</label>
+                  <textarea
+                    id="pos-new-customer-address"
+                    name="address"
+                    value={newCustomerForm.address}
+                    onChange={handleNewCustomerChange}
+                    placeholder="Address"
+                    className="pos-customer-modal-input pos-customer-create-textarea"
+                    rows={2}
+                  />
+                </div>
+                {createCustomerError && (
+                  <p className="pos-customer-create-error" role="alert">{createCustomerError}</p>
+                )}
+                <div className="pos-customer-create-form-actions">
+                  <button type="button" className="pos-customer-modal-cancel" onClick={() => { setShowCreateCustomerForm(false); setCreateCustomerError(''); }}>
+                    Back
+                  </button>
+                  <button type="button" className="pos-customer-modal-confirm" onClick={handleCreateCustomer} disabled={creatingCustomer}>
+                    {creatingCustomer ? 'Saving...' : 'Save & Use'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="pos-customer-modal-search">
+                  <input
+                    type="text"
+                    className="pos-customer-modal-input"
+                    placeholder="Search by name, phone or email..."
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  type="button"
+                  className={`pos-customer-modal-walkin ${selectedCustomerId === null ? 'selected' : ''}`}
+                  onClick={() => setSelectedCustomerId(null)}
+                >
+                  Walk-in (No customer)
+                </button>
+                <button
+                  type="button"
+                  className="pos-customer-modal-create-btn"
+                  onClick={() => setShowCreateCustomerForm(true)}
+                >
+                  <FontAwesomeIcon icon={faUserPlus} />
+                  <span>Create new customer</span>
+                </button>
+                <div className="pos-customer-modal-list">
+                  {customersLoading ? (
+                    <p className="pos-customer-modal-loading">Loading customers...</p>
+                  ) : (
+                    filteredCustomers.slice(0, 50).map((c) => (
+                      <button
+                        type="button"
+                        key={c.id}
+                        className={`pos-customer-modal-item ${selectedCustomerId === c.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedCustomerId(c.id)}
+                      >
+                        <span className="pos-customer-modal-item-name">{c.customerName}</span>
+                        {(c.phone || c.email) && (
+                          <span className="pos-customer-modal-item-meta">{[c.phone, c.email].filter(Boolean).join(' · ')}</span>
+                        )}
+                      </button>
+                    ))
+                  )}
+                  {!customersLoading && filteredCustomers.length === 0 && customers.length > 0 && (
+                    <p className="pos-customer-modal-no-match">No customers match your search.</p>
+                  )}
+                  {!customersLoading && customers.length === 0 && (
+                    <p className="pos-customer-modal-empty">No customers yet. Create one below or add from the Customer page.</p>
+                  )}
+                </div>
+                <div className="pos-customer-modal-actions">
+                  <button type="button" className="pos-customer-modal-cancel" onClick={() => setShowCustomerModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="button" className="pos-customer-modal-confirm" onClick={handleCustomerConfirm} disabled={isPlacingOrder}>
+                    {isPlacingOrder ? 'Processing...' : 'Confirm & Place Order'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <div id="pos-invoice-print" className="pos-invoice-print" aria-hidden="true">
         <div className="pos-invoice-paper">
@@ -471,7 +695,7 @@ function POSPage() {
               <tr>
                 <th>Product</th>
                 <th className="text-center">Qty</th>
-                <th className="text-right">Price</th>
+                <th className="text-right">Final Price</th>
                 <th className="text-right">Amount</th>
               </tr>
             </thead>

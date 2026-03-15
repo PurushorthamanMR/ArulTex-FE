@@ -8,6 +8,8 @@ import NewProduct from './pages/NewProduct'
 import LowStocks from './pages/LowStocks'
 import Category from './pages/Category'
 import NewCategory from './pages/NewCategory'
+import CustomerList from './pages/CustomerList'
+import NewCustomer from './pages/NewCustomer'
 import TransactionReport from './pages/TransactionReport'
 import SupplierList from './pages/SupplierList'
 import NewSupplier from './pages/NewSupplier'
@@ -65,6 +67,10 @@ const router = createBrowserRouter([
         element: <Dashboard />
       },
       {
+        path: '/barcode',
+        element: <Dashboard />
+      },
+      {
         path: '/low-stocks',
         element: <Dashboard />
       },
@@ -94,6 +100,18 @@ const router = createBrowserRouter([
       },
       {
         path: '/category/edit/:id',
+        element: <Dashboard />
+      },
+      {
+        path: '/customer',
+        element: <Dashboard />
+      },
+      {
+        path: '/customer/new',
+        element: <Dashboard />
+      },
+      {
+        path: '/customer/edit/:id',
         element: <Dashboard />
       },
       {
@@ -131,8 +149,16 @@ const router = createBrowserRouter([
       {
         path: '/users/new',
         element: <Dashboard />
+      },
+      {
+        path: '*',
+        element: <Navigate to="/dashboard" replace />
       }
     ]
+  },
+  {
+    path: '*',
+    element: <Navigate to="/signin" replace />
   }
 ])
 

@@ -95,7 +95,7 @@ function ProductList({ onAddNew }) {
     downloadTablePdf({
       title: 'Product List',
       subtitle: 'Manage your products',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock', 'Status'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock'],
       rows: products.map((p) => [
         p.productName || '',
         p.barcode || '',
@@ -104,8 +104,7 @@ function ProductList({ onAddNew }) {
         `LKR ${p.pricePerUnit ?? ''}`,
         `LKR ${finalPrice(p)}`,
         String(p.quantity ?? ''),
-        String(p.lowStock ?? ''),
-        p.isActive ? 'Active' : 'Inactive'
+        String(p.lowStock ?? '')
       ]),
       filename: `Products_${new Date().toISOString().slice(0, 10)}.pdf`
     })
@@ -114,7 +113,7 @@ function ProductList({ onAddNew }) {
   const handleDownloadExcel = () => {
     downloadTableExcel({
       title: 'Products',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock', 'Status'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock'],
       rows: products.map((p) => [
         p.productName || '',
         p.barcode || '',
@@ -123,8 +122,7 @@ function ProductList({ onAddNew }) {
         p.pricePerUnit ?? '',
         finalPrice(p),
         p.quantity ?? '',
-        p.lowStock ?? '',
-        p.isActive ? 'Active' : 'Inactive'
+        p.lowStock ?? ''
       ]),
       filename: `Products_${new Date().toISOString().slice(0, 10)}.xlsx`
     })
@@ -213,18 +211,17 @@ function ProductList({ onAddNew }) {
               <th>Final Price</th>
               <th>Qty</th>
               <th>Low Stock</th>
-              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="10" className="no-data">Loading...</td>
+                <td colSpan="9" className="no-data">Loading...</td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan="10" className="no-data">
+                <td colSpan="9" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon">📦</div>
                     <div className="no-data-text">No products found</div>
@@ -248,17 +245,14 @@ function ProductList({ onAddNew }) {
                   <td>{p.quantity}</td>
                   <td>{p.lowStock}</td>
                   <td>
-                    <span className={`status-badge ${p.isActive ? 'status-active' : 'status-inactive'}`}>
-                      {p.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/products/edit/${p.id}`)}>
-                      <FontAwesomeIcon icon={faPen} />
-                    </button>
-                    <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === p.id} onClick={() => handleDelete(p.id)}>
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                    <div className="product-list-actions">
+                      <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/products/edit/${p.id}`)}>
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                      <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === p.id} onClick={() => handleDelete(p.id)}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
