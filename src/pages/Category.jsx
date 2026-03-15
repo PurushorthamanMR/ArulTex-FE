@@ -12,7 +12,8 @@ import {
   faSortUp,
   faSortDown,
   faPen,
-  faTrash
+  faTrash,
+  faBox
 } from '@fortawesome/free-solid-svg-icons'
 import * as categoryApi from '../api/categoryApi'
 import { downloadTablePdf } from '../utils/pdfExport'
@@ -207,7 +208,7 @@ function Category() {
               <tr>
                 <td colSpan="3" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No categories found</div>
                   </div>
                 </td>

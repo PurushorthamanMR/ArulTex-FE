@@ -11,7 +11,8 @@ import {
   faSortUp,
   faSortDown,
   faPen,
-  faTrash
+  faTrash,
+  faBox
 } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
@@ -223,7 +224,7 @@ function ProductList({ onAddNew }) {
               <tr>
                 <td colSpan="9" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No products found</div>
                   </div>
                 </td>

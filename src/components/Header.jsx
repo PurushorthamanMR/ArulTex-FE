@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faArrowsAlt, 
+  faCompressAlt,
   faMoon, 
+  faSun,
   faChevronDown,
   faChevronLeft,
   faChevronRight,
@@ -11,10 +13,53 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import '../styles/Header.css'
 
+const DARK_THEME_KEY = 'arultex-dark-theme'
+
 function Header({ onToggleSidebar, isSidebarCollapsed }) {
   const navigate = useNavigate()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem(DARK_THEME_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
   const dropdownRef = useRef(null)
+
+  // Apply dark theme to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-theme')
+    } else {
+      document.documentElement.classList.remove('dark-theme')
+    }
+    try {
+      localStorage.setItem(DARK_THEME_KEY, isDarkMode ? 'true' : 'false')
+    } catch (_) {}
+  }, [isDarkMode])
+
+  // Listen for fullscreen change (e.g. user presses Escape)
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [])
+
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {})
+    } else {
+      document.exitFullscreen?.()
+    }
+  }
+
+  const handleDarkModeToggle = () => {
+    setIsDarkMode((prev) => !prev)
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,11 +114,11 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
       </div>
       
       <div className="header-right">
-        <button className="header-icon-btn" aria-label="Fullscreen">
-          <FontAwesomeIcon icon={faArrowsAlt} />
+        <button type="button" className="header-icon-btn" aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} onClick={handleFullscreen}>
+          <FontAwesomeIcon icon={isFullscreen ? faCompressAlt : faArrowsAlt} />
         </button>
-        <button className="header-icon-btn" aria-label="Dark mode">
-          <FontAwesomeIcon icon={faMoon} />
+        <button type="button" className="header-icon-btn" aria-label={isDarkMode ? 'Light mode' : 'Dark mode'} onClick={handleDarkModeToggle}>
+          <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
         </button>
         <div className="user-menu-wrapper" ref={dropdownRef}>
           <button 

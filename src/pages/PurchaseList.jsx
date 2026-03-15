@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faEye, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faEye, faTrash, faPencilAlt, faClipboardList } from '@fortawesome/free-solid-svg-icons'
 import * as purchaseApi from '../api/purchaseApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
@@ -165,7 +165,7 @@ function PurchaseList() {
               <tr>
                 <td colSpan="6" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📋</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faClipboardList} /></div>
                     <div className="no-data-text">No purchases found</div>
                   </div>
                 </td>

@@ -10,7 +10,8 @@ import {
   faSortUp,
   faSortDown,
   faEdit,
-  faTrash
+  faTrash,
+  faBox
 } from '@fortawesome/free-solid-svg-icons'
 import { discountsMock } from '../api/mockData'
 import { downloadTablePdf } from '../utils/pdfExport'
@@ -120,7 +121,7 @@ function Discount() {
               <tr>
                 <td colSpan="3" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No data</div>
                   </div>
                 </td>

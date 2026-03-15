@@ -5,7 +5,8 @@ import {
   faSyncAlt,
   faSearch,
   faEye,
-  faTimes
+  faTimes,
+  faFolderOpen
 } from '@fortawesome/free-solid-svg-icons'
 import { downloadTablePdf } from '../utils/pdfExport'
 import * as salesApi from '../api/salesApi'
@@ -157,7 +158,7 @@ function TransactionReport() {
               <tr>
                 <td colSpan="8" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📁</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faFolderOpen} /></div>
                     <div className="no-data-text">No transactions found</div>
                   </div>
                 </td>

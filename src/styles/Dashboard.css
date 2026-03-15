@@ -46,6 +46,11 @@
   letter-spacing: -0.5px;
 }
 
+.hero-greeting .hero-greeting-icon {
+  margin-left: 6px;
+  vertical-align: -0.15em;
+}
+
 .hero-date {
   font-size: 14px;
   color: #64748b;

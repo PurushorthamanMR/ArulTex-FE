@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faPen, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faPen, faTrash, faBox } from '@fortawesome/free-solid-svg-icons'
 import * as supplierApi from '../api/supplierApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
@@ -133,7 +133,7 @@ function SupplierList() {
               <tr>
                 <td colSpan="6" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No suppliers found</div>
                   </div>
                 </td>

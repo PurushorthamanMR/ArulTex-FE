@@ -29,9 +29,12 @@ function POSPage() {
   const [createCustomerError, setCreateCustomerError] = useState('')
   const [creatingCustomer, setCreatingCustomer] = useState(false)
   const [orderToast, setOrderToast] = useState(null) // { type: 'success'|'error', message: string }
+  const [draftInvoiceNo, setDraftInvoiceNo] = useState(() => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`)
   const searchInputRef = useRef(null)
   const orderToastTimerRef = useRef(null)
   const searchErrorTimerRef = useRef(null)
+
+  const generateNewInvoiceNo = () => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -207,8 +210,6 @@ function POSPage() {
   const subtotal = cart.reduce((sum, c) => sum + c.lineTotal, 0)
   const total = subtotal
 
-  const invoiceNo = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`
-
   const handlePrint = () => {
     window.print()
   }
@@ -275,7 +276,7 @@ function POSPage() {
     setIsPlacingOrder(true)
     try {
       const saleData = {
-        invoiceNo,
+        invoiceNo: draftInvoiceNo,
         paymentMethod,
         ...(customerId != null && { customerId }),
         items: cart.map(item => ({
@@ -290,6 +291,7 @@ function POSPage() {
       handlePrint()
       setCart([])
       setPaymentMethod('cash')
+      setDraftInvoiceNo(generateNewInvoiceNo())
       fetchProducts()
     } catch (error) {
       console.error('Error placing order:', error)
@@ -456,7 +458,7 @@ function POSPage() {
                   <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faChevronLeft} /></button>
                   <div className="pos-receipt-title">
                     <div className="pos-receipt-label">Purchase Receipt</div>
-                    <div className="pos-receipt-id">#546294</div>
+                    <div className="pos-receipt-id">#{draftInvoiceNo.split('-').pop()}</div>
                   </div>
                   <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faEllipsisH} /></button>
                 </div>
@@ -686,7 +688,7 @@ function POSPage() {
             </p>
             <p className="pos-invoice-meta-info">
               Date : {new Date().toLocaleDateString('en-LK')} Time: {new Date().toLocaleTimeString('en-LK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}<br />
-              Order Id #{invoiceNo.split('-').pop()}
+              Order Id #{draftInvoiceNo.split('-').pop()}
             </p>
           </div>
 

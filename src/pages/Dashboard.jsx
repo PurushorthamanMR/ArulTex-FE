@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faPlus, faChartLine, faShoppingBag, faBox, faHistory,
   faCashRegister, faBoxOpen, faUsers, faTruck, faListAlt, faChartBar,
-  faWarehouse, faTag, faArrowRight, faExclamationTriangle
+  faWarehouse, faTag, faArrowRight, faExclamationTriangle, faHand
 } from '@fortawesome/free-solid-svg-icons'
 import * as dashboardApi from '../api/dashboardApi'
 import * as salesApi from '../api/salesApi'
@@ -139,7 +139,7 @@ function Dashboard() {
               {/* ── Hero Section ── */}
               <header className="dashboard-hero">
                 <div className="hero-text">
-                  <h1 className="hero-greeting">Welcome back, {userFirstName}! 👋</h1>
+                  <h1 className="hero-greeting">Welcome back, {userFirstName}! <FontAwesomeIcon icon={faHand} className="hero-greeting-icon" /></h1>
                   <p className="hero-date">
                     {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>

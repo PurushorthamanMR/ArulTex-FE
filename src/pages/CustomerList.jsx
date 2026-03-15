@@ -203,7 +203,7 @@ function CustomerList() {
               <tr>
                 <td colSpan="6" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">👤</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faUser} /></div>
                     <div className="no-data-text">No customers found</div>
                   </div>
                 </td>

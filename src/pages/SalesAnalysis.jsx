@@ -1,4 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faCalendarDay,
+    faCalendarAlt,
+    faChartBar,
+    faChartLine,
+    faTrophy,
+    faDollarSign,
+    faExclamationTriangle,
+    faCheck
+} from '@fortawesome/free-solid-svg-icons'
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Cell, PieChart, Pie, Legend
@@ -141,22 +152,22 @@ function SalesAnalysis() {
                 </div>
             </div>
 
-            {error && <div className="analysis-error">⚠️ {error}</div>}
+            {error && <div className="analysis-error"><FontAwesomeIcon icon={faExclamationTriangle} /> {error}</div>}
 
             {/* KPI Summary Cards */}
             <div className="analysis-stats-row">
                 <div className="stat-card primary">
-                    <span className="stat-label">📅 Today's Sales</span>
+                    <span className="stat-label"><FontAwesomeIcon icon={faCalendarDay} /> Today's Sales</span>
                     <span className="stat-value">{formatCurrency(todaySales)}</span>
                     <span className="stat-footer">{today}</span>
                 </div>
                 <div className="stat-card secondary">
-                    <span className="stat-label">📆 This Month ({new Date().toLocaleString('default', { month: 'long' })})</span>
+                    <span className="stat-label"><FontAwesomeIcon icon={faCalendarAlt} /> This Month ({new Date().toLocaleString('default', { month: 'long' })})</span>
                     <span className="stat-value">{formatCurrency(monthSales)}</span>
                     <span className="stat-footer">Monthly revenue</span>
                 </div>
                 <div className="stat-card tertiary">
-                    <span className="stat-label">📊 Year Total ({selectedYear})</span>
+                    <span className="stat-label"><FontAwesomeIcon icon={faChartBar} /> Year Total ({selectedYear})</span>
                     <span className="stat-value">{formatCurrency(yearSales)}</span>
                     <span className="stat-footer">Cumulative sales</span>
                 </div>
@@ -167,7 +178,7 @@ function SalesAnalysis() {
                 {/* ======= Sales Performance Metrics - Daily / Monthly / Yearly ======= */}
                 <section className="analysis-card wide">
                     <div className="card-header">
-                        <h3>📈 Sales Performance Metrics</h3>
+                        <h3><FontAwesomeIcon icon={faChartLine} /> Sales Performance Metrics</h3>
                         <div className="metric-tabs">
                             {['daily', 'monthly', 'yearly'].map(tab => (
                                 <button
@@ -245,7 +256,7 @@ function SalesAnalysis() {
                 {/* ======= Top Selling Products ======= */}
                 <section className="analysis-card">
                     <div className="card-header">
-                        <h3>🏆 Top Selling Products</h3>
+                        <h3><FontAwesomeIcon icon={faTrophy} /> Top Selling Products</h3>
                         <span className="card-badge purple">By Units</span>
                     </div>
                     <div className="chart-wrapper">
@@ -285,7 +296,7 @@ function SalesAnalysis() {
                 {/* ======= Profitability Analysis ======= */}
                 <section className="analysis-card">
                     <div className="card-header">
-                        <h3>💰 Profitability Analysis</h3>
+                        <h3><FontAwesomeIcon icon={faDollarSign} /> Profitability Analysis</h3>
                         <span className="card-badge orange">By Category</span>
                     </div>
                     {profitabilityChartData.length === 0 ? (
@@ -338,11 +349,11 @@ function SalesAnalysis() {
                 {/* ======= Low Stock Alerts ======= */}
                 <section className="analysis-card wide">
                     <div className="card-header">
-                        <h3>🚨 Low Stock Alerts</h3>
+                        <h3><FontAwesomeIcon icon={faExclamationTriangle} /> Low Stock Alerts</h3>
                         <span className="card-badge red">{lowStock.length} Items Need Restocking</span>
                     </div>
                     {lowStock.length === 0 ? (
-                        <div className="no-data">✅ All inventory levels are healthy</div>
+                        <div className="no-data"><FontAwesomeIcon icon={faCheck} /> All inventory levels are healthy</div>
                     ) : (
                         <div className="low-stock-grid">
                             {lowStock.slice(0, 8).map(item => (

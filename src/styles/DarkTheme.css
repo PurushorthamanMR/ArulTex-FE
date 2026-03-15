@@ -1,0 +1,972 @@
+/* Dark theme – applied when html has class .dark-theme */
+
+html.dark-theme {
+  color-scheme: dark;
+}
+
+html.dark-theme body {
+  background-color: #0f172a;
+}
+
+/* Header */
+html.dark-theme .header {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .sidebar-toggle,
+html.dark-theme .header-icon-btn {
+  color: #94a3b8;
+}
+
+html.dark-theme .sidebar-toggle:hover,
+html.dark-theme .header-icon-btn:hover {
+  color: #38bdf8;
+  background-color: #334155;
+}
+
+html.dark-theme .user-name {
+  color: #e2e8f0;
+}
+
+html.dark-theme .user-role,
+html.dark-theme .chevron-icon {
+  color: #94a3b8;
+}
+
+html.dark-theme .user-menu-trigger:hover {
+  background-color: #334155;
+}
+
+html.dark-theme .user-dropdown {
+  background-color: #1e293b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-theme .dropdown-user-info .user-name {
+  color: #e2e8f0;
+}
+
+html.dark-theme .dropdown-user-info .user-role {
+  color: #94a3b8;
+}
+
+html.dark-theme .dropdown-separator {
+  background-color: #334155;
+}
+
+html.dark-theme .logout-btn:hover {
+  background-color: #334155;
+}
+
+/* Sidebar */
+html.dark-theme .sidebar {
+  background-color: #1e293b;
+  border-right-color: #334155;
+}
+
+html.dark-theme .sidebar-section-title {
+  color: #64748b;
+}
+
+html.dark-theme .sidebar-menu-item {
+  color: #cbd5e1;
+}
+
+html.dark-theme .sidebar-menu-item:hover {
+  background-color: #334155;
+}
+
+html.dark-theme .sidebar-menu-item.active {
+  background-color: #800020;
+  color: #fff;
+}
+
+/* Dashboard */
+html.dark-theme .dashboard-container {
+  background-color: #0f172a;
+}
+
+/* Content wrapper and section header – override light backgrounds from other stylesheets (e.g. NewProduct.css .section-header) */
+html.dark-theme .dashboard-content-wrapper {
+  background-color: #0f172a;
+}
+
+html.dark-theme .section-header {
+  background-color: transparent !important;
+}
+
+html.dark-theme .section-header:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark-theme .dashboard-hero {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .hero-greeting {
+  color: #f1f5f9;
+}
+
+html.dark-theme .hero-date {
+  color: #94a3b8;
+}
+
+html.dark-theme .stat-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .stat-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-theme .stat-card .stat-label {
+  color: #94a3b8;
+}
+
+html.dark-theme .stat-card .stat-value,
+html.dark-theme .dashboard-section-title,
+html.dark-theme .shortcut-title {
+  color: #f1f5f9;
+}
+
+/* Dashboard summary cards (Total Revenue, Total Purchases, etc.) use .card-label, .card-value, .card-trend */
+html.dark-theme .stat-card .card-label,
+html.dark-theme .stat-card .card-trend {
+  color: #94a3b8;
+}
+
+html.dark-theme .stat-card .card-value {
+  color: #f1f5f9;
+}
+
+html.dark-theme .stat-card.premium-teal .card-icon-wrap {
+  background: rgba(13, 148, 136, 0.25);
+  color: #2dd4bf;
+}
+
+html.dark-theme .stat-card.premium-blue .card-icon-wrap {
+  background: rgba(37, 99, 235, 0.25);
+  color: #60a5fa;
+}
+
+html.dark-theme .stat-card.premium-orange .card-icon-wrap {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+html.dark-theme .stat-card.premium-indigo .card-icon-wrap {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+}
+
+/* Section titles (Quick Shortcuts, Recent Sales) – ensure contrast on dark background */
+html.dark-theme .section-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .section-header .section-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .shortcuts-hint {
+  color: #94a3b8;
+}
+
+html.dark-theme .section-header .shortcuts-hint {
+  color: #94a3b8;
+}
+
+/* Quick Shortcut cards */
+html.dark-theme .shortcut-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .shortcut-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: var(--sc-color);
+}
+
+html.dark-theme .shortcut-card .shortcut-label {
+  color: #f1f5f9;
+}
+
+html.dark-theme .shortcut-card .shortcut-desc {
+  color: #94a3b8;
+}
+
+html.dark-theme .shortcut-card .shortcut-arrow {
+  color: #64748b;
+}
+
+html.dark-theme .shortcut-card:hover .shortcut-arrow {
+  color: var(--sc-color);
+}
+
+/* Sales Trend & Top Categories cards (analytics-card) */
+html.dark-theme .analytics-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .card-header-minimal h3,
+html.dark-theme .performance-card h3 {
+  color: #f1f5f9;
+}
+
+html.dark-theme .view-link,
+html.dark-theme .view-all-btn {
+  color: #2dd4bf;
+}
+
+html.dark-theme .view-link:hover,
+html.dark-theme .view-all-btn:hover {
+  color: #5eead4;
+}
+
+/* Top Categories list */
+html.dark-theme .performance-item .item-name {
+  color: #94a3b8;
+}
+
+html.dark-theme .performance-item .item-value {
+  color: #f1f5f9;
+}
+
+html.dark-theme .item-progress {
+  background: #334155;
+}
+
+html.dark-theme .dashboard-content-wrapper .no-data-text {
+  color: #94a3b8;
+}
+
+/* Recharts on dashboard (Sales Trend chart) */
+html.dark-theme .dashboard-content-wrapper .recharts-text,
+html.dark-theme .dashboard-content-wrapper .recharts-cartesian-axis-tick text {
+  fill: #94a3b8 !important;
+}
+
+html.dark-theme .dashboard-content-wrapper .recharts-cartesian-grid line {
+  stroke: #334155;
+}
+
+/* Dashboard error message */
+html.dark-theme .dashboard-error {
+  background: #451a1a;
+  color: #fca5a5;
+  border-left-color: #dc2626;
+}
+
+html.dark-theme .action-btn.secondary {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark-theme .action-btn.secondary:hover {
+  background-color: #475569;
+}
+
+html.dark-theme .dashboard-table-wrap,
+html.dark-theme .table-container {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html.dark-theme .dashboard-table th,
+html.dark-theme .barcode-table th {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+html.dark-theme .dashboard-table td,
+html.dark-theme .dashboard-table tbody tr:hover,
+html.dark-theme .barcode-table td,
+html.dark-theme .barcode-table tbody tr:hover {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html.dark-theme .dashboard-table tbody tr:hover,
+html.dark-theme .barcode-table tbody tr:hover {
+  background: #334155;
+}
+
+/* ========== List / content page containers (Purchase, Customer, Product, etc.) ========== */
+html.dark-theme .dashboard-main {
+  background-color: #0f172a;
+}
+
+html.dark-theme .purchase-list-container,
+html.dark-theme .customer-container,
+html.dark-theme .product-list-container,
+html.dark-theme .user-list-container,
+html.dark-theme .supplier-list-container,
+html.dark-theme .barcode-page-container,
+html.dark-theme .discount-container,
+html.dark-theme .low-stocks-container,
+html.dark-theme .category-container,
+html.dark-theme .transaction-report-container,
+html.dark-theme .inventory-ledger-container,
+html.dark-theme .analysis-container,
+html.dark-theme .new-product-container,
+html.dark-theme .new-customer-container,
+html.dark-theme .new-user-container,
+html.dark-theme .purchase-container,
+html.dark-theme .new-supplier-container,
+html.dark-theme .new-category-container,
+html.dark-theme .new-discount-container {
+  background-color: #0f172a;
+}
+
+/* Page header text */
+html.dark-theme .page-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .page-subtitle {
+  color: #94a3b8;
+}
+
+/* Status filter toggles (All, Pending, Completed, etc.) */
+html.dark-theme .status-toggles {
+  color: #e2e8f0;
+}
+
+html.dark-theme .status-toggle {
+  background-color: #1e293b;
+  border-color: #0d9488;
+  color: #94a3b8;
+}
+
+html.dark-theme .status-toggle:hover {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark-theme .status-toggle.active {
+  background-color: #0d9488;
+  color: #fff;
+}
+
+/* Search wrapper and input */
+html.dark-theme .search-wrapper {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+html.dark-theme .search-wrapper:focus-within {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+}
+
+html.dark-theme .search-input {
+  background-color: transparent;
+  color: #e2e8f0;
+}
+
+html.dark-theme .search-input::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .search-wrapper .search-icon,
+html.dark-theme .search-icon-wrap .search-icon {
+  color: #64748b;
+}
+
+/* Action buttons on list pages (PDF, Excel, Refresh, Add) – keep accent colors, darken neutrals */
+html.dark-theme .refresh-btn,
+html.dark-theme .upload-btn {
+  background-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .refresh-btn:hover,
+html.dark-theme .upload-btn:hover {
+  background-color: #64748b;
+}
+
+/* Tables – all list pages (purchase, customer, product, user, supplier, transaction, low-stocks, category) */
+html.dark-theme .table-container thead {
+  background-color: #334155;
+}
+
+html.dark-theme .table-container th,
+html.dark-theme .table-container td {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html.dark-theme .table-container tbody tr:hover {
+  background-color: #334155;
+}
+
+/* Specific table classes in case they override */
+html.dark-theme .purchase-list-table thead,
+html.dark-theme .transaction-table thead,
+html.dark-theme .low-stocks-table thead,
+html.dark-theme .category-table thead {
+  background-color: #334155;
+}
+
+html.dark-theme .purchase-list-table th,
+html.dark-theme .purchase-list-table td,
+html.dark-theme .transaction-table th,
+html.dark-theme .transaction-table td,
+html.dark-theme .low-stocks-table th,
+html.dark-theme .low-stocks-table td,
+html.dark-theme .category-table th,
+html.dark-theme .category-table td {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+/* No data message */
+html.dark-theme .no-data,
+html.dark-theme .no-data-text {
+  color: #94a3b8;
+}
+
+html.dark-theme .no-data-icon {
+  color: #64748b;
+}
+
+/* Error messages on list pages */
+html.dark-theme .purchase-list-error,
+html.dark-theme .product-list-error,
+html.dark-theme .supplier-list-error {
+  background-color: #451a1a;
+  color: #fca5a5;
+}
+
+/* Purchase detail modal */
+html.dark-theme .purchase-detail-modal {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+}
+
+html.dark-theme .purchase-detail-header {
+  border-bottom-color: #334155;
+}
+
+html.dark-theme .purchase-detail-header h2 {
+  color: #f1f5f9;
+}
+
+html.dark-theme .close-detail-btn {
+  color: #94a3b8;
+}
+
+html.dark-theme .close-detail-btn:hover {
+  color: #e2e8f0;
+}
+
+html.dark-theme .purchase-detail-body p,
+html.dark-theme .purchase-detail-items th,
+html.dark-theme .purchase-detail-items td {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html.dark-theme .purchase-detail-items thead {
+  background-color: #334155;
+}
+
+/* Filter selects (Customer, User list, etc.) */
+html.dark-theme .filter-select,
+html.dark-theme .customer-filter-select,
+html.dark-theme .category-filter-select,
+html.dark-theme .discount-filter-select {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark-theme .filter-select:focus,
+html.dark-theme .customer-filter-select:focus,
+html.dark-theme .category-filter-select:focus,
+html.dark-theme .discount-filter-select:focus {
+  border-color: #0d9488;
+}
+
+/* Barcode page header area */
+html.dark-theme .barcode-page-container .page-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .barcode-page-container .page-subtitle {
+  color: #94a3b8;
+}
+
+/* ========== Sales Analysis page (Dashboard analysis widgets) ========== */
+html.dark-theme .analysis-container .analysis-stats-row .stat-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .analysis-container .stat-card .stat-label,
+html.dark-theme .analysis-container .stat-card .stat-footer {
+  color: #94a3b8;
+}
+
+html.dark-theme .analysis-container .stat-card .stat-value {
+  color: #f1f5f9;
+}
+
+html.dark-theme .analysis-container .stat-card.primary .stat-value {
+  color: #2dd4bf;
+}
+
+html.dark-theme .analysis-container .stat-card.secondary .stat-value {
+  color: #818cf8;
+}
+
+html.dark-theme .analysis-container .stat-card.tertiary .stat-value {
+  color: #fbbf24;
+}
+
+/* Analysis cards (Sales Performance, Top Selling, Profitability, Low Stock) */
+html.dark-theme .analysis-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .analysis-card .card-header h3 {
+  color: #f1f5f9;
+}
+
+/* Metric tabs (Daily, Monthly, Yearly) */
+html.dark-theme .metric-tab-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+html.dark-theme .metric-tab-btn:hover {
+  border-color: #64748b;
+  color: #e2e8f0;
+}
+
+html.dark-theme .metric-tab-btn.active {
+  background: rgba(13, 148, 136, 0.2);
+  border-color: #0d9488;
+  color: #2dd4bf;
+}
+
+/* Metric summary row (Total Revenue, Peak Day, Data Points) */
+html.dark-theme .metric-summary-row {
+  border-top-color: #334155;
+}
+
+html.dark-theme .summary-label {
+  color: #94a3b8;
+}
+
+html.dark-theme .summary-value {
+  color: #f1f5f9;
+}
+
+/* Card badges (BY UNITS, BY CATEGORY, etc.) */
+html.dark-theme .card-badge {
+  background: rgba(13, 148, 136, 0.25);
+  color: #2dd4bf;
+}
+
+html.dark-theme .card-badge.purple {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+}
+
+html.dark-theme .card-badge.orange {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fcd34d;
+}
+
+html.dark-theme .card-badge.red {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
+}
+
+/* Chart area – Recharts axis labels and grid */
+html.dark-theme .chart-wrapper {
+  background: transparent;
+}
+
+html.dark-theme .analysis-card .recharts-text,
+html.dark-theme .analysis-card .recharts-cartesian-axis-tick text,
+html.dark-theme .analysis-card .recharts-legend-item-text {
+  fill: #94a3b8 !important;
+}
+
+html.dark-theme .analysis-card .recharts-cartesian-grid line {
+  stroke: #334155;
+}
+
+html.dark-theme .analysis-card .recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* No data text in analysis cards */
+html.dark-theme .analysis-card .no-data {
+  color: #94a3b8;
+}
+
+/* Year select & refresh button */
+html.dark-theme .year-select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark-theme .year-select:focus {
+  border-color: #0d9488;
+}
+
+html.dark-theme .analysis-container .btn-refresh {
+  background: #1e293b;
+  border-color: #334155;
+  color: #2dd4bf;
+}
+
+html.dark-theme .analysis-container .btn-refresh:hover {
+  background: #334155;
+  border-color: #0d9488;
+}
+
+/* Analysis error message */
+html.dark-theme .analysis-error {
+  background: #451a1a;
+  color: #fca5a5;
+  border-left-color: #dc2626;
+}
+
+/* Analysis tables */
+html.dark-theme .analysis-table-wrapper {
+  border-color: #334155;
+}
+
+html.dark-theme .analysis-table th {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+html.dark-theme .analysis-table td {
+  color: #e2e8f0;
+  border-top-color: #334155;
+}
+
+html.dark-theme .analysis-table tr:hover {
+  background: #334155;
+}
+
+/* Low stock items in analysis */
+html.dark-theme .low-stock-item {
+  background: #1e293b;
+  border-color: #7f1d1d;
+}
+
+html.dark-theme .low-stock-item:hover {
+  background: #334155;
+}
+
+html.dark-theme .low-stock-item .item-name {
+  color: #fca5a5;
+}
+
+html.dark-theme .low-stock-item .item-cat {
+  color: #94a3b8;
+}
+
+html.dark-theme .low-stock-item .item-qty-badge {
+  background: rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+}
+
+/* Retail metrics row (Best Category, Total Profit, Avg Margin) */
+html.dark-theme .retail-metrics {
+  border-top-color: #334155;
+}
+
+html.dark-theme .retail-metric-label {
+  color: #94a3b8;
+}
+
+html.dark-theme .retail-metric-value {
+  color: #f1f5f9;
+}
+
+/* ========== POS (Point of Sale) page ========== */
+html.dark-theme .pos-page {
+  background: #0f172a;
+}
+
+html.dark-theme .pos-main {
+  background: #0f172a;
+}
+
+/* POS Sidebar */
+html.dark-theme .pos-sidebar {
+  background-color: #1e293b;
+  border-right-color: #334155;
+}
+
+html.dark-theme .pos-sidebar-item {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-sidebar-item:hover {
+  background-color: #334155;
+  color: #2dd4bf;
+}
+
+html.dark-theme .pos-sidebar-item.active,
+html.dark-theme .pos-sidebar-item[aria-current="page"] {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+/* POS Left: Search & Categories */
+html.dark-theme .pos-section-label {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-inputs-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .pos-search-wrap {
+  background: #334155;
+  border-color: #475569;
+}
+
+html.dark-theme .pos-search-wrap:focus-within {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25);
+}
+
+html.dark-theme .pos-search-input {
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-search-input::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .pos-search-icon-wrap {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-search-error {
+  color: #fca5a5;
+}
+
+/* Products section (area below search – category grid / product grid) */
+html.dark-theme .pos-products-section {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .pos-products-section-head .pos-section-label {
+  color: #94a3b8;
+}
+
+/* Category boxes */
+html.dark-theme .pos-category-box {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html.dark-theme .pos-category-box:hover {
+  background: #334155;
+  border-color: #0d9488;
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.25);
+}
+
+html.dark-theme .pos-category-box-name {
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-category-box-icon-wrap {
+  background: rgba(13, 148, 136, 0.2);
+  border-color: rgba(13, 148, 136, 0.3);
+}
+
+html.dark-theme .pos-back-categories {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-back-categories:hover {
+  color: #2dd4bf;
+}
+
+/* Product cards */
+html.dark-theme .pos-product-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html.dark-theme .pos-product-card:hover {
+  background: #334155;
+  border-color: #0d9488;
+}
+
+html.dark-theme .pos-product-card .pos-product-name {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-product-card .pos-product-price {
+  color: #2dd4bf;
+}
+
+html.dark-theme .pos-product-card .pos-product-stock {
+  color: #94a3b8;
+  background: #334155;
+}
+
+html.dark-theme .pos-product-card .pos-product-stock.low {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
+}
+
+html.dark-theme .pos-no-items {
+  color: #94a3b8;
+}
+
+/* POS Right: Cart / Receipt */
+html.dark-theme .pos-cart-container {
+  background: #1e293b;
+  background-image: none;
+  border-color: #334155;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-theme .pos-cart-header-new {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+html.dark-theme .pos-header-icon-btn {
+  background: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-header-icon-btn:hover {
+  background: #475569;
+  border-color: #64748b;
+}
+
+html.dark-theme .pos-receipt-label {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-receipt-id {
+  color: #94a3b8;
+}
+
+/* Payment tabs */
+html.dark-theme .pos-payment-tabs {
+  background: #334155;
+  border-color: #475569;
+}
+
+html.dark-theme .pos-payment-tab {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-payment-tab.active {
+  background: #0d9488;
+  color: #fff;
+}
+
+html.dark-theme .pos-orders-list-label {
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-orders-scroll-area {
+  scrollbar-color: #475569 #1e293b;
+}
+
+/* Cart item cards */
+html.dark-theme .pos-cart-item-card {
+  background: #334155;
+  border-color: #475569;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .pos-cart-item-card .pos-item-name,
+html.dark-theme .pos-cart-item-card .pos-product-name {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-cart-item-card .pos-item-price,
+html.dark-theme .pos-cart-item-card .pos-item-qty-picker span {
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-cart-item-card .pos-product-price {
+  color: #2dd4bf;
+}
+
+html.dark-theme .pos-item-qty-picker {
+  background: #475569;
+}
+
+html.dark-theme .pos-item-qty-picker button {
+  color: #cbd5e1;
+}
+
+/* Payment summary */
+html.dark-theme .pos-payment-summary {
+  background: #334155;
+  border-top-color: #475569;
+}
+
+html.dark-theme .pos-summary-header {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-summary-row {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-summary-row.total {
+  color: #f1f5f9;
+}
+
+/* Cart action buttons */
+html.dark-theme .pos-cart-print-icon-btn {
+  background: #334155;
+  border-color: #475569;
+  color: #2dd4bf;
+}
+
+html.dark-theme .pos-cart-print-icon-btn:hover:not(:disabled) {
+  border-color: #0d9488;
+  background: #475569;
+}
+
+html.dark-theme .pos-btn-circle {
+  background: #334155;
+  color: #2dd4bf;
+}
+
+/* Empty cart placeholder text */
+html.dark-theme .pos-cart-empty,
+html.dark-theme .pos-cart-empty-hint,
+html.dark-theme .pos-orders-empty {
+  color: #64748b;
+}

@@ -8,7 +8,8 @@ import {
   faPrint,
   faSearch,
   faSortUp,
-  faSortDown
+  faSortDown,
+  faBox
 } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import { downloadTablePdf } from '../utils/pdfExport'
@@ -217,7 +218,7 @@ function LowStocks() {
               <tr>
                 <td colSpan="7" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No low stock products</div>
                   </div>
                 </td>

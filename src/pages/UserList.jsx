@@ -11,7 +11,8 @@ import {
   faPen,
   faTrash,
   faEye,
-  faTimes
+  faTimes,
+  faUser
 } from '@fortawesome/free-solid-svg-icons'
 import * as userApi from '../api/userApi'
 import { downloadTablePdf } from '../utils/pdfExport'
@@ -251,7 +252,7 @@ function UserList() {
               <tr>
                 <td colSpan="7" className="no-data">
                   <div className="no-data-content">
-                    <div className="no-data-icon">📦</div>
+                    <div className="no-data-icon"><FontAwesomeIcon icon={faUser} /></div>
                     <div className="no-data-text">No users found</div>
                   </div>
                 </td>
