@@ -64,7 +64,7 @@ function SignInPage() {
         <div className="signin-content">
           {/* Logo */}
           <div className="signin-logo-wrap">
-            <img src="/logo.jpg" alt="Aruntex & Fancy Palace" className="signin-logo-img" />
+            <img src="/ATF.png" alt="Aruntex & Fancy Palace" className="signin-logo-img" />
           </div>
           {/* Sign In Form */}
           <div className="signin-form">

@@ -193,7 +193,7 @@ function Dashboard() {
                         {summary.lowStockCount ?? 0} Items
                       </div>
                       <div className="card-trend down">
-                        {(summary.lowStockCount ?? 0) > 0 ? '⚠ Need restocking' : '✓ All healthy'}
+                        {(summary.lowStockCount ?? 0) > 0 ? '⚠ Need restocking' : 'All healthy'}
                       </div>
                     </div>
                   </div>

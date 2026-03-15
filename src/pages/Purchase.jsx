@@ -254,7 +254,7 @@ function Purchase() {
           <p className="success-purchase-no">{savedPurchaseNo}</p>
           <p className="success-detail">
             {totalItems} item(s) &middot; LKR {totalAmount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
-            {status === 'Completed' && <span className="stock-updated-tag">Stock Updated ✓</span>}
+            {status === 'Completed' && <span className="stock-updated-tag">Stock Updated</span>}
           </p>
           <div className="success-actions">
             <button className="btn-primary" onClick={handleNewPurchase}>

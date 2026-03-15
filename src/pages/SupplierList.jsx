@@ -150,7 +150,7 @@ function SupplierList() {
                       {s.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td>
+                  <td className="supplier-actions-cell">
                     <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/suppliers/edit/${s.id}`)}>
                       <FontAwesomeIcon icon={faPen} />
                     </button>

@@ -678,7 +678,7 @@ function POSPage() {
       <div id="pos-invoice-print" className="pos-invoice-print" aria-hidden="true">
         <div className="pos-invoice-paper">
           <div className="pos-invoice-header-center">
-            <img src="/logo.jpg" alt="Logo" className="pos-invoice-logo-center" />
+            <img src="/ATF.png" alt="Logo" className="pos-invoice-logo-center" />
             <p className="pos-invoice-welcome">Welcome to ArulTex</p>
             <h1 className="pos-invoice-store-name">ArulTex & Fancy Palace</h1>
             <p className="pos-invoice-address">

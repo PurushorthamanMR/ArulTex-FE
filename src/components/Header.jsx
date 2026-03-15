@@ -99,7 +99,7 @@ function Header({ onToggleSidebar, isSidebarCollapsed }) {
     <header className="header">
       <div className="header-left">
         <div className="logo">
-          <img src="/logo.jpg" alt="Aruntex & Fancy Palace" className="logo-img" />
+          <img src="/ATF.png" alt="Aruntex & Fancy Palace" className="logo-img" />
         </div>
         <button 
           className="sidebar-toggle"

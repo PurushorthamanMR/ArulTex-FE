@@ -275,6 +275,16 @@ html.dark-theme .action-btn.secondary:hover {
   background-color: #475569;
 }
 
+html.dark-theme .action-btn.tertiary {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark-theme .action-btn.tertiary:hover {
+  background-color: #475569;
+  color: #f1f5f9;
+}
+
 html.dark-theme .dashboard-table-wrap,
 html.dark-theme .table-container {
   background: #1e293b;
@@ -429,6 +439,27 @@ html.dark-theme .category-table td {
   border-color: #334155;
 }
 
+/* Inventory Ledger – product name and cells (light text in dark mode) */
+html.dark-theme .inventory-ledger-container .ledger-table th,
+html.dark-theme .inventory-ledger-container .ledger-table td {
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html.dark-theme .inventory-ledger-container .product-name {
+  color: #e2e8f0;
+}
+
+html.dark-theme .inventory-ledger-container .product-id {
+  color: #94a3b8;
+}
+
+html.dark-theme .inventory-ledger-container .stock-cell,
+html.dark-theme .inventory-ledger-container .note-cell,
+html.dark-theme .inventory-ledger-container .date-secondary {
+  color: #94a3b8;
+}
+
 /* No data message */
 html.dark-theme .no-data,
 html.dark-theme .no-data-text {
@@ -484,7 +515,8 @@ html.dark-theme .purchase-detail-items thead {
 html.dark-theme .filter-select,
 html.dark-theme .customer-filter-select,
 html.dark-theme .category-filter-select,
-html.dark-theme .discount-filter-select {
+html.dark-theme .discount-filter-select,
+html.dark-theme .category-select {
   background-color: #1e293b;
   border-color: #334155;
   color: #e2e8f0;
@@ -493,8 +525,166 @@ html.dark-theme .discount-filter-select {
 html.dark-theme .filter-select:focus,
 html.dark-theme .customer-filter-select:focus,
 html.dark-theme .category-filter-select:focus,
-html.dark-theme .discount-filter-select:focus {
+html.dark-theme .discount-filter-select:focus,
+html.dark-theme .category-select:focus {
   border-color: #0d9488;
+}
+
+/* Product list category dropdown – option elements (native select) */
+html.dark-theme .category-select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+/* ========== New/Edit form pages (New User, Edit User, New Customer, New Supplier, Create Purchase, New Product, New Category) ========== */
+html.dark-theme .user-form,
+html.dark-theme .customer-form,
+html.dark-theme .supplier-form,
+html.dark-theme .purchase-form-card,
+html.dark-theme .category-form,
+html.dark-theme .product-form {
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .form-group label {
+  color: #94a3b8;
+}
+
+html.dark-theme .form-section-header {
+  color: #e2e8f0;
+}
+
+html.dark-theme .form-input,
+html.dark-theme .form-select,
+html.dark-theme .form-textarea,
+html.dark-theme #address {
+  background-color: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .form-input::placeholder,
+html.dark-theme .form-textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .form-input:focus,
+html.dark-theme .form-select:focus,
+html.dark-theme .form-textarea:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+}
+
+html.dark-theme .form-input-readonly {
+  background-color: #334155;
+  color: #94a3b8;
+}
+
+html.dark-theme .form-select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+html.dark-theme .form-actions {
+  border-top-color: #334155;
+}
+
+html.dark-theme .cancel-btn,
+html.dark-theme .new-user-container .back-btn,
+html.dark-theme .purchase-container .back-btn {
+  background-color: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .cancel-btn:hover,
+html.dark-theme .new-user-container .back-btn:hover,
+html.dark-theme .purchase-container .back-btn:hover {
+  background-color: #475569;
+  border-color: #64748b;
+  color: #f1f5f9;
+}
+
+html.dark-theme .customer-form-error,
+html.dark-theme .supplier-form-error,
+html.dark-theme .purchase-error,
+html.dark-theme .category-form-error,
+html.dark-theme .product-form-error {
+  background-color: #451a1a;
+  color: #fca5a5;
+}
+
+/* New Customer / New Supplier back button is primary teal – leave as is; only New User back is gray */
+
+/* Create Purchase – review table, qty/cost inputs, remove button, summary */
+html.dark-theme .purchase-table th {
+  background-color: #334155;
+  color: #cbd5e1;
+  border-bottom-color: #475569;
+}
+
+html.dark-theme .purchase-table td {
+  color: #e2e8f0;
+  border-bottom-color: #334155;
+}
+
+html.dark-theme .purchase-table tr:hover {
+  background-color: #334155;
+}
+
+html.dark-theme .line-product-name {
+  color: #f1f5f9;
+}
+
+html.dark-theme .line-barcode {
+  color: #94a3b8;
+}
+
+html.dark-theme .line-total {
+  color: #2dd4bf;
+}
+
+html.dark-theme .row-num {
+  color: #94a3b8 !important;
+}
+
+html.dark-theme .qty-input,
+html.dark-theme .price-input {
+  background-color: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .qty-input:focus,
+html.dark-theme .price-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+}
+
+html.dark-theme .remove-line-btn {
+  background-color: rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
+}
+
+html.dark-theme .remove-line-btn:hover {
+  background-color: rgba(220, 38, 38, 0.45);
+  color: #fecaca;
+}
+
+html.dark-theme .purchase-summary {
+  background-color: #334155;
+  border-color: #475569;
+}
+
+html.dark-theme .summary-row {
+  color: #94a3b8;
+}
+
+html.dark-theme .summary-row.grand-total {
+  border-top-color: #475569;
+  color: #2dd4bf;
 }
 
 /* Barcode page header area */

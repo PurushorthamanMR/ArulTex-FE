@@ -136,7 +136,7 @@ function SalesAnalysis() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Sales Analysis</h1>
-                    <p className="page-subtitle">Fancy Shop — Performance & Growth Insights</p>
+                    <p className="page-subtitle">Fancy Shop Performance & Growth Insights</p>
                 </div>
                 <div className="header-actions">
                     <select

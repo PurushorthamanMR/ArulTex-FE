@@ -321,6 +321,19 @@
   overflow-y: auto;
 }
 
+.modal-return-bar {
+  margin-bottom: 20px;
+}
+
+.modal-return-bar .return-btn {
+  background-color: #b45309;
+  color: #fff;
+}
+
+.modal-return-bar .return-btn:hover {
+  background-color: #92410e;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

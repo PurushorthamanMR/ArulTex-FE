@@ -73,7 +73,7 @@ function LowStocks() {
   const handleDownloadPdf = () => {
     downloadTablePdf({
       title: 'Low Stocks',
-      subtitle: 'Products where quantity ≤ low stock threshold',
+      subtitle: 'Products where quantity low stock threshold',
       columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Qty', 'Low Stock'],
       rows: filteredList.map((p) => [
         p.productName || '',
@@ -111,7 +111,7 @@ function LowStocks() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Low Stocks</h1>
-          <p className="page-subtitle">Products where quantity ≤ low stock threshold</p>
+          <p className="page-subtitle">Products where quantity low stock threshold</p>
         </div>
         <div className="header-actions">
           <button className="action-btn print-btn" title="Print">

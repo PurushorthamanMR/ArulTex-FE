@@ -68,6 +68,19 @@ export async function getById(id) {
   return handleResponse(res)
 }
 
+/** POST /sales/return - return sale (restore product quantities). body: { saleId, items: [{ saleItemId, returnQty }] } */
+export async function returnSale(saleId, items) {
+  const res = await fetch(`${BASE_URL}/sales/return`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ saleId, items })
+  })
+  return handleResponse(res)
+}
+
 /** GET /sales/report/yearly?year=YYYY */
 export async function getReportYearly(year) {
   const y = year ?? new Date().getFullYear()

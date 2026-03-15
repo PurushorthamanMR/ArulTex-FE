@@ -55,7 +55,7 @@ function POSHeader() {
 
   return (
     <header className="pos-header">
-      <img src="/logo.jpg" alt="Aruntex & Fancy Palace" className="pos-header-logo" />
+      <img src="/ATF.png" alt="Aruntex & Fancy Palace" className="pos-header-logo" />
       <div className="pos-header-title">Point of Sale</div>
       <div className="pos-header-spacer" />
       <div className="pos-header-right">

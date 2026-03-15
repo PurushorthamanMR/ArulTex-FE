@@ -6,8 +6,10 @@ import {
   faSearch,
   faEye,
   faTimes,
-  faFolderOpen
+  faFolderOpen,
+  faUndo
 } from '@fortawesome/free-solid-svg-icons'
+import Swal from 'sweetalert2'
 import { downloadTablePdf } from '../utils/pdfExport'
 import * as salesApi from '../api/salesApi'
 import '../styles/TransactionReport.css'
@@ -65,13 +67,52 @@ function TransactionReport() {
       setSelectedSale(detailed)
     } catch (error) {
       console.error('Failed to fetch sale details:', error)
-      alert('Could not load sale details')
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Could not load sale details' })
     } finally {
       setDetailsLoading(false)
     }
   }
 
-
+  const handleReturn = async (sale, detailedSale = null) => {
+    if (sale.status === 'Refunded') {
+      Swal.fire({ icon: 'info', title: 'Already refunded', text: 'This sale is already refunded.' })
+      return
+    }
+    try {
+      const detailed = detailedSale || await salesApi.getById(sale.id)
+      if (!detailed?.items?.length) {
+        Swal.fire({ icon: 'warning', title: 'No items', text: 'No items to return.' })
+        return
+      }
+      const returnable = detailed.items.map((i) => ({
+        saleItemId: i.id,
+        returnQty: Math.max(0, (i.quantity || 0) - (i.returnedQty || 0))
+      })).filter((i) => i.returnQty > 0)
+      if (returnable.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Already returned', text: 'All items are already returned.' })
+        return
+      }
+      const { isConfirmed } = await Swal.fire({
+        icon: 'question',
+        title: 'Return sale?',
+        text: `Return this sale (${sale.invoiceNo})? Product quantities will be restored to stock.`,
+        showCancelButton: true,
+        confirmButtonText: 'Yes, return',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#0d9488',
+        cancelButtonColor: '#6b7280'
+      })
+      if (!isConfirmed) return
+      await salesApi.returnSale(sale.id, returnable)
+      await fetchSales()
+      if (selectedSale?.id === sale.id) setSelectedSale(null)
+      setShowModal(false)
+      await Swal.fire({ icon: 'success', title: 'Returned', text: 'Sale returned and product quantities restored.' })
+    } catch (error) {
+      console.error('Return failed:', error)
+      Swal.fire({ icon: 'error', title: 'Return failed', text: error?.message || 'Return failed.' })
+    }
+  }
 
   const handleDownloadPdf = () => {
     downloadTablePdf({
@@ -177,6 +218,14 @@ function TransactionReport() {
                     <button className="action-icon-btn view" title="View details" onClick={() => handleViewDetails(s.id)}>
                       <FontAwesomeIcon icon={faEye} />
                     </button>
+                    <button
+                      className="action-icon-btn refund"
+                      title="Return sale (restore quantities)"
+                      onClick={() => handleReturn(s)}
+                      disabled={s.status === 'Refunded'}
+                    >
+                      <FontAwesomeIcon icon={faUndo} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -199,6 +248,17 @@ function TransactionReport() {
                 <div className="loading-spinner">Loading order details...</div>
               ) : selectedSale ? (
                 <>
+                  {selectedSale.status !== 'Refunded' && (
+                    <div className="modal-return-bar">
+                      <button
+                        type="button"
+                        className="action-btn return-btn"
+                        onClick={() => handleReturn(selectedSale, selectedSale)}
+                      >
+                        <FontAwesomeIcon icon={faUndo} /> Return sale (restore quantities)
+                      </button>
+                    </div>
+                  )}
                   <div className="detail-grid">
                     <div className="detail-item">
                       <label>User</label>

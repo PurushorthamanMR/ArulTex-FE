@@ -95,6 +95,15 @@
   background-color: #e2e8f0;
 }
 
+.action-btn.tertiary {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.action-btn.tertiary:hover {
+  background-color: #e2e8f0;
+}
+
 /* Stat Cards Premium */
 .stat-card {
   background: #ffffff;
