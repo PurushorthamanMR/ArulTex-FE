@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTh, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { faTh, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import '../styles/POSSidebar.css'
 
 const DASHBOARD_ROLES = ['ADMIN', 'MANAGER', 'DUMMY MANAGER']
@@ -27,6 +27,9 @@ function POSSidebar() {
   return (
     <aside className="pos-sidebar">
       <div className="pos-sidebar-top">
+        <div className="pos-sidebar-logo">
+          <img src="/ATF.png" alt="Arultex & Fancy Palace" className="pos-sidebar-logo-img" />
+        </div>
         <button
           type="button"
           className={`pos-sidebar-item ${!canAccessDashboard ? 'pos-sidebar-item--disabled' : ''}`}
@@ -39,10 +42,6 @@ function POSSidebar() {
         </button>
       </div>
       <div className="pos-sidebar-bottom">
-        <button type="button" className="pos-sidebar-item" title="Profile">
-          <FontAwesomeIcon icon={faUser} className="pos-sidebar-icon" />
-          <span>Profile</span>
-        </button>
         <button
           type="button"
           className="pos-sidebar-item logout-item"

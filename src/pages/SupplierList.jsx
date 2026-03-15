@@ -6,6 +6,7 @@ import * as supplierApi from '../api/supplierApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/SupplierList.css'
+import StatusToggle from '../components/StatusToggle'
 
 function SupplierList() {
   const navigate = useNavigate()
@@ -146,9 +147,17 @@ function SupplierList() {
                   <td>{s.email}</td>
                   <td>{s.address}</td>
                   <td>
-                    <span className={`status-badge ${s.isActive ? 'status-active' : 'status-inactive'}`}>
-                      {s.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <StatusToggle
+                      value={s.isActive}
+                      onChange={async (next) => {
+                        try {
+                          await supplierApi.update(s.id, { isActive: next })
+                          await fetchSuppliers()
+                        } catch (err) {
+                          setError(err.message || 'Failed to update status')
+                        }
+                      }}
+                    />
                   </td>
                   <td className="supplier-actions-cell">
                     <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/suppliers/edit/${s.id}`)}>

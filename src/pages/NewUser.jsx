@@ -189,20 +189,6 @@ function NewUser({ initialData, onSave, onBack }) {
               ))}
             </select>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="form-select"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
         </div>
 
         {!formData.id && (

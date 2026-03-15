@@ -153,20 +153,6 @@ function NewCategory() {
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="isActive">Status</label>
-          <select
-            id="isActive"
-            name="isActive"
-            value={formData.isActive === true ? 'true' : 'false'}
-            onChange={handleInputChange}
-            className="form-select"
-          >
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-        </div>
-
         {saveError && (
           <div className="category-form-error" role="alert">
             {saveError}
