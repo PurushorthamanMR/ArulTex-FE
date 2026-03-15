@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faEllipsisH, faChevronRight, faChevronLeft, faUserPlus } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faChevronRight, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import POSHeader from '../components/POSHeader'
 import POSSidebar from '../components/POSSidebar'
@@ -29,6 +29,11 @@ function POSPage() {
   const [createCustomerError, setCreateCustomerError] = useState('')
   const [creatingCustomer, setCreatingCustomer] = useState(false)
   const [orderToast, setOrderToast] = useState(null) // { type: 'success'|'error', message: string }
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false)
+  const [cashGiven, setCashGiven] = useState('')
+  const [paymentError, setPaymentError] = useState('')
+  const [cartDiscountPercent, setCartDiscountPercent] = useState('')
+  const [lastPrintPayment, setLastPrintPayment] = useState(null) // { paymentMethod, cashReceived, balanceAmount }
   const [draftInvoiceNo, setDraftInvoiceNo] = useState(() => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`)
   const searchInputRef = useRef(null)
   const orderToastTimerRef = useRef(null)
@@ -169,20 +174,17 @@ function POSPage() {
       searchErrorTimerRef.current = null
     }
     setSearchError('')
-    let product = products.find((p) => getProductBarcode(p) === q) || filteredProducts[0]
+
+    // Safer search: only auto-add on exact barcode
+    let product = products.find((p) => getProductBarcode(p) === q)
+
     if (!product) {
       try {
-        const [byBarcodeList, byNameList] = await Promise.all([
-          productApi.search({ barCode: q, isActive: true }),
-          productApi.search({ productName: q, isActive: true })
-        ])
-        const merged = [...byBarcodeList]
-        byNameList.forEach((p) => {
-          if (!merged.some((x) => normId(x.id) === normId(p.id))) merged.push(p)
-        })
-        const exactBarcode = merged.find((p) => getProductBarcode(p) === q)
-        const exactName = merged.find((p) => (p.productName ?? p.name ?? '').toLowerCase() === searchLower)
-        product = exactBarcode || exactName || merged[0]
+        const byBarcodeList = await productApi.search({ barCode: q, isActive: true })
+        const exactBarcode = Array.isArray(byBarcodeList)
+          ? byBarcodeList.find((p) => getProductBarcode(p) === q)
+          : null
+        product = exactBarcode || null
         if (product) {
           setProducts((prev) => (prev.some((p) => normId(p.id) === normId(product.id)) ? prev : [product, ...prev]))
         }
@@ -190,11 +192,12 @@ function POSPage() {
         product = null
       }
     }
+
     if (product) {
       addToCart(product)
       setSearchQuery('')
     } else {
-      setSearchError('No product found')
+      setSearchError('No product found for this barcode')
       searchErrorTimerRef.current = setTimeout(() => setSearchError(''), 3000)
     }
     searchInputRef.current?.focus()
@@ -207,8 +210,27 @@ function POSPage() {
 
   const showCategoryBoxes = selectedCategory === null
 
+  // Totals
+  // subtotal: after product discounts (already in lineTotal)
   const subtotal = cart.reduce((sum, c) => sum + c.lineTotal, 0)
-  const total = subtotal
+  // rawSubtotal: before discount (based on original pricePerUnit)
+  const rawSubtotal = cart.reduce((sum, c) => {
+    const product = products.find((p) => normId(p.id) === c.productId)
+    if (!product) return sum + c.quantity * c.price
+    return sum + c.quantity * (product.pricePerUnit || 0)
+  }, 0)
+  const productDiscountTotal = rawSubtotal - subtotal
+  // Cart-level discount: user enters % (e.g. 10), applied on subtotal
+  const discountPercentNum = Math.min(100, Math.max(0, Number(cartDiscountPercent) || 0))
+  const discountAmount = Math.round(subtotal * (discountPercentNum / 100) * 100) / 100
+  const discountTotal = productDiscountTotal + discountAmount
+  const total = Math.round((subtotal - discountAmount) * 100) / 100
+
+  const handleClearCart = () => {
+    if (cart.length === 0 || isPlacingOrder) return
+    setCart([])
+    setCartDiscountPercent('')
+  }
 
   const handlePrint = () => {
     window.print()
@@ -270,15 +292,17 @@ function POSPage() {
       )
     : customers
 
-  const doPlaceOrder = async (customerId) => {
+  const doPlaceOrder = async (customerId, paymentInfo) => {
     if (cart.length === 0 || isPlacingOrder) return
-    setShowCustomerModal(false)
     setIsPlacingOrder(true)
     try {
       const saleData = {
         invoiceNo: draftInvoiceNo,
         paymentMethod,
         ...(customerId != null && { customerId }),
+        totalAmount: total,
+        cashReceived: paymentInfo?.cashReceived ?? null,
+        balanceAmount: paymentInfo?.balanceAmount ?? null,
         items: cart.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -287,6 +311,11 @@ function POSPage() {
         }))
       }
       await salesApi.save(saleData)
+      setLastPrintPayment({
+        paymentMethod,
+        cashReceived: paymentInfo?.cashReceived ?? null,
+        balanceAmount: paymentInfo?.balanceAmount ?? null
+      })
       showOrderToast('success', 'Order placed successfully!')
       handlePrint()
       setCart([])
@@ -302,7 +331,10 @@ function POSPage() {
   }
 
   const handleCustomerConfirm = () => {
-    doPlaceOrder(selectedCustomerId ?? null)
+    setShowCustomerModal(false)
+    setCashGiven('')
+    setPaymentError('')
+    setShowPaymentPopup(true)
   }
 
   return (
@@ -455,26 +487,24 @@ function POSPage() {
             <div className="pos-right">
               <div className="pos-cart-container">
                 <div className="pos-cart-header-new">
-                  <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faChevronLeft} /></button>
                   <div className="pos-receipt-title">
-                    <div className="pos-receipt-label">Purchase Receipt</div>
-                    <div className="pos-receipt-id">#{draftInvoiceNo.split('-').pop()}</div>
+                    <div className="pos-receipt-label">Sales Receipt</div>
                   </div>
-                  <button className="pos-header-icon-btn"><FontAwesomeIcon icon={faEllipsisH} /></button>
                 </div>
 
-                <div className="pos-payment-tabs">
+                <div className="pos-orders-list-head">
+                  <span className="pos-orders-list-label">Orders List</span>
                   <button
-                    className={`pos-payment-tab ${paymentMethod === 'cash' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('cash')}
-                  >Cash</button>
-                  <button
-                    className={`pos-payment-tab ${paymentMethod === 'card' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('card')}
-                  >Card</button>
+                    type="button"
+                    className="pos-cart-clear-btn-inline"
+                    onClick={handleClearCart}
+                    disabled={cart.length === 0 || isPlacingOrder}
+                    title="Clear cart"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                    <span>Clear cart</span>
+                  </button>
                 </div>
-
-                <div className="pos-orders-list-label">Orders List</div>
                 <div className="pos-orders-scroll-area">
                   {cart.length === 0 ? (
                     <p className="pos-cart-empty">Cart is empty</p>
@@ -491,6 +521,14 @@ function POSPage() {
                                 <button type="button" onClick={() => updateQty(c.productId, 1)}><FontAwesomeIcon icon={faPlus} /></button>
                               </div>
                               <div className="pos-item-price">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+                              <button
+                                type="button"
+                                className="pos-item-remove-btn"
+                                onClick={() => removeFromCart(c.productId)}
+                                title="Remove item"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -503,11 +541,35 @@ function POSPage() {
                   <div className="pos-summary-header">Payment Details</div>
                   <div className="pos-summary-row">
                     <span>Subtotal</span>
-                    <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    <span>LKR {rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {productDiscountTotal > 0 && (
+                    <div className="pos-summary-row pos-summary-row--discount">
+                      <span>Product discount</span>
+                      <span>- LKR {productDiscountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                  <div className="pos-summary-row pos-summary-row-discount-pct">
+                    <span>Discount %</span>
+                    <input
+                      type="number"
+                      className="pos-discount-pct-input"
+                      placeholder="0"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      value={cartDiscountPercent}
+                      onChange={(e) => setCartDiscountPercent(e.target.value.replace(/[^0-9.]/g, ''))}
+                      aria-label="Discount percentage"
+                    />
+                  </div>
+                  <div className="pos-summary-row pos-summary-row--discount">
+                    <span>Discount</span>
+                    <span>- LKR {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="pos-summary-row total">
                     <span>Total</span>
-                    <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
 
@@ -520,14 +582,11 @@ function POSPage() {
                     <div className="pos-btn-circle">
                       {isPlacingOrder ? <div className="pos-spinner" /> : <FontAwesomeIcon icon={faChevronRight} />}
                     </div>
-                    <span>{isPlacingOrder ? 'Processing...' : `Next LKR ${subtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
+                    <span>{isPlacingOrder ? 'Processing...' : `Next LKR ${total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
                     <div className="pos-btn-arrows">
                       <FontAwesomeIcon icon={faChevronRight} />
                       <FontAwesomeIcon icon={faChevronRight} />
                     </div>
-                  </button>
-                  <button type="button" className="pos-cart-print-icon-btn" onClick={handlePrint} disabled={cart.length === 0} title="Print Invoice">
-                    <FontAwesomeIcon icon={faPrint} />
                   </button>
                 </div>
               </div>
@@ -675,66 +734,195 @@ function POSPage() {
         </div>
       )}
 
+      {showPaymentPopup && (
+        <div className="pos-payment-popup-overlay" role="dialog" aria-modal="true">
+          <div className="pos-payment-popup" onClick={(e) => e.stopPropagation()}>
+            <h2 className="pos-payment-popup-title">Payment</h2>
+
+            <div className="pos-payment-popup-tabs">
+              <button
+                type="button"
+                className={`pos-payment-popup-tab ${paymentMethod === 'cash' ? 'active' : ''}`}
+                onClick={() => { setPaymentMethod('cash'); setPaymentError(''); }}
+              >
+                Cash
+              </button>
+              <button
+                type="button"
+                className={`pos-payment-popup-tab ${paymentMethod === 'card' ? 'active' : ''}`}
+                onClick={() => { setPaymentMethod('card'); setCashGiven(''); setPaymentError(''); }}
+              >
+                Card
+              </button>
+            </div>
+
+            <div className="pos-payment-popup-row">
+              <span>Total amount</span>
+              <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+            </div>
+
+            {paymentMethod === 'cash' && (
+              <>
+                <div className="pos-payment-popup-row">
+                  <label className="pos-payment-popup-label">
+                    Cash received
+                    <input
+                      type="number"
+                      className="pos-payment-popup-input"
+                      value={cashGiven}
+                      onChange={(e) => {
+                        setCashGiven(e.target.value)
+                        setPaymentError('')
+                      }}
+                      min="0"
+                    />
+                  </label>
+                </div>
+
+                {cashGiven !== '' && (
+                  <div className="pos-payment-popup-row">
+                    <span>Balance</span>
+                    <span>
+                      {(() => {
+                        const cash = Number(cashGiven) || 0
+                        const bal = cash - total
+                        const safeBal = bal < 0 ? 0 : bal
+                        return `LKR ${safeBal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`
+                      })()}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {paymentError && (
+              <p className="pos-payment-popup-error" role="alert">
+                {paymentError}
+              </p>
+            )}
+
+            <div className="pos-payment-popup-actions">
+              <button
+                type="button"
+                className="pos-payment-popup-cancel"
+                onClick={() => setShowPaymentPopup(false)}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className="pos-payment-popup-confirm"
+                onClick={() => {
+                  if (paymentMethod === 'cash') {
+                    const cash = Number(cashGiven) || 0
+                    if (cash < total) {
+                      setPaymentError('Cash received is less than total.')
+                      return
+                    }
+                    const balance = cash - total
+                    setShowPaymentPopup(false)
+                    doPlaceOrder(selectedCustomerId ?? null, {
+                      cashReceived: cash,
+                      balanceAmount: balance
+                    })
+                  } else {
+                    setShowPaymentPopup(false)
+                    doPlaceOrder(selectedCustomerId ?? null, {
+                      cashReceived: null,
+                      balanceAmount: null
+                    })
+                  }
+                }}
+              >
+                Confirm &amp; Print
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div id="pos-invoice-print" className="pos-invoice-print" aria-hidden="true">
         <div className="pos-invoice-paper">
-          <div className="pos-invoice-header-center">
-            <img src="/ATF.png" alt="Logo" className="pos-invoice-logo-center" />
-            <p className="pos-invoice-welcome">Welcome to ArulTex</p>
+          <div className="pos-invoice-header">
+            <img src="/ATF.png" alt="Logo" className="pos-invoice-logo" />
             <h1 className="pos-invoice-store-name">ArulTex & Fancy Palace</h1>
-            <p className="pos-invoice-address">
-              Nelliady, Jaffna,<br />
-              Sri Lanka (40000)<br />
-              tin no 1234567
-            </p>
-            <p className="pos-invoice-meta-info">
-              Date : {new Date().toLocaleDateString('en-LK')} Time: {new Date().toLocaleTimeString('en-LK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}<br />
-              Order Id #{draftInvoiceNo.split('-').pop()}
-            </p>
+            <p className="pos-invoice-address">Nelliady, Jaffna, Sri Lanka (40000)</p>
+            <p className="pos-invoice-tin">TIN: 1234567</p>
           </div>
 
-          <table className="pos-invoice-table-new">
+          <div className="pos-invoice-divider" />
+
+          <div className="pos-invoice-meta">
+            <span>Date: {new Date().toLocaleDateString('en-LK')}</span>
+            <span>Time: {new Date().toLocaleTimeString('en-LK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <span>Bill # {draftInvoiceNo.split('-').pop()}</span>
+          </div>
+
+          <div className="pos-invoice-divider" />
+
+          <table className="pos-invoice-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th className="text-center">Qty</th>
-                <th className="text-right">Final Price</th>
-                <th className="text-right">Amount</th>
+                <th>Item</th>
+                <th className="pos-invoice-th-qty">Qty</th>
+                <th className="pos-invoice-th-amt">Amount</th>
               </tr>
             </thead>
             <tbody>
               {cart.map((c) => (
                 <tr key={c.productId}>
-                  <td>{c.productName}</td>
-                  <td className="text-center">{c.quantity}</td>
-                  <td className="text-right">LKR {c.price.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</td>
-                  <td className="text-right">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</td>
+                  <td className="pos-invoice-item-name">{c.productName}</td>
+                  <td className="pos-invoice-td-qty">{c.quantity}</td>
+                  <td className="pos-invoice-td-amt">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div className="pos-invoice-summary-new">
-            <div className="pos-invoice-summary-row">
-              <div className="pos-summary-left">
-                <strong>Total Quantity</strong>
-                <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
+          <div className="pos-invoice-divider" />
+
+          <div className="pos-invoice-totals">
+            <div className="pos-invoice-total-row">
+              <span>Sub Total</span>
+              <span>LKR {rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+            </div>
+            {discountTotal > 0 && (
+              <div className="pos-invoice-total-row">
+                <span>Discount</span>
+                <span>- LKR {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
               </div>
-              <div className="pos-summary-right">
-                <div className="pos-summary-line">
-                  <strong>Sub-Total</strong>
-                  <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</span>
-                </div>
-                <div className="pos-summary-line">
-                  <strong>Grand-Total</strong>
-                  <span>LKR {subtotal.toLocaleString('en-LK', { minimumFractionDigits: 0 })}</span>
-                </div>
-              </div>
+            )}
+            <div className="pos-invoice-total-row pos-invoice-grand">
+              <span>Total</span>
+              <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
-          <p className="pos-invoice-footer-msg">
-            Please share your love again by visiting our store "arultex.com"
-          </p>
+          <div className="pos-invoice-divider" />
+
+          <div className="pos-invoice-payment">
+            <div className="pos-invoice-payment-row">
+              <span>Payment</span>
+              <span>{(lastPrintPayment?.paymentMethod ?? paymentMethod) === 'cash' ? 'Cash' : 'Card'}</span>
+            </div>
+            {lastPrintPayment && (lastPrintPayment.paymentMethod ?? paymentMethod) === 'cash' && lastPrintPayment.cashReceived != null && (
+              <>
+                <div className="pos-invoice-payment-row">
+                  <span>Cash Received</span>
+                  <span>LKR {Number(lastPrintPayment.cashReceived).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="pos-invoice-payment-row">
+                  <span>Balance</span>
+                  <span>LKR {Number(lastPrintPayment.balanceAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="pos-invoice-divider" />
+
+          <p className="pos-invoice-thanks">Thank you for your purchase</p>
+          <p className="pos-invoice-website">arultex.com</p>
         </div>
       </div>
     </div>

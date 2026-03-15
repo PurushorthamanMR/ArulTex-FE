@@ -16,6 +16,7 @@ import * as customerApi from '../api/customerApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/Customer.css'
+import StatusToggle from '../components/StatusToggle'
 
 function CustomerList() {
   const navigate = useNavigate()
@@ -216,9 +217,17 @@ function CustomerList() {
                   <td>{c.email || '—'}</td>
                   <td>{c.address || '—'}</td>
                   <td>
-                    <span className={`status-badge ${c.isActive ? 'status-active' : 'status-inactive'}`}>
-                      {c.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <StatusToggle
+                      value={c.isActive}
+                      onChange={async (next) => {
+                        try {
+                          await customerApi.update(c.id, { isActive: next })
+                          await fetchCustomers()
+                        } catch (err) {
+                          setError(err.message || 'Failed to update status')
+                        }
+                      }}
+                    />
                   </td>
                   <td>
                     <div className="action-buttons">

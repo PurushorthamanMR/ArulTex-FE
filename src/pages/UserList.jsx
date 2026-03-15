@@ -18,6 +18,7 @@ import * as userApi from '../api/userApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import NewUser from './NewUser'
+import StatusToggle from '../components/StatusToggle'
 import '../styles/UserList.css'
 
 function UserList() {
@@ -266,9 +267,17 @@ function UserList() {
                   <td>{u.address}</td>
                   <td>{u.userRoleDto?.userRole}</td>
                   <td>
-                    <span className={`status-badge ${u.isActive ? 'active' : 'inactive'}`}>
-                      {u.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <StatusToggle
+                      value={u.isActive}
+                      onChange={async (next) => {
+                        try {
+                          await userApi.updateStatus(u.id, next)
+                          await fetchUsers()
+                        } catch (err) {
+                          alert(err.message || 'Failed to update status')
+                        }
+                      }}
+                    />
                   </td>
                   <td>
                     <div className="table-actions">

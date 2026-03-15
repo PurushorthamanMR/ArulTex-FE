@@ -20,6 +20,7 @@ import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/Category.css'
+import StatusToggle from '../components/StatusToggle'
 
 function Category() {
   const navigate = useNavigate()
@@ -223,9 +224,17 @@ function Category() {
                     </span>
                   </td>
                   <td>
-                    <span className={`status-badge ${cat.isActive ? 'status-active' : 'status-inactive'}`}>
-                      {cat.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <StatusToggle
+                      value={cat.isActive}
+                      onChange={async (next) => {
+                        try {
+                          await categoryApi.update(cat.id, { isActive: next })
+                          await fetchCategories()
+                        } catch (err) {
+                          setError(err.message || 'Failed to update status')
+                        }
+                      }}
+                    />
                   </td>
                   <td>
                     <div className="action-buttons">

@@ -98,13 +98,6 @@ function NewSupplier() {
           <label htmlFor="address">Address</label>
           <input type="text" id="address" name="address" value={formData.address} onChange={handleInputChange} placeholder="Enter Address" className="form-input" />
         </div>
-        <div className="form-group">
-          <label htmlFor="isActive">Status</label>
-          <select id="isActive" name="isActive" value={formData.isActive ? 'true' : 'false'} onChange={handleInputChange} className="form-select">
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-        </div>
         {saveError && <div className="supplier-form-error">{saveError}</div>}
         <div className="form-actions">
           <button type="button" className="cancel-btn" onClick={() => navigate('/suppliers')}>Cancel</button>

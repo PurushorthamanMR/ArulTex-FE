@@ -910,13 +910,30 @@ html.dark-theme .pos-sidebar {
   border-right-color: #334155;
 }
 
+html.dark-theme .pos-sidebar-logo {
+  border-bottom-color: #334155;
+}
+
 html.dark-theme .pos-sidebar-item {
-  color: #94a3b8;
+  color: #c0849b;
+}
+
+html.dark-theme .pos-sidebar-item .pos-sidebar-icon {
+  color: #c0849b;
 }
 
 html.dark-theme .pos-sidebar-item:hover {
   background-color: #334155;
-  color: #2dd4bf;
+  color: #e8a0b0;
+}
+
+html.dark-theme .pos-sidebar-item:hover .pos-sidebar-icon {
+  color: #e8a0b0;
+}
+
+html.dark-theme .pos-sidebar-item.logout-item:hover,
+html.dark-theme .pos-sidebar-item.logout-item:hover .pos-sidebar-icon {
+  color: #f87171;
 }
 
 html.dark-theme .pos-sidebar-item.active,
@@ -933,7 +950,7 @@ html.dark-theme .pos-section-label {
 html.dark-theme .pos-inputs-card {
   background: #1e293b;
   border-color: #334155;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 html.dark-theme .pos-search-wrap {
@@ -941,13 +958,23 @@ html.dark-theme .pos-search-wrap {
   border-color: #475569;
 }
 
+html.dark-theme .pos-search-wrap:hover {
+  background: #3d4a5c;
+  border-color: #64748b;
+}
+
 html.dark-theme .pos-search-wrap:focus-within {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25);
+  background: #334155;
+  border-color: #800020;
+  box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.25);
+}
+
+html.dark-theme .pos-search-wrap:focus-within .pos-search-icon-wrap {
+  color: #c0849b;
 }
 
 html.dark-theme .pos-search-input {
-  color: #e2e8f0;
+  color: #f1f5f9;
 }
 
 html.dark-theme .pos-search-input::placeholder {
@@ -958,8 +985,18 @@ html.dark-theme .pos-search-icon-wrap {
   color: #94a3b8;
 }
 
+html.dark-theme .pos-search-add-btn {
+  background: #800020;
+}
+
+html.dark-theme .pos-search-add-btn:hover {
+  background: #991b1b;
+}
+
 html.dark-theme .pos-search-error {
   color: #fca5a5;
+  background: rgba(185, 28, 28, 0.15);
+  border-color: #7f1d1d;
 }
 
 /* Products section (area below search – category grid / product grid) */
@@ -999,7 +1036,9 @@ html.dark-theme .pos-back-categories {
 }
 
 html.dark-theme .pos-back-categories:hover {
-  color: #2dd4bf;
+  color: #c0849b;
+  border-color: #800020;
+  background: rgba(128, 0, 32, 0.2);
 }
 
 /* Product cards */
@@ -1048,17 +1087,6 @@ html.dark-theme .pos-cart-header-new {
   border-bottom: 1px solid #334155;
 }
 
-html.dark-theme .pos-header-icon-btn {
-  background: #334155;
-  border-color: #475569;
-  color: #e2e8f0;
-}
-
-html.dark-theme .pos-header-icon-btn:hover {
-  background: #475569;
-  border-color: #64748b;
-}
-
 html.dark-theme .pos-receipt-label {
   color: #f1f5f9;
 }
@@ -1067,23 +1095,36 @@ html.dark-theme .pos-receipt-id {
   color: #94a3b8;
 }
 
-/* Payment tabs */
-html.dark-theme .pos-payment-tabs {
-  background: #334155;
-  border-color: #475569;
-}
-
-html.dark-theme .pos-payment-tab {
-  color: #94a3b8;
-}
-
-html.dark-theme .pos-payment-tab.active {
-  background: #0d9488;
-  color: #fff;
-}
-
 html.dark-theme .pos-orders-list-label {
   color: #e2e8f0;
+}
+
+html.dark-theme .pos-cart-clear-btn-inline {
+  background: rgba(185, 28, 28, 0.2);
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+html.dark-theme .pos-cart-clear-btn-inline:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.35);
+  border-color: #991b1b;
+  color: #fecaca;
+}
+
+html.dark-theme .pos-place-order-btn {
+  background: #800020;
+}
+
+html.dark-theme .pos-place-order-btn:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+html.dark-theme .pos-payment-popup-confirm {
+  background: #800020;
+}
+
+html.dark-theme .pos-payment-popup-confirm:hover {
+  background: #991b1b;
 }
 
 html.dark-theme .pos-orders-scroll-area {
@@ -1138,20 +1179,9 @@ html.dark-theme .pos-summary-row.total {
 }
 
 /* Cart action buttons */
-html.dark-theme .pos-cart-print-icon-btn {
-  background: #334155;
-  border-color: #475569;
-  color: #2dd4bf;
-}
-
-html.dark-theme .pos-cart-print-icon-btn:hover:not(:disabled) {
-  border-color: #0d9488;
-  background: #475569;
-}
-
 html.dark-theme .pos-btn-circle {
   background: #334155;
-  color: #2dd4bf;
+  color: #c0849b;
 }
 
 /* Empty cart placeholder text */
@@ -1159,4 +1189,179 @@ html.dark-theme .pos-cart-empty,
 html.dark-theme .pos-cart-empty-hint,
 html.dark-theme .pos-orders-empty {
   color: #64748b;
+}
+
+/* POS Customer modal: Select / Create customer */
+html.dark-theme .pos-customer-modal {
+  background: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+html.dark-theme .pos-customer-modal-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-customer-modal-subtitle {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-customer-modal-input {
+  background: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-customer-modal-input::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .pos-customer-modal-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.4);
+}
+
+/* POS discount % input & payment popup input – dark */
+html.dark-theme .pos-discount-pct-input {
+  background-color: #334155;
+  border-color: #475569;
+  color: #2dd4bf;
+}
+
+html.dark-theme .pos-discount-pct-input::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .pos-discount-pct-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.4);
+}
+
+html.dark-theme .pos-payment-popup-title {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-payment-popup-tabs {
+  background: #334155;
+  border-color: #475569;
+}
+
+html.dark-theme .pos-payment-popup-tab {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-payment-popup-tab:hover {
+  color: #c0849b;
+}
+
+html.dark-theme .pos-payment-popup-tab.active {
+  background: #800020;
+  color: #fff;
+}
+
+html.dark-theme .pos-payment-popup-row {
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-payment-popup-label {
+  color: #94a3b8;
+}
+
+html.dark-theme .pos-payment-popup-input {
+  background-color: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.dark-theme .pos-payment-popup-input::placeholder {
+  color: #64748b;
+}
+
+html.dark-theme .pos-payment-popup-input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.4);
+}
+
+html.dark-theme .pos-customer-modal-walkin {
+  border-color: #334155;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+html.dark-theme .pos-customer-modal-walkin:hover,
+html.dark-theme .pos-customer-modal-walkin.selected {
+  border-color: #800020;
+  background: rgba(128, 0, 32, 0.25);
+  color: #e8a0b0;
+}
+
+html.dark-theme .pos-customer-modal-create-btn {
+  border-color: #800020;
+  background: rgba(128, 0, 32, 0.2);
+  color: #e8a0b0;
+}
+
+html.dark-theme .pos-customer-modal-create-btn:hover {
+  border-color: #991b1b;
+  background: rgba(128, 0, 32, 0.35);
+  color: #f0c0c8;
+}
+
+html.dark-theme .pos-customer-create-field label {
+  color: #e5e7eb;
+}
+
+html.dark-theme .pos-customer-create-error {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fecaca;
+}
+
+html.dark-theme .pos-customer-modal-loading,
+html.dark-theme .pos-customer-modal-no-match,
+html.dark-theme .pos-customer-modal-empty {
+  color: #9ca3af;
+}
+
+html.dark-theme .pos-customer-modal-item {
+  border-color: #374151;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+html.dark-theme .pos-customer-modal-item:hover,
+html.dark-theme .pos-customer-modal-item.selected {
+  border-color: #800020;
+  background: rgba(128, 0, 32, 0.25);
+}
+
+html.dark-theme .pos-customer-modal-item-name {
+  color: #f1f5f9;
+}
+
+html.dark-theme .pos-customer-modal-item-meta {
+  color: #9ca3af;
+}
+
+html.dark-theme .pos-customer-modal-actions {
+  border-top-color: #334155;
+  background: #020617;
+}
+
+html.dark-theme .pos-customer-modal-cancel {
+  border-color: #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+html.dark-theme .pos-customer-modal-cancel:hover {
+  background: #111827;
+}
+
+html.dark-theme .pos-customer-modal-confirm {
+  background: #800020;
+  color: #f9fafb;
+}
+
+html.dark-theme .pos-customer-modal-confirm:hover:not(:disabled) {
+  background: #991b1b;
 }
