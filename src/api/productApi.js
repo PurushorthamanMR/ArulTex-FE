@@ -27,9 +27,7 @@ function toBackend(body, isUpdate = false) {
   const payload = {
     productName: body.productName,
     categoryId: body.categoryId,
-    supplierId: body.supplierId ?? null,
     costPrice: Number(body.purchasedPrice ?? body.costPrice ?? 0),
-    sellingPrice: Number(body.pricePerUnit ?? body.sellingPrice ?? 0),
     discountPercentage: Number(body.discountPercent ?? body.discountPercentage ?? 0),
     stockQty: Number(body.quantity ?? body.stockQty ?? 0),
     minStockLevel: Number(body.lowStock ?? body.minStockLevel ?? 0),
@@ -190,9 +188,9 @@ export async function deleteProduct(id) {
   return { success: true }
 }
 
-/** Final price after discount: pricePerUnit * (1 - discountPercent/100) */
-export function calcFinalPrice(pricePerUnit, discountPercent) {
-  const p = Number(pricePerUnit) || 0
+/** Final price = costPrice * (1 - discountPercent/100) */
+export function calcFinalPrice(costPrice, discountPercent) {
+  const p = Number(costPrice) || 0
   const d = Number(discountPercent) || 0
   return Math.round(p * (1 - d / 100) * 100) / 100
 }

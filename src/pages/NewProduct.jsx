@@ -28,6 +28,7 @@ function NewProduct({ onBack, onSave }) {
     pricePerUnit: '',
     lowStock: '',
     discountPercent: '0',
+    unit: 'pcs',
     isActive: true
   })
 
@@ -54,6 +55,7 @@ function NewProduct({ onBack, onSave }) {
           pricePerUnit: String(p.pricePerUnit ?? ''),
           lowStock: String(p.lowStock ?? ''),
           discountPercent: String(p.discountPercent ?? 0),
+          unit: p.unit || 'pcs',
           isActive: p.isActive !== false
         })
       }
@@ -73,7 +75,7 @@ function NewProduct({ onBack, onSave }) {
   }
 
   const finalPrice = productApi.calcFinalPrice(
-    Number(formData.pricePerUnit) || 0,
+    Number(formData.purchasedPrice) || 0,
     Number(formData.discountPercent) || 0
   )
 
@@ -96,6 +98,7 @@ function NewProduct({ onBack, onSave }) {
         pricePerUnit: Number(formData.pricePerUnit) || 0,
         lowStock: Number(formData.lowStock) || 0,
         discountPercent: Number(formData.discountPercent) || 0,
+        unit: formData.unit || 'pcs',
         isActive: formData.isActive
       }
       if (isEdit) {
@@ -200,12 +203,32 @@ function NewProduct({ onBack, onSave }) {
                 <input type="number" id="quantity" name="quantity" min="0" value={formData.quantity} onChange={handleInputChange} placeholder="Enter Quantity" className="form-input" />
               </div>
               <div className="form-group">
-                <label htmlFor="purchasedPrice">Purchased Price (LKR)</label>
-                <input type="number" id="purchasedPrice" name="purchasedPrice" min="0" step="0.01" value={formData.purchasedPrice} onChange={handleInputChange} placeholder="Enter Purchased Price" className="form-input" />
+                <label htmlFor="purchasedPrice">Cost Price (LKR)</label>
+                <input
+                  type="number"
+                  id="purchasedPrice"
+                  name="purchasedPrice"
+                  min="0"
+                  step="0.01"
+                  value={formData.purchasedPrice}
+                  onChange={handleInputChange}
+                  placeholder="Enter Cost Price"
+                  className="form-input"
+                />
               </div>
               <div className="form-group">
-                <label htmlFor="pricePerUnit">Price Per Unit (LKR)</label>
-                <input type="number" id="pricePerUnit" name="pricePerUnit" min="0" step="0.01" value={formData.pricePerUnit} onChange={handleInputChange} placeholder="Enter Price Per Unit" className="form-input" />
+                <label htmlFor="unit">Unit</label>
+                <select
+                  id="unit"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
+                  <option value="pcs">pcs</option>
+                  <option value="kg">kg</option>
+                  <option value="liter">liter</option>
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="discountPercent">Discount (%)</label>

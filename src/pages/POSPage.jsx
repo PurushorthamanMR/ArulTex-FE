@@ -97,7 +97,8 @@ function POSPage() {
 
   const addToCart = (product, qty = 1) => {
     const pid = normId(product.id)
-    const price = productApi.calcFinalPrice(product.pricePerUnit, product.discountPercent || 0)
+    const price = Number(product.pricePerUnit ?? 0)            // selling price (after discount)
+    const costPrice = Number(product.purchasedPrice ?? 0)      // original cost price (for display only)
     const name = normName(product)
 
     // Check if enough stock available
@@ -113,9 +114,30 @@ function POSPage() {
     }
 
     if (existing) {
-      setCart((prev) => prev.map((c) => c.productId === pid ? { ...c, quantity: c.quantity + qty, lineTotal: (c.quantity + qty) * c.price } : c))
+      setCart((prev) =>
+        prev.map((c) =>
+          c.productId === pid
+            ? {
+                ...c,
+                quantity: c.quantity + qty,
+                lineTotal: (c.quantity + qty) * c.price
+              }
+            : c
+        )
+      )
     } else {
-      setCart((prev) => [...prev, { productId: pid, productName: name, barcode: product.barcode, price, quantity: qty, lineTotal: qty * price }])
+      setCart((prev) => [
+        ...prev,
+        {
+          productId: pid,
+          productName: name,
+          barcode: product.barcode,
+          price,                 // selling price
+          costPrice,             // original cost price (for crossed-out display)
+          quantity: qty,
+          lineTotal: qty * price
+        }
+      ])
     }
   }
 
@@ -211,13 +233,11 @@ function POSPage() {
   const showCategoryBoxes = selectedCategory === null
 
   // Totals
-  // subtotal: after product discounts (already in lineTotal)
+  // subtotal: based on sellingPrice (already in lineTotal)
   const subtotal = cart.reduce((sum, c) => sum + c.lineTotal, 0)
-  // rawSubtotal: before discount (based on original pricePerUnit)
+  // rawSubtotal: before any cart-level discount (same as subtotal when product discounts are baked into sellingPrice)
   const rawSubtotal = cart.reduce((sum, c) => {
-    const product = products.find((p) => normId(p.id) === c.productId)
-    if (!product) return sum + c.quantity * c.price
-    return sum + c.quantity * (product.pricePerUnit || 0)
+    return sum + c.quantity * c.price
   }, 0)
   const productDiscountTotal = rawSubtotal - subtotal
   // Cart-level discount: user enters % (e.g. 10), applied on subtotal
@@ -318,8 +338,12 @@ function POSPage() {
       })
       showOrderToast('success', 'Order placed successfully!')
       handlePrint()
+      // Full POS reset after successful transaction
       setCart([])
       setPaymentMethod('cash')
+      setCartDiscountPercent('')
+      setSearchQuery('')
+      setSelectedCategory(null)
       setDraftInvoiceNo(generateNewInvoiceNo())
       fetchProducts()
     } catch (error) {
@@ -414,9 +438,14 @@ function POSPage() {
                           {inCart && <span className="pos-product-cart-badge">In cart: {inCart.quantity}</span>}
                           <span className="pos-product-name">{normName(p)}</span>
                           <div className="pos-product-footer-info">
-                            <span className="pos-product-price">LKR {productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                            <span className="pos-product-price">
+                              <span className="pos-product-price-original">{p.purchasedPrice}</span>
+                              <span className="pos-product-price-final">
+                                {productApi.calcFinalPrice(p.purchasedPrice, p.discountPercent || 0)}
+                              </span>
+                            </span>
                             <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
-                              Stock: {p.quantity}
+                              Qty: {p.quantity}
                             </span>
                           </div>
                         </button>
@@ -468,9 +497,14 @@ function POSPage() {
                           {inCart && <span className="pos-product-cart-badge">In cart: {inCart.quantity}</span>}
                           <span className="pos-product-name">{normName(p)}</span>
                           <div className="pos-product-footer-info">
-                            <span className="pos-product-price">LKR {productApi.calcFinalPrice(p.pricePerUnit, p.discountPercent || 0)}</span>
+                            <span className="pos-product-price">
+                              <span className="pos-product-price-original">{p.purchasedPrice}</span>
+                              <span className="pos-product-price-final">
+                                {productApi.calcFinalPrice(p.purchasedPrice, p.discountPercent || 0)}
+                              </span>
+                            </span>
                             <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
-                              Stock: {p.quantity}
+                              Qty: {p.quantity}
                             </span>
                           </div>
                         </button>
@@ -520,7 +554,16 @@ function POSPage() {
                                 <span>{c.quantity}</span>
                                 <button type="button" onClick={() => updateQty(c.productId, 1)}><FontAwesomeIcon icon={faPlus} /></button>
                               </div>
-                              <div className="pos-item-price">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</div>
+                              <div className="pos-item-price">
+                                <span className="pos-item-price-original">
+                                  {(Number(c.costPrice ?? c.price) * c.quantity).toLocaleString('en-LK', {
+                                    minimumFractionDigits: 2
+                                  })}
+                                </span>
+                                <span className="pos-item-price-final">
+                                  {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                                </span>
+                              </div>
                               <button
                                 type="button"
                                 className="pos-item-remove-btn"
@@ -541,12 +584,12 @@ function POSPage() {
                   <div className="pos-summary-header">Payment Details</div>
                   <div className="pos-summary-row">
                     <span>Subtotal</span>
-                    <span>LKR {rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    <span>{rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                   </div>
                   {productDiscountTotal > 0 && (
                     <div className="pos-summary-row pos-summary-row--discount">
                       <span>Product discount</span>
-                      <span>- LKR {productDiscountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                      <span>- {productDiscountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
                   <div className="pos-summary-row pos-summary-row-discount-pct">
@@ -565,11 +608,11 @@ function POSPage() {
                   </div>
                   <div className="pos-summary-row pos-summary-row--discount">
                     <span>Discount</span>
-                    <span>- LKR {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    <span>- {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="pos-summary-row total">
                     <span>Total</span>
-                    <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                    <span>{total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
 
@@ -582,7 +625,7 @@ function POSPage() {
                     <div className="pos-btn-circle">
                       {isPlacingOrder ? <div className="pos-spinner" /> : <FontAwesomeIcon icon={faChevronRight} />}
                     </div>
-                    <span>{isPlacingOrder ? 'Processing...' : `Next LKR ${total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
+                    <span>{isPlacingOrder ? 'Processing...' : `Next ${total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</span>
                     <div className="pos-btn-arrows">
                       <FontAwesomeIcon icon={faChevronRight} />
                       <FontAwesomeIcon icon={faChevronRight} />
@@ -758,7 +801,7 @@ function POSPage() {
 
             <div className="pos-payment-popup-row">
               <span>Total amount</span>
-              <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+              <span>{total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
             </div>
 
             {paymentMethod === 'cash' && (
@@ -787,7 +830,7 @@ function POSPage() {
                         const cash = Number(cashGiven) || 0
                         const bal = cash - total
                         const safeBal = bal < 0 ? 0 : bal
-                        return `LKR ${safeBal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`
+                        return safeBal.toLocaleString('en-LK', { minimumFractionDigits: 2 })
                       })()}
                     </span>
                   </div>
@@ -873,7 +916,16 @@ function POSPage() {
                 <tr key={c.productId}>
                   <td className="pos-invoice-item-name">{c.productName}</td>
                   <td className="pos-invoice-td-qty">{c.quantity}</td>
-                  <td className="pos-invoice-td-amt">LKR {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
+                  <td className="pos-invoice-td-amt">
+                    <div className="pos-invoice-amt-wrapper">
+                      <div className="pos-invoice-amt-original">
+                        {(Number(c.costPrice ?? c.price) * c.quantity).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className="pos-invoice-amt-final">
+                        {c.lineTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -884,17 +936,17 @@ function POSPage() {
           <div className="pos-invoice-totals">
             <div className="pos-invoice-total-row">
               <span>Sub Total</span>
-              <span>LKR {rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+              <span>{rawSubtotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
             </div>
             {discountTotal > 0 && (
               <div className="pos-invoice-total-row">
                 <span>Discount</span>
-                <span>- LKR {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                <span>- {discountTotal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
             <div className="pos-invoice-total-row pos-invoice-grand">
               <span>Total</span>
-              <span>LKR {total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+              <span>{total.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
@@ -909,11 +961,11 @@ function POSPage() {
               <>
                 <div className="pos-invoice-payment-row">
                   <span>Cash Received</span>
-                  <span>LKR {Number(lastPrintPayment.cashReceived).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                  <span>{Number(lastPrintPayment.cashReceived).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="pos-invoice-payment-row">
                   <span>Balance</span>
-                  <span>LKR {Number(lastPrintPayment.balanceAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                  <span>{Number(lastPrintPayment.balanceAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                 </div>
               </>
             )}

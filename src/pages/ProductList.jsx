@@ -96,14 +96,13 @@ function ProductList({ onAddNew }) {
     downloadTablePdf({
       title: 'Product List',
       subtitle: 'Manage your products',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Cost Price', 'Selling Price', 'Qty', 'Low Stock'],
       rows: products.map((p) => [
         p.productName || '',
         p.barcode || '',
         p.category || '',
         `LKR ${p.purchasedPrice ?? ''}`,
         `LKR ${p.pricePerUnit ?? ''}`,
-        `LKR ${finalPrice(p)}`,
         String(p.quantity ?? ''),
         String(p.lowStock ?? '')
       ]),
@@ -114,14 +113,13 @@ function ProductList({ onAddNew }) {
   const handleDownloadExcel = () => {
     downloadTableExcel({
       title: 'Products',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Final Price', 'Qty', 'Low Stock'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Cost Price', 'Selling Price', 'Qty', 'Low Stock'],
       rows: products.map((p) => [
         p.productName || '',
         p.barcode || '',
         p.category || '',
         p.purchasedPrice ?? '',
         p.pricePerUnit ?? '',
-        finalPrice(p),
         p.quantity ?? '',
         p.lowStock ?? ''
       ]),
@@ -207,9 +205,8 @@ function ProductList({ onAddNew }) {
               <th>Product Name</th>
               <th>Bar Code</th>
               <th>Category</th>
-              <th>Purchase Price</th>
-              <th>Price Per Unit</th>
-              <th>Final Price</th>
+              <th>Cost Price</th>
+              <th>Selling Price</th>
               <th>Qty</th>
               <th>Low Stock</th>
               <th>Action</th>
@@ -242,7 +239,6 @@ function ProductList({ onAddNew }) {
                   </td>
                   <td>LKR {p.purchasedPrice}</td>
                   <td>LKR {p.pricePerUnit}</td>
-                  <td>LKR {finalPrice(p)}</td>
                   <td>{p.quantity}</td>
                   <td>{p.lowStock}</td>
                   <td>

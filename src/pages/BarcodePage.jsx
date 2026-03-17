@@ -12,8 +12,7 @@ function BarcodeCanvas({ value, className = '' }) {
     try {
       JsBarcode(canvasRef.current, value, {
         format: 'CODE128',
-        displayValue: true,
-        fontSize: 14,
+        displayValue: false,
         margin: 8,
         width: 2,
         height: 48,
@@ -76,7 +75,6 @@ function BarcodePage() {
   const handlePrintLabel = (product) => {
     const barcodeValue = product.barCode ? String(product.barCode).trim() : ''
     if (!barcodeValue) return
-    const digitsDisplay = barcodeValue.replace(/(.)/g, '$1 ') // space between digits: 1 7 2 3 6 4 8 5
     const barcodeDataUrl = getBarcodeDataUrl(barcodeValue)
     const imgTag = barcodeDataUrl
       ? `<img src="${barcodeDataUrl}" alt="Barcode" class="barcode-print-image" />`
@@ -100,13 +98,6 @@ function BarcodePage() {
             }
             .barcode-label .barcode-wrap { margin-bottom: 10px; }
             .barcode-label .barcode-print-image { display: block; margin: 0 auto; }
-            .barcode-label .barcode-digits {
-              font-size: 18px;
-              letter-spacing: 3px;
-              color: #1e3a5f;
-              font-weight: 500;
-              font-family: 'Courier New', monospace;
-            }
             @media print {
               body { padding: 0; background: #fff; }
               .barcode-label {
@@ -119,14 +110,12 @@ function BarcodePage() {
                 width: 37.29mm; height: 25.93mm;
                 object-fit: contain; object-position: center;
               }
-              .barcode-label .barcode-digits { font-size: 14px; letter-spacing: 2px; }
             }
           </style>
         </head>
         <body>
           <div class="barcode-label">
             <div class="barcode-wrap">${imgTag}</div>
-            <div class="barcode-digits">${digitsDisplay.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
           </div>
         </body>
       </html>
@@ -199,7 +188,6 @@ function BarcodePage() {
           <thead>
             <tr>
               <th>Product Name</th>
-              <th>Barcode</th>
               <th>Barcode Label</th>
               <th>Action</th>
             </tr>
@@ -221,7 +209,6 @@ function BarcodePage() {
               products.map((p) => (
                 <tr key={p.id}>
                   <td className="product-name-cell">{p.productName}</td>
-                  <td className="barcode-cell">{p.barCode || '—'}</td>
                   <td>
                     <div className="barcode-label-preview">
                       <BarcodeCanvas value={p.barCode ? String(p.barCode).trim() : ''} className="barcode-preview-canvas" />

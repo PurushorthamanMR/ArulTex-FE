@@ -653,6 +653,20 @@
 }
 
 .pos-product-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.pos-product-price-original {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.pos-product-price-final {
   font-size: 16px;
   font-weight: 700;
   color: #0d9488;
@@ -681,6 +695,20 @@
 }
 
 .pos-item-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.pos-item-price-original {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.pos-item-price-final {
   font-size: 14px;
   font-weight: 800;
   color: #1e293b;
@@ -1103,6 +1131,24 @@
   width: 58px;
   text-align: right;
   white-space: nowrap;
+}
+
+.pos-invoice-amt-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.pos-invoice-amt-original {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.pos-invoice-amt-final {
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .pos-invoice-totals {
