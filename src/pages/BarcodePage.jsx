@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSyncAlt, faPrint, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import { faSyncAlt, faPrint, faPencilAlt, faSearch } from '@fortawesome/free-solid-svg-icons'
 import JsBarcode from 'jsbarcode'
 import * as productApi from '../api/productApi'
 import '../styles/BarcodePage.css'
@@ -30,6 +30,11 @@ function BarcodePage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalElements, setTotalElements] = useState(0)
   const [editBarcodeProduct, setEditBarcodeProduct] = useState(null) // { id, productName, barCode }
   const [editBarcodeValue, setEditBarcodeValue] = useState('')
   const [savingBarcode, setSavingBarcode] = useState(false)
@@ -39,19 +44,37 @@ function BarcodePage() {
     setLoading(true)
     setError(null)
     try {
-      const list = await productApi.listForBarcode()
-      setProducts(Array.isArray(list) ? list : [])
+      const res = await productApi.getAll({ page, pageSize, isActive: true })
+      setProducts(res.content || [])
+      setTotalPages(res.totalPages || 1)
+      setTotalElements(res.totalElements || 0)
     } catch (err) {
       setError(err.message || 'Failed to load products')
       setProducts([])
+      setTotalPages(1)
+      setTotalElements(0)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, pageSize])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(1)
+  }, [page, totalPages])
+
+  const filteredProducts = products.filter((p) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      (p.productName || '').toLowerCase().includes(q) ||
+      (p.barCode ? String(p.barCode).toLowerCase() : '').includes(q) ||
+      (p.barcode ? String(p.barcode).toLowerCase() : '').includes(q)
+    )
+  })
 
   // GS1: 100% = 25.93mm height × 37.29mm width (incl. quiet zones). Generate at ~300dpi equivalent for sharp print.
   const getBarcodeDataUrl = useCallback((barcodeValue) => {
@@ -183,6 +206,24 @@ function BarcodePage() {
 
       {error && <div className="barcode-page-error">{error}</div>}
 
+      <div className="barcode-filters-container">
+        <div className="search-wrapper">
+          <span className="search-icon-wrap" aria-hidden="true">
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          </span>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by product name or barcode"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setPage(1)
+            }}
+          />
+        </div>
+      </div>
+
       <div className="table-container">
         <table className="barcode-table">
           <thead>
@@ -206,7 +247,7 @@ function BarcodePage() {
                 </td>
               </tr>
             ) : (
-              products.map((p) => (
+              filteredProducts.map((p) => (
                 <tr key={p.id}>
                   <td className="product-name-cell">{p.productName}</td>
                   <td>
@@ -243,6 +284,54 @@ function BarcodePage() {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-wrap" style={{ marginTop: 16 }}>
+          <button type="button" className="pagination-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
+          <div className="pagination-numbers" role="navigation" aria-label="Pagination">
+            {(() => {
+              const visibleCount = 5
+              const start = Math.max(1, Math.min(page - 2, totalPages - visibleCount + 1))
+              const end = Math.min(totalPages, start + visibleCount - 1)
+              const items = []
+
+              if (start > 1) {
+                items.push(
+                  <span key="start-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              for (let p = start; p <= end; p++) {
+                items.push(
+                  <button
+                    key={p}
+                    type="button"
+                    className={`pagination-btn ${p === page ? 'active' : ''}`}
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                )
+              }
+
+              if (end < totalPages) {
+                items.push(
+                  <span key="end-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              return items
+            })()}
+          </div>
+          <span className="pagination-info">Page {page} of {totalPages} ({totalElements} items)</span>
+          <button type="button" className="pagination-btn" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+        </div>
+      )}
 
       {editBarcodeProduct && (
         <div className="barcode-edit-modal-overlay" onClick={closeEditBarcode} role="dialog" aria-modal="true" aria-labelledby="barcode-edit-modal-title">

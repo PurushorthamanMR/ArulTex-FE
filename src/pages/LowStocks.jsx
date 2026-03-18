@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faFilePdf,
@@ -9,7 +10,8 @@ import {
   faSearch,
   faSortUp,
   faSortDown,
-  faBox
+  faBox,
+  faPen
 } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import { downloadTablePdf } from '../utils/pdfExport'
@@ -18,39 +20,32 @@ import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/LowStocks.css'
 
 function LowStocks() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalElements, setTotalElements] = useState(0)
 
-  // Frontend-only low stock logic: fetch all products, then filter where quantity <= lowStock threshold
   const fetchLowStock = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const allProducts = []
-      let page = 1
-      const pageSize = 500
-      let hasMore = true
-      while (hasMore) {
-        const res = await productApi.getAll({ page, pageSize, isActive: true })
-        const content = res.content || []
-        allProducts.push(...content)
-        hasMore = page * pageSize < (res.totalElements ?? 0)
-        page += 1
-      }
-      // Low stock = quantity <= low stock threshold (frontend filter)
-      const lowStockOnly = allProducts.filter(
-        (p) => (Number(p.quantity) ?? 0) <= (Number(p.lowStock) ?? 0)
-      )
-      setList(lowStockOnly)
+      // Backend low-stock page: products where stockQty <= minStockLevel
+      const res = await productApi.getLowStockPaginated({ pageNumber: page, pageSize: PAGE_SIZE })
+      setList(res.content || [])
+      setTotalPages(res.totalPages || 1)
+      setTotalElements(res.totalElements || 0)
     } catch (err) {
       setError(err.message || 'Failed to load products')
       setList([])
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page])
 
   useEffect(() => {
     fetchLowStock()
@@ -70,19 +65,18 @@ function LowStocks() {
     return result
   }, [list, searchQuery])
 
+
   const handleDownloadPdf = () => {
     downloadTablePdf({
       title: 'Low Stocks',
       subtitle: 'Products where quantity low stock threshold',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Qty', 'Low Stock'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Supplier', 'Min Stock'],
       rows: filteredList.map((p) => [
         p.productName || '',
         p.barcode || '',
         p.category || '',
-        `LKR ${Number(p.purchasedPrice ?? p.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`,
-        `LKR ${Number(p.pricePerUnit ?? p.sellingPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}`,
-        String(p.quantity ?? ''),
-        String(p.lowStock ?? '')
+        p.supplier?.supplierName || 'NoSupplier',
+        String(p.lowStock ?? p.minStockLevel ?? '')
       ]),
       filename: `LowStocks_${new Date().toISOString().slice(0, 10)}.pdf`
     })
@@ -91,18 +85,24 @@ function LowStocks() {
   const handleDownloadExcel = () => {
     downloadTableExcel({
       title: 'Low Stocks',
-      columns: ['Product Name', 'Bar Code', 'Category', 'Purchase Price', 'Price/Unit', 'Qty', 'Low Stock'],
+      columns: ['Product Name', 'Bar Code', 'Category', 'Supplier', 'Min Stock'],
       rows: filteredList.map((p) => [
         p.productName || '',
         p.barcode || '',
         p.category || '',
-        p.purchasedPrice ?? p.costPrice ?? 0,
-        p.pricePerUnit ?? p.sellingPrice ?? 0,
-        p.quantity ?? 0,
-        p.lowStock ?? 0
+        p.supplier?.supplierName || 'NoSupplier',
+        p.lowStock ?? p.minStockLevel ?? 0
       ]),
       filename: `LowStocks_${new Date().toISOString().slice(0, 10)}.xlsx`
     })
+  }
+
+  const handleEdit = (product) => {
+    const supplierId = product.supplierId ?? product.supplier?.id ?? ''
+    const params = new URLSearchParams()
+    if (supplierId) params.set('supplierId', String(supplierId))
+    params.set('productName', product.productName || '')
+    navigate(`/purchase?${params.toString()}`)
   }
 
   return (
@@ -161,54 +161,23 @@ function LowStocks() {
                   <FontAwesomeIcon icon={faSortDown} />
                 </span>
               </th>
+              <th>Bar Code</th>
+              <th>Category</th>
+              <th>Supplier</th>
               <th>
-                Bar Code
+                Min Stock
                 <span className="sort-icons">
                   <FontAwesomeIcon icon={faSortUp} />
                   <FontAwesomeIcon icon={faSortDown} />
                 </span>
               </th>
-              <th>
-                Category
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
-              <th>
-                Purchase Price
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
-              <th>
-                Price Per Unit
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
-              <th>
-                Qty
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
-              <th>
-                Low St
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="7" className="no-data">
+                <td colSpan="6" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-text">Loading...</div>
                   </div>
@@ -216,7 +185,7 @@ function LowStocks() {
               </tr>
             ) : filteredList.length === 0 ? (
               <tr>
-                <td colSpan="7" className="no-data">
+                <td colSpan="6" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No low stock products</div>
@@ -228,22 +197,87 @@ function LowStocks() {
                 <tr key={p.id}>
                   <td>{p.productName}</td>
                   <td>{p.barcode ?? p.barCode}</td>
-                  <td>
-                    <span className="category-cell-with-icon">
-                      <FontAwesomeIcon icon={getCategoryIcon(p.categoryId)} className="category-icon" />
-                      {p.category}
-                    </span>
-                  </td>
-                  <td>LKR {Number(p.purchasedPrice ?? p.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
-                  <td>LKR {Number(p.pricePerUnit ?? p.sellingPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
-                  <td>{p.quantity ?? p.stockQty}</td>
+                  <td>{p.category}</td>
+                  <td>{p.supplier?.supplierName || 'NoSupplier'}</td>
                   <td>{p.lowStock ?? p.minStockLevel}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="action-icon-btn edit-btn"
+                      title="Add purchase for this product"
+                      onClick={() => handleEdit(p)}
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-wrap">
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="pagination-numbers" role="navigation" aria-label="Pagination">
+            {(() => {
+              const visibleCount = 5
+              const start = Math.max(1, Math.min(page - 2, totalPages - visibleCount + 1))
+              const end = Math.min(totalPages, start + visibleCount - 1)
+              const items = []
+
+              if (start > 1) {
+                items.push(
+                  <span key="start-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              for (let p = start; p <= end; p++) {
+                items.push(
+                  <button
+                    key={p}
+                    type="button"
+                    className={`pagination-btn ${p === page ? 'active' : ''}`}
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                )
+              }
+
+              if (end < totalPages) {
+                items.push(
+                  <span key="end-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              return items
+            })()}
+          </div>
+          <span className="pagination-info">Page {page} of {totalPages} ({totalElements} items)</span>
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Bottom Accent Line */}
       <div className="bottom-accent-line"></div>

@@ -25,7 +25,8 @@ function PurchaseList() {
       const res = await purchaseApi.getAll({
         search: searchQuery.trim() || undefined,
         status,
-        pageSize: 100
+        page: 1,
+        pageSize: 10
       })
       setPurchases(res.content || [])
     } catch (err) {

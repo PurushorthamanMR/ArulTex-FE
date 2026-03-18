@@ -1,0 +1,139 @@
+.stock-page-container {
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 60px);
+}
+
+.stock-error {
+  margin-bottom: 12px;
+  color: #b91c1c;
+}
+
+.filters-container {
+  margin-bottom: 20px;
+}
+
+.search-wrapper {
+  flex: 1;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #FFFFFF;
+  overflow: hidden;
+  min-height: 42px;
+}
+
+.search-wrapper:focus-within {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+}
+
+.search-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-width: 42px;
+  flex-shrink: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.search-wrapper .search-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: #64748b;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px 10px 8px;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background-color: transparent;
+  color: #1e293b;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stock-table th,
+.stock-table td {
+  padding: 10px 14px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.stock-table th {
+  background: #f1f5f9;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.stock-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Pagination */
+.pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 12px;
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-ellipsis {
+  color: #64748b;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination-btn.active {
+  background-color: #0d9488;
+  border-color: #0d9488;
+  color: #ffffff;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

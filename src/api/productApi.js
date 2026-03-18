@@ -14,6 +14,7 @@ function fromBackend(p) {
     barcode,
     category: p.category?.categoryName ?? '',
     categoryId: p.categoryId,
+    supplierId: p.supplierId ?? null,
     quantity: p.stockQty ?? 0,
     purchasedPrice: p.costPrice != null ? Number(p.costPrice) : 0,
     pricePerUnit: p.sellingPrice != null ? Number(p.sellingPrice) : 0,
@@ -27,6 +28,7 @@ function toBackend(body, isUpdate = false) {
   const payload = {
     productName: body.productName,
     categoryId: body.categoryId,
+    supplierId: body.supplierId != null ? Number(body.supplierId) : null,
     costPrice: Number(body.purchasedPrice ?? body.costPrice ?? 0),
     discountPercentage: Number(body.discountPercent ?? body.discountPercentage ?? 0),
     stockQty: Number(body.quantity ?? body.stockQty ?? 0),
@@ -44,13 +46,22 @@ function toBackend(body, isUpdate = false) {
 }
 
 export async function getAll(params = {}) {
-  const { page = 1, pageSize = 10, categoryId, category, search: searchQ, isActive } = params
+  const { page = 1, pageSize = 10, categoryId, category, supplierId, search: searchQ, isActive } = params
   const q = new URLSearchParams()
   q.set('pageNumber', String(page))
   q.set('pageSize', String(pageSize))
   if (categoryId != null && categoryId !== '') q.set('categoryId', String(categoryId))
   if (category != null && category !== '') q.set('categoryId', String(category))
-  if (searchQ && String(searchQ).trim()) q.set('productName', String(searchQ).trim())
+  if (supplierId != null && supplierId !== '') q.set('supplierId', String(supplierId))
+  if (searchQ && String(searchQ).trim()) {
+    const s = String(searchQ).trim()
+    // If input is all digits, treat as barcode search; otherwise as name
+    if (/^\d+$/.test(s)) {
+      q.set('barCode', s)
+    } else {
+      q.set('productName', s)
+    }
+  }
   if (isActive !== undefined && isActive !== null) q.set('isActive', isActive === true ? 'true' : 'false')
   const res = await fetch(`${BASE_URL}/product/getAllPaginated?${q}`, {
     method: 'GET',
@@ -136,6 +147,25 @@ export async function getLowStockPaginated(params = {}) {
   }
 }
 
+export async function getHighStockPaginated(params = {}) {
+  const { pageNumber = 1, pageSize = 10 } = params
+  const q = new URLSearchParams()
+  q.set('pageNumber', String(pageNumber))
+  q.set('pageSize', String(pageSize))
+  const res = await fetch(`${BASE_URL}/product/getHighStockPaginated?${q}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  const data = await handleResponse(res)
+  return {
+    content: (data.content || []).map(fromBackend),
+    totalElements: data.totalElements ?? 0,
+    totalPages: data.totalPages ?? 1,
+    pageNumber: data.pageNumber ?? pageNumber,
+    pageSize: data.pageSize ?? pageSize
+  }
+}
+
 /** Generate barcode (optional: backend may allow null; frontend can use a placeholder) */
 export function generateBarcode() {
   const prefix = '8901000'
@@ -186,6 +216,17 @@ export async function deleteProduct(id) {
   })
   await handleResponse(res)
   return { success: true }
+}
+
+export async function setActive(id, isActive) {
+  const payload = { id: Number(id), isActive }
+  const res = await fetch(`${BASE_URL}/product/update`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload)
+  })
+  const data = await handleResponse(res)
+  return fromBackend(data)
 }
 
 /** Final price = costPrice * (1 - discountPercent/100) */

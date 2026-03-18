@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faTrash, faSearch, faCheck, faBoxOpen, faShoppingBag } from '@fortawesome/free-solid-svg-icons'
+import Swal from 'sweetalert2'
 import * as supplierApi from '../api/supplierApi'
 import * as productApi from '../api/productApi'
 import * as purchaseApi from '../api/purchaseApi'
@@ -9,14 +10,19 @@ import '../styles/Purchase.css'
 
 function Purchase() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id: editId } = useParams() // if editing, this will have the purchase ID
   const isEditMode = Boolean(editId)
 
+  const searchParams = new URLSearchParams(location.search)
+  const initialSupplierId = searchParams.get('supplierId') || ''
+  const initialProductName = searchParams.get('productName') || ''
+
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
-  const [selectedSupplier, setSelectedSupplier] = useState('')
+  const [selectedSupplier, setSelectedSupplier] = useState(initialSupplierId)
   const [lines, setLines] = useState([])
-  const [searchProduct, setSearchProduct] = useState('')
+  const [searchProduct, setSearchProduct] = useState(initialProductName)
   const [showDropdown, setShowDropdown] = useState(false)
   const [purchaseDate, setPurchaseDate] = useState(() => new Date().toISOString().slice(0, 16))
   const [status, setStatus] = useState('Completed')
@@ -28,6 +34,7 @@ function Purchase() {
   const [existingPurchaseNo, setExistingPurchaseNo] = useState(null)
   const searchRef = useRef(null)
   const dropdownRef = useRef(null)
+  const prefillAppliedRef = useRef(false)
 
   // Get logged-in user info
   const loggedUserId = localStorage.getItem('userId')
@@ -94,6 +101,26 @@ function Purchase() {
     }
   }, [fetchSuppliers, fetchProducts, isEditMode, loadExistingPurchase])
 
+  // When coming from Stock page, auto-add the selected product into Review Items once
+  useEffect(() => {
+    if (isEditMode || prefillAppliedRef.current) return
+    if (!initialProductName) return
+    if (!products.length) return
+
+    const product = products.find((p) => {
+      if (!p.productName) return false
+      if (p.productName !== initialProductName) return false
+      const sid = String(p.supplierId ?? '')
+      if (!initialSupplierId) return !sid || sid === ''
+      return sid === String(initialSupplierId)
+    })
+
+    if (product) {
+      addLine(product)
+      prefillAppliedRef.current = true
+    }
+  }, [products, initialProductName, initialSupplierId, isEditMode])
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -147,13 +174,6 @@ function Purchase() {
     )
   }
 
-  const updateLineCostPrice = (productId, costPrice) => {
-    const cp = Math.max(0, Number(costPrice) || 0)
-    setLines((prev) =>
-      prev.map((l) => (l.productId === productId ? { ...l, costPrice: cp, totalPrice: l.quantity * cp } : l))
-    )
-  }
-
   const removeLine = (productId) => {
     setLines((prev) => prev.filter((l) => l.productId !== productId))
   }
@@ -162,10 +182,20 @@ function Purchase() {
   const totalItems = lines.reduce((sum, l) => sum + l.quantity, 0)
 
   const filteredProducts = searchProduct.trim()
-    ? products.filter((p) =>
-      (p.productName || '').toLowerCase().includes(searchProduct.toLowerCase()) ||
-      (p.barcode && p.barcode.includes(searchProduct))
-    )
+    ? products.filter((p) => {
+      const q = searchProduct.toLowerCase()
+      const nameMatch = (p.productName || '').toLowerCase().includes(q)
+      const barcodeMatch = p.barcode && p.barcode.includes(searchProduct)
+      const textMatch = nameMatch || barcodeMatch
+      if (!textMatch) return false
+      const sid = String(p.supplierId ?? '')
+      // When no supplier selected -> show only NoSupplier products
+      if (!selectedSupplier) {
+        return !sid || sid === ''
+      }
+      // When supplier selected -> only that supplier's products
+      return sid === String(selectedSupplier)
+    })
     : []
 
   const handleSave = async () => {
@@ -297,7 +327,15 @@ function Purchase() {
           <div className="form-row">
             <div className="form-group">
               <label>Supplier <span className="required">*</span></label>
-              <select value={selectedSupplier} onChange={(e) => setSelectedSupplier(e.target.value)} className="form-select">
+              <select
+                value={selectedSupplier}
+                onChange={(e) => {
+                  setSelectedSupplier(e.target.value)
+                  setSearchProduct('')
+                  setShowDropdown(false)
+                }}
+                className="form-select"
+              >
                 <option value="">Select Supplier</option>
                 {suppliers.map((s) => (
                   <option key={s.id} value={s.id}>{s.supplierName}</option>
@@ -334,9 +372,30 @@ function Purchase() {
                 className="form-input search-field"
                 placeholder="Type product name or scan barcode..."
                 value={searchProduct}
-                onChange={(e) => {
-                  setSearchProduct(e.target.value)
-                  setShowDropdown(e.target.value.trim().length > 0)
+                onChange={async (e) => {
+                  const val = e.target.value
+                  setSearchProduct(val)
+                  const trimmed = val.trim()
+                  setShowDropdown(trimmed.length > 0)
+
+                  if (trimmed.length > 0) {
+                    // If barcode matches a product but supplier doesn't match selection, show SweetAlert
+                    const exact = products.find((p) => String(p.barcode || '') === trimmed)
+                    if (exact) {
+                      const sid = String(exact.supplierId ?? '')
+                      const supplierSelected = !!selectedSupplier
+                      const supplierMatch = supplierSelected
+                        ? sid === String(selectedSupplier)
+                        : !sid || sid === ''
+                      if (!supplierMatch) {
+                        await Swal.fire({
+                          icon: 'warning',
+                          title: 'Supplier mismatch',
+                          text: 'This product belongs to a different supplier.',
+                        })
+                      }
+                    }
+                  }
                 }}
                 onFocus={() => {
                   if (searchProduct.trim().length > 0) setShowDropdown(true)
@@ -401,7 +460,7 @@ function Purchase() {
                         <input type="number" min="1" value={l.quantity} onChange={(e) => updateLineQuantity(l.productId, e.target.value)} className="qty-input" />
                       </td>
                       <td>
-                        <input type="number" min="0" step="0.01" value={l.costPrice} onChange={(e) => updateLineCostPrice(l.productId, e.target.value)} className="qty-input price-input" />
+                        <span className="readonly-price">{Number(l.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
                       </td>
                       <td className="line-total">LKR {Number(l.totalPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                       <td>

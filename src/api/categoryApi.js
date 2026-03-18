@@ -153,14 +153,34 @@ export async function getById(id) {
 }
 
 /**
- * Search categories (e.g. by name)
- * @param {string} query
+ * Search categories (e.g. by name) and optionally filter by active/inactive.
+ * @param {string|{categoryName?: string, isActive?: boolean}} query
  * @returns {Promise<Array<{ id, categoryName, isActive, createdAt, updatedAt }>>}
  */
 export async function search(query) {
-  if (USE_MOCK) return mockSearch(query)
+  if (USE_MOCK) {
+    if (typeof query === 'string') return mockSearch(query)
+    const qName = query?.categoryName ?? ''
+    let list = mockSearch(qName)
+    if (query?.isActive !== undefined && query?.isActive !== null) {
+      list = list.filter((c) => c.isActive === query.isActive)
+    }
+    return list
+  }
+
   const params = new URLSearchParams()
-  if (query && String(query).trim()) params.set('categoryName', String(query).trim())
+
+  // Support previous signature: search("abc")
+  const categoryName = typeof query === 'string' ? query : query?.categoryName
+  const isActive = typeof query === 'string' ? undefined : query?.isActive
+
+  if (categoryName && String(categoryName).trim()) {
+    params.set('categoryName', String(categoryName).trim())
+  }
+  if (isActive !== undefined && isActive !== null) {
+    params.set('isActive', isActive === true ? 'true' : 'false')
+  }
+
   const res = await fetch(`${BASE_URL}/productCategory/search?${params}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -211,4 +231,8 @@ export async function deleteCategory(id) {
     headers: getAuthHeaders()
   })
   return handleResponse(res)
+}
+
+export async function setActive(id, isActive) {
+  return update(id, { isActive })
 }

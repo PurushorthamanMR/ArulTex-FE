@@ -20,7 +20,7 @@ import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/Category.css'
-import StatusToggle from '../components/StatusToggle'
+import Swal from 'sweetalert2'
 
 function Category() {
   const navigate = useNavigate()
@@ -30,22 +30,27 @@ function Category() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   const fetchCategories = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const list = searchQuery.trim()
-        ? await categoryApi.search(searchQuery.trim())
-        : await categoryApi.getAll()
+      const isActive = activeStatus === 'Active'
+      const list = await categoryApi.search({
+        categoryName: searchQuery.trim() || undefined,
+        isActive
+      })
       setCategories(Array.isArray(list) ? list : [])
+      setPage(1)
     } catch (err) {
       setError(err.message || 'Failed to load categories')
       setCategories([])
     } finally {
       setLoading(false)
     }
-  }, [searchQuery])
+  }, [searchQuery, activeStatus])
 
   useEffect(() => {
     fetchCategories()
@@ -55,18 +60,20 @@ function Category() {
     fetchCategories()
   }
 
-  const filteredCategories = categories.filter((cat) => {
-    if (activeStatus === 'All') return true
-    if (activeStatus === 'Active') return cat.isActive === true
-    return cat.isActive === false
-  })
+  // Backend already filters by active/inactive; we paginate on frontend.
+  const filteredCategories = categories
+  const totalElements = filteredCategories.length
+  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE))
+  const safePage = Math.min(Math.max(page, 1), totalPages)
+  const startIndex = (safePage - 1) * PAGE_SIZE
+  const visibleCategories = filteredCategories.slice(startIndex, startIndex + PAGE_SIZE)
 
   const handleDownloadPdf = () => {
     downloadTablePdf({
       title: 'Category',
       subtitle: 'Manage your categories',
-      columns: ['Category', 'Status'],
-      rows: filteredCategories.map((c) => [c.categoryName || '', c.isActive ? 'Active' : 'Inactive']),
+      columns: ['Category'],
+      rows: filteredCategories.map((c) => [c.categoryName || '']),
       filename: `Category_${new Date().toISOString().slice(0, 10)}.pdf`
     })
   }
@@ -74,20 +81,53 @@ function Category() {
   const handleDownloadExcel = () => {
     downloadTableExcel({
       title: 'Categories',
-      columns: ['Category', 'Status'],
-      rows: filteredCategories.map((c) => [c.categoryName || '', c.isActive ? 'Active' : 'Inactive']),
+      columns: ['Category'],
+      rows: filteredCategories.map((c) => [c.categoryName || '']),
       filename: `Categories_${new Date().toISOString().slice(0, 10)}.xlsx`
     })
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Delete this category?',
+      text: 'This will move the category to Inactive. You can restore it later.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
     setDeletingId(id)
     try {
       await categoryApi.deleteCategory(id)
       await fetchCategories()
     } catch (err) {
       setError(err.message || 'Delete failed')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleReactivate = async (id) => {
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Restore this category?',
+      text: 'This will move the category back to Active.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#0d9488',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
+    setDeletingId(id)
+    try {
+      await categoryApi.setActive(id, true)
+      await fetchCategories()
+    } catch (err) {
+      setError(err.message || 'Redo failed')
     } finally {
       setDeletingId(null)
     }
@@ -139,12 +179,6 @@ function Category() {
         >
           Inactive
         </button>
-        <button
-          className={`status-toggle ${activeStatus === 'All' ? 'active' : ''}`}
-          onClick={() => setActiveStatus('All')}
-        >
-          All
-        </button>
       </div>
 
       <div className="filters-container">
@@ -160,15 +194,6 @@ function Category() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select
-          className="category-filter-select"
-          value={activeStatus}
-          onChange={(e) => setActiveStatus(e.target.value)}
-        >
-          <option value="Active">Active only</option>
-          <option value="Inactive">Inactive only</option>
-          <option value="All">Show all categories</option>
-        </select>
       </div>
 
       {error && (
@@ -188,26 +213,19 @@ function Category() {
                   <FontAwesomeIcon icon={faSortDown} />
                 </span>
               </th>
-              <th>
-                Status
-                <span className="sort-icons">
-                  <FontAwesomeIcon icon={faSortUp} />
-                  <FontAwesomeIcon icon={faSortDown} />
-                </span>
-              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="3" className="no-data">
+                <td colSpan="2" className="no-data">
                   <div className="no-data-content">Loading...</div>
                 </td>
               </tr>
             ) : filteredCategories.length === 0 ? (
               <tr>
-                <td colSpan="3" className="no-data">
+                <td colSpan="2" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No categories found</div>
@@ -215,54 +233,118 @@ function Category() {
                 </td>
               </tr>
             ) : (
-              filteredCategories.map((cat) => (
-                <tr key={cat.id}>
-                  <td>
-                    <span className="category-cell-with-icon">
-                      <FontAwesomeIcon icon={getCategoryIcon(cat.id)} className="category-icon" />
-                      {cat.categoryName}
-                    </span>
-                  </td>
-                  <td>
-                    <StatusToggle
-                      value={cat.isActive}
-                      onChange={async (next) => {
-                        try {
-                          await categoryApi.update(cat.id, { isActive: next })
-                          await fetchCategories()
-                        } catch (err) {
-                          setError(err.message || 'Failed to update status')
-                        }
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        type="button"
-                        className="action-icon-btn edit-btn"
-                        title="Edit"
-                        onClick={() => navigate(`/category/edit/${cat.id}`)}
-                      >
-                        <FontAwesomeIcon icon={faPen} />
-                      </button>
-                      <button
-                        type="button"
-                        className="action-icon-btn delete-btn"
-                        title="Delete"
-                        disabled={deletingId === cat.id}
-                        onClick={() => handleDelete(cat.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              visibleCategories.map((cat) => {
+                const isInactive = activeStatus === 'Inactive'
+                return (
+                  <tr key={cat.id}>
+                    <td>
+                      <span className="category-cell-with-icon">
+                        <FontAwesomeIcon icon={getCategoryIcon(cat.id)} className="category-icon" />
+                        {cat.categoryName}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="action-icon-btn edit-btn"
+                          title="Edit"
+                          onClick={() => navigate(`/category/edit/${cat.id}`)}
+                        >
+                          <FontAwesomeIcon icon={faPen} />
+                        </button>
+                        {isInactive ? (
+                          <button
+                            type="button"
+                            className="action-icon-btn delete-btn"
+                            title="Redo (make active)"
+                            disabled={deletingId === cat.id}
+                            onClick={() => handleReactivate(cat.id)}
+                          >
+                            <FontAwesomeIcon icon={faPlus} style={{ transform: 'rotate(45deg)' }} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="action-icon-btn delete-btn"
+                            title="Delete"
+                            disabled={deletingId === cat.id}
+                            onClick={() => handleDelete(cat.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-wrap">
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={safePage <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="pagination-numbers" role="navigation" aria-label="Pagination">
+            {(() => {
+              const visibleCount = 5
+              const start = Math.max(1, Math.min(safePage - 2, totalPages - visibleCount + 1))
+              const end = Math.min(totalPages, start + visibleCount - 1)
+              const items = []
+
+              if (start > 1) {
+                items.push(
+                  <span key="start-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              for (let p = start; p <= end; p++) {
+                items.push(
+                  <button
+                    key={p}
+                    type="button"
+                    className={`pagination-btn ${p === safePage ? 'active' : ''}`}
+                    onClick={() => setPage(p)}
+                    aria-current={p === safePage ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                )
+              }
+
+              if (end < totalPages) {
+                items.push(
+                  <span key="end-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              return items
+            })()}
+          </div>
+          <span className="pagination-info">Page {safePage} of {totalPages} ({totalElements} items)</span>
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={safePage >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <div className="bottom-accent-line"></div>
     </div>

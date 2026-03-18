@@ -132,6 +132,15 @@ export async function updateStatus(userId, status) {
   return handleResponse(res)
 }
 
+export async function softDelete(userId) {
+  // reuse updateStatus to set isActive=false
+  return updateStatus(userId, false)
+}
+
+export async function reactivate(userId) {
+  return updateStatus(userId, true)
+}
+
 /**
  * PUT /user/updatePassword - update user password.
  * @param {number} userId

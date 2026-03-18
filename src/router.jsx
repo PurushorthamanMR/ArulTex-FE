@@ -19,6 +19,7 @@ import POSPage from './pages/POSPage'
 import Purchase from './pages/Purchase'
 import InventoryLedger from './pages/InventoryLedger'
 import SalesAnalysis from './pages/SalesAnalysis'
+import StockPage from './pages/StockPage'
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -88,6 +89,10 @@ const router = createBrowserRouter([
       },
       {
         path: '/inventory-ledger',
+        element: <Dashboard />
+      },
+      {
+        path: '/stock',
         element: <Dashboard />
       },
       {

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faPen, faTrash, faBox } from '@fortawesome/free-solid-svg-icons'
+import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faPen, faTrash, faBox, faSyncAlt as faRedo } from '@fortawesome/free-solid-svg-icons'
 import * as supplierApi from '../api/supplierApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import '../styles/SupplierList.css'
-import StatusToggle from '../components/StatusToggle'
+import Swal from 'sweetalert2'
 
 function SupplierList() {
   const navigate = useNavigate()
@@ -21,9 +21,9 @@ function SupplierList() {
     setLoading(true)
     setError(null)
     try {
-      const isActive = activeStatus === 'All' ? undefined : activeStatus === 'Active'
+      const isActive = activeStatus === 'Active'
       const list = await supplierApi.getAll({ search: searchQuery.trim() || undefined, isActive })
-      setSuppliers(Array.isArray(list) ? list : [])
+      setSuppliers(Array.isArray(list) ? list.slice(0, 10) : [])
     } catch (err) {
       setError(err.message || 'Failed to load suppliers')
       setSuppliers([])
@@ -40,13 +40,12 @@ function SupplierList() {
     downloadTablePdf({
       title: 'Supplier List',
       subtitle: 'Manage your suppliers',
-      columns: ['Supplier Name', 'Phone', 'Email', 'Address', 'Status'],
+      columns: ['Supplier Name', 'Phone', 'Email', 'Address'],
       rows: suppliers.map((s) => [
         s.supplierName || '',
         s.phone || '',
         s.email || '',
-        s.address || '',
-        s.isActive ? 'Active' : 'Inactive'
+        s.address || ''
       ]),
       filename: `Suppliers_${new Date().toISOString().slice(0, 10)}.pdf`
     })
@@ -55,26 +54,58 @@ function SupplierList() {
   const handleDownloadExcel = () => {
     downloadTableExcel({
       title: 'Suppliers',
-      columns: ['Supplier Name', 'Phone', 'Email', 'Address', 'Status'],
+      columns: ['Supplier Name', 'Phone', 'Email', 'Address'],
       rows: suppliers.map((s) => [
         s.supplierName || '',
         s.phone || '',
         s.email || '',
-        s.address || '',
-        s.isActive ? 'Active' : 'Inactive'
+        s.address || ''
       ]),
       filename: `Suppliers_${new Date().toISOString().slice(0, 10)}.xlsx`
     })
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this supplier?')) return
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Delete this supplier?',
+      text: 'This will move the supplier to Inactive. You can restore it later.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
     setDeletingId(id)
     try {
       await supplierApi.deleteSupplier(id)
       await fetchSuppliers()
     } catch (err) {
       setError(err.message || 'Delete failed')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleReactivate = async (id) => {
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Restore this supplier?',
+      text: 'This will move the supplier back to Active.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#0d9488',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
+    setDeletingId(id)
+    try {
+      await supplierApi.setActive(id, true)
+      await fetchSuppliers()
+    } catch (err) {
+      setError(err.message || 'Redo failed')
     } finally {
       setDeletingId(null)
     }
@@ -101,7 +132,6 @@ function SupplierList() {
       <div className="status-toggles">
         <button className={`status-toggle ${activeStatus === 'Active' ? 'active' : ''}`} onClick={() => setActiveStatus('Active')}>Active</button>
         <button className={`status-toggle ${activeStatus === 'Inactive' ? 'active' : ''}`} onClick={() => setActiveStatus('Inactive')}>Inactive</button>
-        <button className={`status-toggle ${activeStatus === 'All' ? 'active' : ''}`} onClick={() => setActiveStatus('All')}>All</button>
       </div>
 
       <div className="filters-container">
@@ -123,16 +153,15 @@ function SupplierList() {
               <th>Phone</th>
               <th>Email</th>
               <th>Address</th>
-              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="6" className="no-data">Loading...</td></tr>
+              <tr><td colSpan="5" className="no-data">Loading...</td></tr>
             ) : suppliers.length === 0 ? (
               <tr>
-                <td colSpan="6" className="no-data">
+                <td colSpan="5" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon"><FontAwesomeIcon icon={faBox} /></div>
                     <div className="no-data-text">No suppliers found</div>
@@ -140,35 +169,48 @@ function SupplierList() {
                 </td>
               </tr>
             ) : (
-              suppliers.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.supplierName}</td>
-                  <td>{s.phone}</td>
-                  <td>{s.email}</td>
-                  <td>{s.address}</td>
-                  <td>
-                    <StatusToggle
-                      value={s.isActive}
-                      onChange={async (next) => {
-                        try {
-                          await supplierApi.update(s.id, { isActive: next })
-                          await fetchSuppliers()
-                        } catch (err) {
-                          setError(err.message || 'Failed to update status')
-                        }
-                      }}
-                    />
-                  </td>
-                  <td className="supplier-actions-cell">
-                    <button type="button" className="action-icon-btn edit-btn" title="Edit" onClick={() => navigate(`/suppliers/edit/${s.id}`)}>
-                      <FontAwesomeIcon icon={faPen} />
-                    </button>
-                    <button type="button" className="action-icon-btn delete-btn" title="Delete" disabled={deletingId === s.id} onClick={() => handleDelete(s.id)}>
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </td>
-                </tr>
-              ))
+              suppliers.map((s) => {
+                const isInactiveTab = activeStatus === 'Inactive'
+                return (
+                  <tr key={s.id}>
+                    <td>{s.supplierName}</td>
+                    <td>{s.phone}</td>
+                    <td>{s.email}</td>
+                    <td>{s.address}</td>
+                    <td className="supplier-actions-cell">
+                      <button
+                        type="button"
+                        className="action-icon-btn edit-btn"
+                        title="Edit"
+                        onClick={() => navigate(`/suppliers/edit/${s.id}`)}
+                      >
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                      {isInactiveTab ? (
+                        <button
+                          type="button"
+                          className="action-icon-btn delete-btn"
+                          title="Redo (make active)"
+                          disabled={deletingId === s.id}
+                          onClick={() => handleReactivate(s.id)}
+                        >
+                          <FontAwesomeIcon icon={faRedo} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="action-icon-btn delete-btn"
+                          title="Delete"
+                          disabled={deletingId === s.id}
+                          onClick={() => handleDelete(s.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

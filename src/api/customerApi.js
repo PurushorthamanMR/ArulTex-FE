@@ -55,3 +55,7 @@ export async function deleteCustomer(id) {
   })
   return handleResponse(res)
 }
+
+export async function setActive(id, isActive) {
+  return update(id, { isActive })
+}

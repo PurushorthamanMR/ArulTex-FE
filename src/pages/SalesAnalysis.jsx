@@ -99,12 +99,10 @@ function SalesAnalysis() {
     }))
 
     // --- Profitability Chart ---
-    const profitabilityChartData = profitability
-        .filter(p => p.profit > 0)
-        .map(p => ({
-            name: p.categoryName,
-            value: Math.round(Number(p.profit))
-        }))
+    const profitabilityChartData = (profitability || []).map(p => ({
+        name: p.categoryName,
+        value: Math.round(Number(p.profit))
+    }))
 
     // Best Category
     const sortedProfit = [...profitabilityChartData].sort((a, b) => b.value - a.value)

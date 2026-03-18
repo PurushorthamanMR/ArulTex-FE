@@ -12,13 +12,15 @@ import {
   faTrash,
   faEye,
   faTimes,
-  faUser
+  faUser,
+  faSyncAlt as faRedo
 } from '@fortawesome/free-solid-svg-icons'
 import * as userApi from '../api/userApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
 import NewUser from './NewUser'
 import StatusToggle from '../components/StatusToggle'
+import Swal from 'sweetalert2'
 import '../styles/UserList.css'
 
 function UserList() {
@@ -55,10 +57,13 @@ function UserList() {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const statusValue = activeStatus === 'Active' ? true : false
+      let statusValue
+      if (activeStatus === 'Active') statusValue = true
+      else if (activeStatus === 'Inactive') statusValue = false
+      else statusValue = undefined // 'All'
       const data = await userApi.getAllPage({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         status: statusValue
       })
 
@@ -96,14 +101,42 @@ function UserList() {
   }
 
   const handleDelete = async (userId) => {
-    if (window.confirm('Are you sure you want to deactivate this user?')) {
-      try {
-        await userApi.updateStatus(userId, false)
-        alert('User deactivated successfully')
-        fetchUsers()
-      } catch (err) {
-        alert(err.message || 'Failed to deactivate user')
-      }
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Deactivate this user?',
+      text: 'This will move the user to Inactive. You can restore later.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, deactivate',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
+    try {
+      await userApi.softDelete(userId)
+      fetchUsers()
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to deactivate user' })
+    }
+  }
+
+  const handleReactivate = async (userId) => {
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Restore this user?',
+      text: 'This will move the user back to Active.',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#0d9488',
+      cancelButtonColor: '#6b7280'
+    })
+    if (!result.isConfirmed) return
+    try {
+      await userApi.reactivate(userId)
+      fetchUsers()
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to restore user' })
     }
   }
 
@@ -204,6 +237,12 @@ function UserList() {
         >
           Inactive
         </button>
+        <button
+          className={`status-toggle ${activeStatus === 'All' ? 'active' : ''}`}
+          onClick={() => setActiveStatus('All')}
+        >
+          All
+        </button>
       </div>
 
       {/* Filters */}
@@ -242,16 +281,15 @@ function UserList() {
               <th>Email Address</th>
               <th>Address</th>
               <th>Role</th>
-              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="7" className="loading-text">Loading...</td></tr>
+              <tr><td colSpan="6" className="loading-text">Loading...</td></tr>
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan="7" className="no-data">
+                <td colSpan="6" className="no-data">
                   <div className="no-data-content">
                     <div className="no-data-icon"><FontAwesomeIcon icon={faUser} /></div>
                     <div className="no-data-text">No users found</div>
@@ -259,41 +297,37 @@ function UserList() {
                 </td>
               </tr>
             ) : (
-              users.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.firstName} {u.lastName}</td>
-                  <td>{u.mobileNumber}</td>
-                  <td>{u.emailAddress}</td>
-                  <td>{u.address}</td>
-                  <td>{u.userRoleDto?.userRole}</td>
-                  <td>
-                    <StatusToggle
-                      value={u.isActive}
-                      onChange={async (next) => {
-                        try {
-                          await userApi.updateStatus(u.id, next)
-                          await fetchUsers()
-                        } catch (err) {
-                          alert(err.message || 'Failed to update status')
-                        }
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <button className="view-btn" title="View Details" onClick={() => handleView(u)}>
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      <button className="edit-btn" title="Edit User" onClick={() => handleEdit(u)}>
-                        <FontAwesomeIcon icon={faPen} />
-                      </button>
-                      <button className="delete-btn" title="Deactivate" onClick={() => handleDelete(u.id)}>
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              users.map((u) => {
+                const isInactiveTab = activeStatus === 'Inactive'
+                return (
+                  <tr key={u.id}>
+                    <td>{u.firstName} {u.lastName}</td>
+                    <td>{u.mobileNumber}</td>
+                    <td>{u.emailAddress}</td>
+                    <td>{u.address}</td>
+                    <td>{u.userRoleDto?.userRole}</td>
+                    <td>
+                      <div className="table-actions">
+                        <button className="view-btn" title="View Details" onClick={() => handleView(u)}>
+                          <FontAwesomeIcon icon={faEye} />
+                        </button>
+                        <button className="edit-btn" title="Edit User" onClick={() => handleEdit(u)}>
+                          <FontAwesomeIcon icon={faPen} />
+                        </button>
+                        {isInactiveTab ? (
+                          <button className="delete-btn" title="Redo (make active)" onClick={() => handleReactivate(u.id)}>
+                            <FontAwesomeIcon icon={faRedo} />
+                          </button>
+                        ) : (
+                          <button className="delete-btn" title="Deactivate" onClick={() => handleDelete(u.id)}>
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

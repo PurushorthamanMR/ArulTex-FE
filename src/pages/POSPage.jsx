@@ -318,9 +318,10 @@ function POSPage() {
     try {
       const saleData = {
         invoiceNo: draftInvoiceNo,
-        paymentMethod,
+        paymentMethod: paymentInfo?.paymentMethod ?? paymentMethod,
         ...(customerId != null && { customerId }),
         totalAmount: total,
+        discountPercentage: discountPercentNum,
         cashReceived: paymentInfo?.cashReceived ?? null,
         balanceAmount: paymentInfo?.balanceAmount ?? null,
         items: cart.map(item => ({
@@ -331,11 +332,6 @@ function POSPage() {
         }))
       }
       await salesApi.save(saleData)
-      setLastPrintPayment({
-        paymentMethod,
-        cashReceived: paymentInfo?.cashReceived ?? null,
-        balanceAmount: paymentInfo?.balanceAmount ?? null
-      })
       showOrderToast('success', 'Order placed successfully!')
       handlePrint()
       // Full POS reset after successful transaction
@@ -420,6 +416,7 @@ function POSPage() {
                     {filteredProducts.map((p) => {
                       const pid = normId(p.id)
                       const inCart = cart.find((c) => c.productId === pid)
+                      const remainingQty = Math.max(0, (p.quantity ?? 0) - (inCart?.quantity ?? 0))
                       return (
                         <button
                           type="button"
@@ -444,8 +441,8 @@ function POSPage() {
                                 {productApi.calcFinalPrice(p.purchasedPrice, p.discountPercent || 0)}
                               </span>
                             </span>
-                            <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
-                              Qty: {p.quantity}
+                            <span className={`pos-product-stock ${remainingQty <= (p.lowStock || 0) ? 'low' : ''}`}>
+                              Qty: {remainingQty}
                             </span>
                           </div>
                         </button>
@@ -479,6 +476,7 @@ function POSPage() {
                     {filteredProducts.map((p) => {
                       const pid = normId(p.id)
                       const inCart = cart.find((c) => c.productId === pid)
+                      const remainingQty = Math.max(0, (p.quantity ?? 0) - (inCart?.quantity ?? 0))
                       return (
                         <button
                           type="button"
@@ -503,8 +501,8 @@ function POSPage() {
                                 {productApi.calcFinalPrice(p.purchasedPrice, p.discountPercent || 0)}
                               </span>
                             </span>
-                            <span className={`pos-product-stock ${p.quantity <= (p.lowStock || 0) ? 'low' : ''}`}>
-                              Qty: {p.quantity}
+                            <span className={`pos-product-stock ${remainingQty <= (p.lowStock || 0) ? 'low' : ''}`}>
+                              Qty: {remainingQty}
                             </span>
                           </div>
                         </button>
@@ -863,17 +861,23 @@ function POSPage() {
                       return
                     }
                     const balance = cash - total
-                    setShowPaymentPopup(false)
-                    doPlaceOrder(selectedCustomerId ?? null, {
+                    const payment = {
+                      paymentMethod: 'cash',
                       cashReceived: cash,
                       balanceAmount: balance
-                    })
-                  } else {
+                    }
+                    setLastPrintPayment(payment)
                     setShowPaymentPopup(false)
-                    doPlaceOrder(selectedCustomerId ?? null, {
+                    doPlaceOrder(selectedCustomerId ?? null, payment)
+                  } else {
+                    const payment = {
+                      paymentMethod: 'card',
                       cashReceived: null,
                       balanceAmount: null
-                    })
+                    }
+                    setLastPrintPayment(payment)
+                    setShowPaymentPopup(false)
+                    doPlaceOrder(selectedCustomerId ?? null, payment)
                   }
                 }}
               >
@@ -953,22 +957,30 @@ function POSPage() {
           <div className="pos-invoice-divider" />
 
           <div className="pos-invoice-payment">
-            <div className="pos-invoice-payment-row">
-              <span>Payment</span>
-              <span>{(lastPrintPayment?.paymentMethod ?? paymentMethod) === 'cash' ? 'Cash' : 'Card'}</span>
-            </div>
-            {lastPrintPayment && (lastPrintPayment.paymentMethod ?? paymentMethod) === 'cash' && lastPrintPayment.cashReceived != null && (
-              <>
-                <div className="pos-invoice-payment-row">
-                  <span>Cash Received</span>
-                  <span>{Number(lastPrintPayment.cashReceived).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="pos-invoice-payment-row">
-                  <span>Balance</span>
-                  <span>{Number(lastPrintPayment.balanceAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
-                </div>
-              </>
-            )}
+            {(() => {
+              const method = lastPrintPayment?.paymentMethod || paymentMethod || 'cash'
+              const isCash = method === 'cash'
+              return (
+                <>
+                  <div className="pos-invoice-payment-row">
+                    <span>Payment</span>
+                    <span>{isCash ? 'Cash' : 'Card'}</span>
+                  </div>
+                  {isCash && lastPrintPayment && lastPrintPayment.cashReceived != null && (
+                    <>
+                      <div className="pos-invoice-payment-row">
+                        <span>Cash Received</span>
+                        <span>{Number(lastPrintPayment.cashReceived).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="pos-invoice-payment-row">
+                        <span>Balance</span>
+                        <span>{Number(lastPrintPayment.balanceAmount ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </>
+                  )}
+                </>
+              )
+            })()}
           </div>
 
           <div className="pos-invoice-divider" />

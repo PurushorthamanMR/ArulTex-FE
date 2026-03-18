@@ -9,6 +9,8 @@ function InventoryLedger() {
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   const fetchList = useCallback(async () => {
     setLoading(true)
@@ -53,6 +55,12 @@ function InventoryLedger() {
     return result
   }, [list, filterProductId, filterDateFrom, filterDateTo])
 
+  const totalElements = filtered.length
+  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE))
+  const safePage = Math.min(Math.max(page, 1), totalPages)
+  const startIndex = (safePage - 1) * PAGE_SIZE
+  const visible = filtered.slice(startIndex, startIndex + PAGE_SIZE)
+
   return (
     <div className="inventory-ledger-container">
       <div className="page-header">
@@ -66,15 +74,40 @@ function InventoryLedger() {
       <div className="filters-container">
         <div className="form-group">
           <label>Filter by Product ID</label>
-          <input type="number" placeholder="Product ID" value={filterProductId} onChange={(e) => setFilterProductId(e.target.value)} className="form-input" />
+          <input
+            type="number"
+            placeholder="Product ID"
+            value={filterProductId}
+            onChange={(e) => {
+              setFilterProductId(e.target.value)
+              setPage(1)
+            }}
+            className="form-input"
+          />
         </div>
         <div className="form-group">
           <label>Date From</label>
-          <input type="date" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} className="form-input" />
+          <input
+            type="date"
+            value={filterDateFrom}
+            onChange={(e) => {
+              setFilterDateFrom(e.target.value)
+              setPage(1)
+            }}
+            className="form-input"
+          />
         </div>
         <div className="form-group">
           <label>Date To</label>
-          <input type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} className="form-input" />
+          <input
+            type="date"
+            value={filterDateTo}
+            onChange={(e) => {
+              setFilterDateTo(e.target.value)
+              setPage(1)
+            }}
+            className="form-input"
+          />
         </div>
       </div>
 
@@ -99,7 +132,7 @@ function InventoryLedger() {
                 <td colSpan="7" className="no-data">No movements found</td>
               </tr>
             ) : (
-              filtered.map((m) => (
+              visible.map((m) => (
                 <tr key={m.id}>
                   <td>
                     <div className="product-info-cell">
@@ -130,6 +163,68 @@ function InventoryLedger() {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination-wrap">
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={safePage <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="pagination-numbers" role="navigation" aria-label="Pagination">
+            {(() => {
+              const visibleCount = 5
+              const start = Math.max(1, Math.min(safePage - 2, totalPages - visibleCount + 1))
+              const end = Math.min(totalPages, start + visibleCount - 1)
+              const items = []
+
+              if (start > 1) {
+                items.push(
+                  <span key="start-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              for (let p = start; p <= end; p++) {
+                items.push(
+                  <button
+                    key={p}
+                    type="button"
+                    className={`pagination-btn ${p === safePage ? 'active' : ''}`}
+                    onClick={() => setPage(p)}
+                    aria-current={p === safePage ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
+                )
+              }
+
+              if (end < totalPages) {
+                items.push(
+                  <span key="end-ellipsis" className="pagination-ellipsis" aria-hidden>
+                    ...
+                  </span>
+                )
+              }
+
+              return items
+            })()}
+          </div>
+          <span className="pagination-info">Page {safePage} of {totalPages} ({totalElements} items)</span>
+          <button
+            type="button"
+            className="pagination-btn"
+            disabled={safePage >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <div className="bottom-accent-line"></div>
     </div>

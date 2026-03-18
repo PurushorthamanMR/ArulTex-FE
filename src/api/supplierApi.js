@@ -64,3 +64,7 @@ export async function deleteSupplier(id) {
   await handleResponse(res)
   return { success: true }
 }
+
+export async function setActive(id, isActive) {
+  return update(id, { isActive })
+}

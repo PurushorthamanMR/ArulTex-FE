@@ -4,6 +4,7 @@
   min-height: 100vh;
   background: #fff;
   font-family: 'Inter', sans-serif;
+  overflow: hidden; /* hide root/body scrollbar on POS screen */
 }
 
 /* Header overlays main content only; sidebar stays visible with logo at top corner */
@@ -92,6 +93,23 @@
   min-width: 0;
   position: relative;
   z-index: 1;
+}
+
+/* Hide scrollbar UI (keep scrolling via wheel/touch) */
+.pos-main,
+.pos-category-grid,
+.pos-product-grid,
+.pos-orders-scroll-area {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+.pos-main::-webkit-scrollbar,
+.pos-category-grid::-webkit-scrollbar,
+.pos-product-grid::-webkit-scrollbar,
+.pos-orders-scroll-area::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
 }
 
 .pos-content {
@@ -569,8 +587,15 @@
   flex: 1;
   overflow-y: auto;
   padding: 0 20px;
-  scrollbar-width: thin;
-  scrollbar-color: #0d9488 transparent;
+  scrollbar-width: none; /* Firefox */
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+.pos-orders-scroll-area::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
 }
 
 .pos-cart-items-list {

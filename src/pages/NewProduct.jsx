@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle, faDollarSign, faPlus, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
+import * as supplierApi from '../api/supplierApi'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/NewProduct.css'
 
@@ -15,14 +16,16 @@ function NewProduct({ onBack, onSave }) {
   const [productInfoOpen, setProductInfoOpen] = useState(true)
   const [pricingStocksOpen, setPricingStocksOpen] = useState(true)
   const [categories, setCategories] = useState([])
+  const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState(null)
 
   const [formData, setFormData] = useState({
     productName: '',
-    barcode: '', // only used for display on edit
+    barcode: '', // create: optional; edit: readonly display
     categoryId: '',
+    supplierId: '',
     quantity: '',
     purchasedPrice: '',
     pricePerUnit: '',
@@ -37,6 +40,9 @@ function NewProduct({ onBack, onSave }) {
     categoryApi.getAll().then((list) => {
       if (!cancelled) setCategories(Array.isArray(list) ? list : [])
     }).catch(() => { if (!cancelled) setCategories([]) })
+    supplierApi.getAll().then((list) => {
+      if (!cancelled) setSuppliers(Array.isArray(list) ? list : [])
+    }).catch(() => { if (!cancelled) setSuppliers([]) })
     return () => { cancelled = true }
   }, [])
 
@@ -50,6 +56,7 @@ function NewProduct({ onBack, onSave }) {
           productName: p.productName || '',
           barcode: p.barcode || '',
           categoryId: p.categoryId ?? '',
+          supplierId: p.supplierId != null ? String(p.supplierId) : '',
           quantity: String(p.quantity ?? ''),
           purchasedPrice: String(p.purchasedPrice ?? ''),
           pricePerUnit: String(p.pricePerUnit ?? ''),
@@ -93,6 +100,9 @@ function NewProduct({ onBack, onSave }) {
       const payload = {
         productName: formData.productName,
         categoryId,
+        supplierId: formData.supplierId ? Number(formData.supplierId) : null,
+        // barcode is optional: if empty, backend auto-generates
+        barcode: formData.barcode?.trim() || undefined,
         quantity: Number(formData.quantity) || 0,
         purchasedPrice: Number(formData.purchasedPrice) || 0,
         pricePerUnit: Number(formData.pricePerUnit) || 0,
@@ -148,6 +158,20 @@ function NewProduct({ onBack, onSave }) {
                 <label htmlFor="productName">Product Name</label>
                 <input type="text" id="productName" name="productName" value={formData.productName} onChange={handleInputChange} placeholder="Enter Product Name" className="form-input" required />
               </div>
+              {!isEdit && (
+                <div className="form-group">
+                  <label htmlFor="barcode">Barcode (optional)</label>
+                  <input
+                    type="text"
+                    id="barcode"
+                    name="barcode"
+                    value={formData.barcode}
+                    onChange={handleInputChange}
+                    placeholder="Leave empty to auto-generate"
+                    className="form-input"
+                  />
+                </div>
+              )}
               {isEdit && (
                 <div className="form-group">
                   <label>Barcode</label>
@@ -172,6 +196,21 @@ function NewProduct({ onBack, onSave }) {
                     <FontAwesomeIcon icon={faPlus} /><span>Add New</span>
                   </button>
                 </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="supplierId">Supplier</label>
+                <select
+                  id="supplierId"
+                  name="supplierId"
+                  value={formData.supplierId}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
+                  <option value="">Choose</option>
+                  {suppliers.filter((s) => s.isActive !== false).map((s) => (
+                    <option key={s.id} value={s.id}>{s.supplierName}</option>
+                  ))}
+                </select>
               </div>
               {isEdit && (
                 <div className="form-group">

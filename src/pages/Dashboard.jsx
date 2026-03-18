@@ -32,6 +32,7 @@ import PurchaseList from './PurchaseList'
 import InventoryLedger from './InventoryLedger'
 import SalesAnalysis from './SalesAnalysis'
 import BarcodePage from './BarcodePage'
+import StockPage from './StockPage'
 import '../styles/Dashboard.css'
 
 const SHORTCUTS = [
@@ -57,12 +58,19 @@ function Dashboard() {
   const [summaryError, setSummaryError] = useState(null)
 
   useEffect(() => {
-    dashboardApi.getSummary().then((data) => {
-      setSummary(data || {})
-      setSummaryError(null)
-    }).catch((err) => {
-      setSummaryError(err.message || 'Failed to load summary')
-    })
+    const loadSummary = () => {
+      dashboardApi.getSummary().then((data) => {
+        setSummary(data || {})
+        setSummaryError(null)
+      }).catch((err) => {
+        setSummaryError(err.message || 'Failed to load summary')
+      })
+    }
+
+    loadSummary()
+
+    const intervalId = setInterval(loadSummary, 60000) // refresh every 60s
+
     salesApi.getAll().then((list) => {
       setRecentSales(Array.isArray(list) ? list.slice(0, 10) : [])
     }).catch(() => setRecentSales([]))
@@ -70,6 +78,10 @@ function Dashboard() {
     salesApi.getReportByCategory().then((data) => {
       setCategoryPerformance(Array.isArray(data) ? data.sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 5) : [])
     }).catch(() => setCategoryPerformance([]))
+
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [])
 
   const handleToggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
@@ -101,6 +113,7 @@ function Dashboard() {
     if (path.startsWith('/purchases/edit')) return 'Purchase'
     if (path === '/purchase') return 'Purchase'
     if (path === '/inventory-ledger') return 'Inventory Ledger'
+    if (path === '/stock') return 'Stock'
     if (path === '/transaction') return 'Transaction Report'
     if (path === '/analysis') return 'Sales Analysis'
     if (path.startsWith('/suppliers/edit')) return 'NewSupplier'
@@ -347,6 +360,7 @@ function Dashboard() {
           {currentPage === 'Discount' && <Discount />}
           {currentPage === 'NewDiscount' && <NewDiscount />}
           {currentPage === 'Inventory Ledger' && <InventoryLedger />}
+          {currentPage === 'Stock' && <StockPage />}
           {currentPage === 'Transaction Report' && <TransactionReport />}
           {currentPage === 'Sales Analysis' && <SalesAnalysis />}
           {currentPage === 'Suppliers' && <SupplierList />}

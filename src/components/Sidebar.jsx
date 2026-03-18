@@ -29,6 +29,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
   const getPageName = (path) => {
     if (path === '/dashboard') return 'Dashboard'
     if (path === '/products' || path === '/products/new') return 'Products'
+    if (path === '/stock') return 'Stock'
     if (path === '/barcode') return 'Barcode'
     if (path === '/low-stocks') return 'Low Stocks'
     if (path === '/category') return 'Category'
@@ -80,6 +81,14 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
           >
             <FontAwesomeIcon icon={faBox} className="menu-icon" />
             {!isCollapsed && <span>Products</span>}
+          </li>
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Stock' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/stock')}
+            title="Stock"
+          >
+            <FontAwesomeIcon icon={faChartLine} className="menu-icon" />
+            {!isCollapsed && <span>Stock</span>}
           </li>
           <li
             className={`sidebar-menu-item ${currentPage === 'Barcode' ? 'active' : ''}`}
