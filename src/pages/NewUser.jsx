@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import Swal from 'sweetalert2'
 import * as userApi from '../api/userApi'
 import '../styles/NewUser.css'
 
@@ -73,11 +74,21 @@ function NewUser({ initialData, onSave, onBack }) {
 
       if (formData.id) {
         await userApi.update(payload)
-        alert('User updated successfully')
+        await Swal.fire({
+          icon: 'success',
+          title: 'User updated',
+          text: 'The user details were updated successfully.',
+          confirmButtonColor: '#0d9488'
+        })
       } else {
         payload.password = formData.password
         await userApi.register(payload)
-        alert('User created successfully')
+        await Swal.fire({
+          icon: 'success',
+          title: 'User created',
+          text: 'The new user was created successfully.',
+          confirmButtonColor: '#0d9488'
+        })
       }
 
       if (onSave) {

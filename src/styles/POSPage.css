@@ -4,7 +4,8 @@
   min-height: 100vh;
   background: #fff;
   font-family: 'Inter', sans-serif;
-  overflow: hidden; /* hide root/body scrollbar on POS screen */
+  /* Allow page to scroll if content overflows viewport */
+  overflow-y: auto;
 }
 
 /* Header overlays main content only; sidebar stays visible with logo at top corner */
@@ -93,6 +94,8 @@
   min-width: 0;
   position: relative;
   z-index: 1;
+  /* Enable internal scrolling for POS content area */
+  overflow-y: auto;
 }
 
 /* Hide scrollbar UI (keep scrolling via wheel/touch) */
@@ -100,16 +103,17 @@
 .pos-category-grid,
 .pos-product-grid,
 .pos-orders-scroll-area {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge legacy */
+  /* Show normal scrollbars so user clearly sees that POS can scroll */
+  scrollbar-width: auto; /* Firefox */
+  -ms-overflow-style: auto; /* IE/Edge legacy */
 }
 .pos-main::-webkit-scrollbar,
 .pos-category-grid::-webkit-scrollbar,
 .pos-product-grid::-webkit-scrollbar,
 .pos-orders-scroll-area::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none; /* Chrome/Safari */
+  width: 8px;
+  height: 8px;
+  display: block; /* Chrome/Safari */
 }
 
 .pos-content {

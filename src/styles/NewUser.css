@@ -90,7 +90,7 @@
 .form-input,
 .form-select,
 .form-textarea {
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 14px;
@@ -98,6 +98,20 @@
     font-family: inherit;
     background-color: #ffffff;
     color: #1e293b;
+}
+
+/* Make single-line inputs a bit taller for better usability */
+.form-input,
+.form-select {
+    height: 42px;
+}
+
+/* Ensure full-width inputs inside rows */
+.form-group .form-input,
+.form-group .form-select,
+.form-group .form-textarea {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-input:focus,

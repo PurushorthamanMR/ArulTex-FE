@@ -19,7 +19,7 @@ import { downloadTableExcel } from '../utils/excelExport'
 import { getCategoryIcon } from '../utils/categoryIcons'
 import '../styles/LowStocks.css'
 
-function LowStocks() {
+function LowStocks({ onSummaryRefresh }) {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [list, setList] = useState([])
@@ -39,13 +39,14 @@ function LowStocks() {
       setList(res.content || [])
       setTotalPages(res.totalPages || 1)
       setTotalElements(res.totalElements || 0)
+      onSummaryRefresh?.()
     } catch (err) {
       setError(err.message || 'Failed to load products')
       setList([])
     } finally {
       setLoading(false)
     }
-  }, [page])
+  }, [page, onSummaryRefresh])
 
   useEffect(() => {
     fetchLowStock()

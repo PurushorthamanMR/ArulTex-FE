@@ -20,6 +20,8 @@ function NewProduct({ onBack, onSave }) {
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState(null)
+  const [nameSuggestions, setNameSuggestions] = useState([])
+  const [nameSuggestionsLoading, setNameSuggestionsLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -34,6 +36,46 @@ function NewProduct({ onBack, onSave }) {
     unit: 'pcs',
     isActive: true
   })
+
+  // Live product-name suggestions when creating new product
+  useEffect(() => {
+    if (isEdit) {
+      setNameSuggestions([])
+      return
+    }
+    const raw = formData.productName || ''
+    const q = raw.trim()
+    if (q.length < 2) {
+      setNameSuggestions([])
+      return
+    }
+
+    let cancelled = false
+    setNameSuggestionsLoading(true)
+    const timeoutId = setTimeout(() => {
+      productApi
+        .search({ productName: q, isActive: true })
+        .then((list) => {
+          if (cancelled) return
+          const lowerQ = q.toLowerCase()
+          const filtered = (Array.isArray(list) ? list : [])
+            .filter((p) => (p.productName || '').toLowerCase().includes(lowerQ))
+            .slice(0, 5)
+          setNameSuggestions(filtered)
+        })
+        .catch(() => {
+          if (!cancelled) setNameSuggestions([])
+        })
+        .finally(() => {
+          if (!cancelled) setNameSuggestionsLoading(false)
+        })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+    }
+  }, [formData.productName, isEdit])
 
   useEffect(() => {
     let cancelled = false
@@ -156,7 +198,46 @@ function NewProduct({ onBack, onSave }) {
             <div className="section-content">
               <div className="form-group">
                 <label htmlFor="productName">Product Name</label>
-                <input type="text" id="productName" name="productName" value={formData.productName} onChange={handleInputChange} placeholder="Enter Product Name" className="form-input" required />
+                <input
+                  type="text"
+                  id="productName"
+                  name="productName"
+                  value={formData.productName}
+                  onChange={handleInputChange}
+                  placeholder="Enter Product Name"
+                  className="form-input"
+                  required
+                  autoComplete="off"
+                />
+                {!isEdit && (
+                  <div className="product-name-suggestions">
+                    {nameSuggestionsLoading && <div className="product-name-suggestion-loading">Searching existing products…</div>}
+                    {!nameSuggestionsLoading && nameSuggestions.length > 0 && (
+                      <>
+                        <div className="product-name-suggestion-label">Similar existing products:</div>
+                        <ul>
+                          {nameSuggestions.map((p) => (
+                            <li key={p.id}>
+                              <button
+                                type="button"
+                                className="product-name-suggestion-item"
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    productName: p.productName || prev.productName
+                                  }))
+                                }
+                              >
+                                <span className="product-name-suggestion-name">{p.productName}</span>
+                                {p.barcode && <span className="product-name-suggestion-meta">Barcode: {p.barcode}</span>}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
               {!isEdit && (
                 <div className="form-group">
