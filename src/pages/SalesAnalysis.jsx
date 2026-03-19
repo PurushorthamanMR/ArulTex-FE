@@ -191,7 +191,7 @@ function SalesAnalysis() {
                         </div>
                     </div>
                     <div className="chart-wrapper">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height={300} minWidth={0}>
                             <AreaChart data={activeChartData}>
                                 <defs>
                                     <linearGradient id={`colorMetric`} x1="0" y1="0" x2="0" y2="1">

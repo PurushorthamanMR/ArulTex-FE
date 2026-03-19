@@ -164,13 +164,11 @@ function Purchase() {
   }
 
   const updateLineQuantity = (productId, quantity) => {
-    const q = Math.max(0, Number(quantity) || 0)
+    const q = Math.max(1, Number(quantity) || 1)
     setLines((prev) =>
-      prev
-        .map((l) =>
-          l.productId === productId ? { ...l, quantity: q, totalPrice: q * l.costPrice } : l
-        )
-        .filter((l) => l.quantity > 0)
+      prev.map((l) =>
+        l.productId === productId ? { ...l, quantity: q, totalPrice: q * l.costPrice } : l
+      )
     )
   }
 
@@ -178,8 +176,8 @@ function Purchase() {
     setLines((prev) => prev.filter((l) => l.productId !== productId))
   }
 
-  const totalAmount = lines.reduce((sum, l) => sum + (l.totalPrice || 0), 0)
-  const totalItems = lines.reduce((sum, l) => sum + l.quantity, 0)
+  const totalAmount = lines.reduce((sum, l) => sum + (Number(l.totalPrice) || 0), 0)
+  const totalItems = lines.reduce((sum, l) => sum + (Number(l.quantity) || 0), 0)
 
   const filteredProducts = searchProduct.trim()
     ? products.filter((p) => {
@@ -457,7 +455,23 @@ function Purchase() {
                         {l.barcode && <span className="line-barcode">{l.barcode}</span>}
                       </td>
                       <td>
-                        <input type="number" min="1" value={l.quantity} onChange={(e) => updateLineQuantity(l.productId, e.target.value)} className="qty-input" />
+                        <input
+                          type="number"
+                          min="1"
+                          value={l.quantity}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setLines((prev) =>
+                              prev.map((line) =>
+                                line.productId === l.productId
+                                  ? { ...line, quantity: val }
+                                  : line
+                              )
+                            )
+                          }}
+                          onBlur={(e) => updateLineQuantity(l.productId, e.target.value)}
+                          className="qty-input"
+                        />
                       </td>
                       <td>
                         <span className="readonly-price">{Number(l.costPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>

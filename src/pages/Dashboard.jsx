@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -57,20 +57,24 @@ function Dashboard() {
   const [categoryPerformance, setCategoryPerformance] = useState([])
   const [summaryError, setSummaryError] = useState(null)
 
+  const loadSummary = useCallback(() => {
+    dashboardApi.getSummary().then((data) => {
+      setSummary(data || {})
+      setSummaryError(null)
+    }).catch((err) => {
+      setSummaryError(err.message || 'Failed to load summary')
+    })
+  }, [])
+
+  // Re-fetch when user navigates between pages (same Dashboard instance is reused by React Router,
+  // so without this the sidebar low-stock badge stays stale until the 60s poll).
   useEffect(() => {
-    const loadSummary = () => {
-      dashboardApi.getSummary().then((data) => {
-        setSummary(data || {})
-        setSummaryError(null)
-      }).catch((err) => {
-        setSummaryError(err.message || 'Failed to load summary')
-      })
-    }
-
     loadSummary()
+    const intervalId = setInterval(loadSummary, 60000)
+    return () => clearInterval(intervalId)
+  }, [location.pathname, loadSummary])
 
-    const intervalId = setInterval(loadSummary, 60000) // refresh every 60s
-
+  useEffect(() => {
     salesApi.getAll().then((list) => {
       setRecentSales(Array.isArray(list) ? list.slice(0, 10) : [])
     }).catch(() => setRecentSales([]))
@@ -78,10 +82,6 @@ function Dashboard() {
     salesApi.getReportByCategory().then((data) => {
       setCategoryPerformance(Array.isArray(data) ? data.sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 5) : [])
     }).catch(() => setCategoryPerformance([]))
-
-    return () => {
-      clearInterval(intervalId)
-    }
   }, [])
 
   const handleToggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
@@ -350,7 +350,7 @@ function Dashboard() {
           {currentPage === 'Products' && <ProductList onAddNew={() => handleNavigation('/products/new')} />}
           {currentPage === 'NewProduct' && <NewProduct onBack={() => handleNavigation('/products')} onSave={() => handleNavigation('/products')} />}
           {currentPage === 'Barcode' && <BarcodePage />}
-          {currentPage === 'Low Stocks' && <LowStocks />}
+          {currentPage === 'Low Stocks' && <LowStocks onSummaryRefresh={loadSummary} />}
           {currentPage === 'Purchases' && <PurchaseList />}
           {currentPage === 'Purchase' && <Purchase />}
           {currentPage === 'Category' && <Category />}
