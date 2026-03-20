@@ -126,3 +126,65 @@ export async function getLowStock() {
   })
   return handleResponse(res)
 }
+
+/** GET /sales/report/xReport — useOpenShift: true = current open shift; else fromDate/toDate */
+export async function getXReport(params = {}) {
+  const query = new URLSearchParams()
+  if (params.userId) query.set('userId', String(params.userId))
+  if (params.fromDate) query.set('fromDate', params.fromDate)
+  if (params.toDate) query.set('toDate', params.toDate)
+  if (params.shiftId) query.set('shiftId', String(params.shiftId))
+  if (params.useOpenShift) query.set('useOpenShift', '1')
+  const res = await fetch(`${BASE_URL}/sales/report/xReport?${query.toString()}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/zReport — useOpenShift: true = current open shift; else fromDate/toDate */
+export async function getZReport(params = {}) {
+  const query = new URLSearchParams()
+  if (params.userId) query.set('userId', String(params.userId))
+  if (params.fromDate) query.set('fromDate', params.fromDate)
+  if (params.toDate) query.set('toDate', params.toDate)
+  if (params.shiftId) query.set('shiftId', String(params.shiftId))
+  if (params.useOpenShift) query.set('useOpenShift', '1')
+  const res = await fetch(`${BASE_URL}/sales/report/zReport?${query.toString()}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}
+
+/** POST /sales/report/zReport/close — closes current open shift + saves Z archive */
+export async function closeZReport() {
+  const res = await fetch(`${BASE_URL}/sales/report/zReport/close`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({})
+  })
+  return handleResponse(res)
+}
+
+/** GET /sales/report/zReport/archives?limit=50 */
+export async function getZReportArchives(limit = 50) {
+  const res = await fetch(`${BASE_URL}/sales/report/zReport/archives?limit=${limit}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  const list = await handleResponse(res)
+  return Array.isArray(list) ? list : []
+}
+
+/** GET /sales/report/zReport/archive?id= */
+export async function getZReportArchiveById(id) {
+  const res = await fetch(`${BASE_URL}/sales/report/zReport/archive?id=${id}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  })
+  return handleResponse(res)
+}

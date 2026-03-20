@@ -14,7 +14,9 @@ import {
   faBook,
   faCalendarDay,
   faCalendarAlt,
-  faChartBar
+  faChartBar,
+  faFileAlt,
+  faClockRotateLeft
 } from '@fortawesome/free-solid-svg-icons'
 import '../styles/Sidebar.css'
 
@@ -38,6 +40,7 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
     if (path === '/inventory-ledger') return 'Inventory Ledger'
     if (path === '/transaction') return 'Transaction Report'
     if (path === '/analysis') return 'Sales Analysis'
+    if (path === '/z-report') return 'Z Report'
     if (path === '/suppliers') return 'Suppliers'
     if (path === '/users') return 'Users'
     return ''
@@ -183,12 +186,28 @@ function Sidebar({ onNavigate, currentPage, isCollapsed, lowStockCount = 0 }) {
             {!isCollapsed && <span>Inventory Ledger</span>}
           </li>
           <li
+            className={`sidebar-menu-item ${currentPage === 'Shifts' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/shifts')}
+            title="Register shifts"
+          >
+            <FontAwesomeIcon icon={faClockRotateLeft} className="menu-icon" />
+            {!isCollapsed && <span>Shifts</span>}
+          </li>
+          <li
             className={`sidebar-menu-item ${currentPage === 'Sales Analysis' ? 'active' : ''}`}
             onClick={() => handleMenuClick('/analysis')}
             title="Sales Analysis"
           >
             <FontAwesomeIcon icon={faChartBar} className="menu-icon" />
             {!isCollapsed && <span>Sales Analysis</span>}
+          </li>
+          <li
+            className={`sidebar-menu-item ${currentPage === 'Z Report' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('/z-report')}
+            title="Z Report Archives"
+          >
+            <FontAwesomeIcon icon={faFileAlt} className="menu-icon" />
+            {!isCollapsed && <span>Z Report</span>}
           </li>
         </ul>
       </div>

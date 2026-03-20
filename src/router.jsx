@@ -19,8 +19,8 @@ import POSPage from './pages/POSPage'
 import Purchase from './pages/Purchase'
 import InventoryLedger from './pages/InventoryLedger'
 import SalesAnalysis from './pages/SalesAnalysis'
+import ShiftPage from './pages/ShiftPage'
 import StockPage from './pages/StockPage'
-
 // Protected Route Component
 const ProtectedRoute = () => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
@@ -133,6 +133,14 @@ const router = createBrowserRouter([
       },
       {
         path: '/analysis',
+        element: <Dashboard />
+      },
+      {
+        path: '/shifts',
+        element: <Dashboard />
+      },
+      {
+        path: '/z-report',
         element: <Dashboard />
       },
       {

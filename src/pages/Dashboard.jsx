@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faPlus, faChartLine, faShoppingBag, faBox, faHistory,
   faCashRegister, faBoxOpen, faUsers, faTruck, faListAlt, faChartBar,
-  faWarehouse, faTag, faArrowRight, faExclamationTriangle, faHand
+  faWarehouse, faTag, faArrowRight, faExclamationTriangle, faHand, faCheck
 } from '@fortawesome/free-solid-svg-icons'
 import * as dashboardApi from '../api/dashboardApi'
 import * as salesApi from '../api/salesApi'
@@ -31,6 +31,8 @@ import Purchase from './Purchase'
 import PurchaseList from './PurchaseList'
 import InventoryLedger from './InventoryLedger'
 import SalesAnalysis from './SalesAnalysis'
+import ZReportPage from './ZReportPage'
+import ShiftPage from './ShiftPage'
 import BarcodePage from './BarcodePage'
 import StockPage from './StockPage'
 import '../styles/Dashboard.css'
@@ -56,6 +58,13 @@ function Dashboard() {
   const [recentSales, setRecentSales] = useState([])
   const [categoryPerformance, setCategoryPerformance] = useState([])
   const [summaryError, setSummaryError] = useState(null)
+  const [lowStockAlerts, setLowStockAlerts] = useState([])
+
+  const loadLowStockAlerts = useCallback(() => {
+    salesApi.getLowStock()
+      .then((list) => setLowStockAlerts(Array.isArray(list) ? list : []))
+      .catch(() => setLowStockAlerts([]))
+  }, [])
 
   const loadSummary = useCallback(() => {
     dashboardApi.getSummary().then((data) => {
@@ -73,6 +82,13 @@ function Dashboard() {
     const intervalId = setInterval(loadSummary, 60000)
     return () => clearInterval(intervalId)
   }, [location.pathname, loadSummary])
+
+  useEffect(() => {
+    if (location.pathname !== '/dashboard') return
+    loadLowStockAlerts()
+    const intervalId = setInterval(loadLowStockAlerts, 60000)
+    return () => clearInterval(intervalId)
+  }, [location.pathname, loadLowStockAlerts])
 
   useEffect(() => {
     salesApi.getAll().then((list) => {
@@ -116,6 +132,8 @@ function Dashboard() {
     if (path === '/stock') return 'Stock'
     if (path === '/transaction') return 'Transaction Report'
     if (path === '/analysis') return 'Sales Analysis'
+    if (path === '/shifts') return 'Shifts'
+    if (path === '/z-report') return 'Z Report'
     if (path.startsWith('/suppliers/edit')) return 'NewSupplier'
     if (path === '/suppliers/new') return 'NewSupplier'
     if (path === '/suppliers') return 'Suppliers'
@@ -308,6 +326,61 @@ function Dashboard() {
                 </div>
               </section>
 
+              {/* ── Low Stock Alerts ── */}
+              <section className="dashboard-section dashboard-low-stock-section">
+                <div className="dashboard-low-stock-card">
+                  <div className="dashboard-low-stock-header">
+                    <div className="dashboard-low-stock-title-group">
+                      <h3>
+                        <FontAwesomeIcon icon={faExclamationTriangle} /> Low Stock Alerts
+                      </h3>
+                      <span className="dashboard-low-stock-badge">
+                        {lowStockAlerts.length} {lowStockAlerts.length === 1 ? 'item' : 'items'} need restocking
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="dashboard-low-stock-link"
+                      onClick={() => handleNavigation('/low-stocks')}
+                    >
+                      Manage low stock →
+                    </button>
+                  </div>
+                  {lowStockAlerts.length === 0 ? (
+                    <div className="dashboard-low-stock-empty">
+                      <FontAwesomeIcon icon={faCheck} /> All inventory levels are healthy
+                    </div>
+                  ) : (
+                    <>
+                      <div className="dashboard-low-stock-grid">
+                        {lowStockAlerts.slice(0, 8).map((item) => (
+                          <div key={item.id} className="dashboard-low-stock-item">
+                            <div className="dashboard-low-stock-item-info">
+                              <span className="dashboard-low-stock-name">{item.productName}</span>
+                              <span className="dashboard-low-stock-cat">
+                                {item.category?.categoryName || 'Uncategorized'}
+                              </span>
+                            </div>
+                            <div className="dashboard-low-stock-qty-wrap">
+                              <span className="dashboard-low-stock-qty">Stock: {item.stockQty}</span>
+                              <span className="dashboard-low-stock-min">Min: {item.minStockLevel}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {lowStockAlerts.length > 8 && (
+                        <p className="dashboard-low-stock-more">
+                          + {lowStockAlerts.length - 8} more items critically low —{' '}
+                          <button type="button" className="dashboard-low-stock-link-inline" onClick={() => handleNavigation('/low-stocks')}>
+                            view all
+                          </button>
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </section>
+
               {/* ── Bottom: Recent Sales ── */}
               <div className="dashboard-bottom-full">
                 <section className="dashboard-section">
@@ -363,6 +436,8 @@ function Dashboard() {
           {currentPage === 'Stock' && <StockPage />}
           {currentPage === 'Transaction Report' && <TransactionReport />}
           {currentPage === 'Sales Analysis' && <SalesAnalysis />}
+          {currentPage === 'Shifts' && <ShiftPage />}
+          {currentPage === 'Z Report' && <ZReportPage />}
           {currentPage === 'Suppliers' && <SupplierList />}
           {currentPage === 'NewSupplier' && <NewSupplier />}
           {currentPage === 'Users' && <UserList />}

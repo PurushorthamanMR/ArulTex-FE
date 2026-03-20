@@ -123,6 +123,88 @@
   min-height: 420px;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* Block all selling until register shift is open */
+.pos-shift-lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.pos-shift-lock-card {
+  max-width: 420px;
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.pos-shift-lock-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pos-shift-lock-text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.pos-shift-lock-open-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  background: #0d9488;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pos-shift-lock-open-btn:hover:not(:disabled) {
+  background: #0f766e;
+}
+
+.pos-shift-lock-open-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pos-product-card:disabled,
+.pos-category-box:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pos-search-input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pos-search-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Left: Scan / Search + Products */
@@ -1577,6 +1659,60 @@
   cursor: not-allowed;
 }
 
+/* Register shift (X/Z POS) */
+.pos-shift-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px 10px 90px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pos-shift-bar--open {
+  background: linear-gradient(90deg, #ecfdf5 0%, #f0fdfa 100%);
+  color: #0f766e;
+}
+
+.pos-shift-bar--closed {
+  background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+  color: #92400e;
+}
+
+.pos-shift-bar-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.pos-shift-bar-hint {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.pos-shift-open-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #0d9488;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.pos-shift-open-btn:hover:not(:disabled) {
+  background: #0f766e;
+}
+
+.pos-shift-open-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
   .pos-content {
     flex-direction: column;
@@ -1590,5 +1726,9 @@
 
   .pos-product-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .pos-shift-bar {
+    padding-left: 20px;
   }
 }

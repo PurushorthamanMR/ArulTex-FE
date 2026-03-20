@@ -198,3 +198,50 @@
 .logout-btn svg {
   font-size: 14px;
 }
+
+/* POS header — Close shift (replaces profile menu on POS only) */
+.pos-header-close-shift-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pos-header-close-shift-btn:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #991b1b;
+}
+
+.pos-header-close-shift-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pos-header-close-shift-icon {
+  font-size: 14px;
+}
+
+.pos-header-close-shift-label {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .pos-header-close-shift-label {
+    display: none;
+  }
+
+  .pos-header-close-shift-btn {
+    padding: 8px 10px;
+  }
+}

@@ -108,3 +108,71 @@
 .pos-sidebar-item.logout-item:hover .pos-sidebar-icon {
   color: #b91c1c;
 }
+
+/* Register shift — same state as top bar, quick access in sidebar */
+.pos-sidebar-shift-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 6px;
+  margin-top: 4px;
+}
+
+.pos-sidebar-shift-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 54px;
+  margin: 0 auto;
+  padding: 10px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.pos-sidebar-shift-dots {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.pos-sidebar-shift-status--open {
+  color: #0f766e;
+  background: linear-gradient(180deg, #ecfdf5 0%, #f0fdfa 100%);
+  border-radius: 8px;
+  border: 1px solid #a7f3d0;
+}
+
+.pos-sidebar-shift-icon-open {
+  font-size: 18px;
+  color: #10b981;
+}
+
+.pos-sidebar-shift-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0d9488;
+}
+
+.pos-sidebar-item.pos-sidebar-item--open-shift {
+  color: #0d9488;
+  border: 1px dashed #99f6e4;
+  background: #f0fdfa;
+}
+
+.pos-sidebar-item.pos-sidebar-item--open-shift:hover:not(:disabled) {
+  background: #ccfbf1;
+  color: #0f766e;
+  border-color: #5eead4;
+}
+
+.pos-sidebar-item.pos-sidebar-item--open-shift:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

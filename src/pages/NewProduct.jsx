@@ -33,7 +33,6 @@ function NewProduct({ onBack, onSave }) {
     pricePerUnit: '',
     lowStock: '',
     discountPercent: '0',
-    unit: 'pcs',
     isActive: true
   })
 
@@ -104,7 +103,6 @@ function NewProduct({ onBack, onSave }) {
           pricePerUnit: String(p.pricePerUnit ?? ''),
           lowStock: String(p.lowStock ?? ''),
           discountPercent: String(p.discountPercent ?? 0),
-          unit: p.unit || 'pcs',
           isActive: p.isActive !== false
         })
       }
@@ -150,7 +148,6 @@ function NewProduct({ onBack, onSave }) {
         pricePerUnit: Number(formData.pricePerUnit) || 0,
         lowStock: Number(formData.lowStock) || 0,
         discountPercent: Number(formData.discountPercent) || 0,
-        unit: formData.unit || 'pcs',
         isActive: formData.isActive
       }
       if (isEdit) {
@@ -335,20 +332,6 @@ function NewProduct({ onBack, onSave }) {
                   placeholder="Enter Cost Price"
                   className="form-input"
                 />
-              </div>
-              <div className="form-group">
-                <label htmlFor="unit">Unit</label>
-                <select
-                  id="unit"
-                  name="unit"
-                  value={formData.unit}
-                  onChange={handleInputChange}
-                  className="form-select"
-                >
-                  <option value="pcs">pcs</option>
-                  <option value="kg">kg</option>
-                  <option value="liter">liter</option>
-                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="discountPercent">Discount (%)</label>

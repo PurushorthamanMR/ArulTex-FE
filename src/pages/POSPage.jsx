@@ -7,7 +7,10 @@ import POSSidebar from '../components/POSSidebar'
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
 import * as salesApi from '../api/salesApi'
+import * as shiftApi from '../api/shiftApi'
 import * as customerApi from '../api/customerApi'
+import Swal from 'sweetalert2'
+import { downloadZReportPdf } from '../utils/pdfExport'
 import '../styles/POSPage.css'
 
 function POSPage() {
@@ -35,11 +38,18 @@ function POSPage() {
   const [cartDiscountPercent, setCartDiscountPercent] = useState('')
   const [lastPrintPayment, setLastPrintPayment] = useState(null) // { paymentMethod, cashReceived, balanceAmount }
   const [draftInvoiceNo, setDraftInvoiceNo] = useState(() => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`)
+  const [posShift, setPosShift] = useState(null)
+  const [shiftLoading, setShiftLoading] = useState(true)
+  const [openingShift, setOpeningShift] = useState(false)
+  const [zCloseLoading, setZCloseLoading] = useState(false)
   const searchInputRef = useRef(null)
   const orderToastTimerRef = useRef(null)
   const searchErrorTimerRef = useRef(null)
 
   const generateNewInvoiceNo = () => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`
+
+  /** No selling until shift status is known and a shift is open */
+  const posSalesLocked = shiftLoading || !posShift?.id
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -59,10 +69,83 @@ function POSPage() {
     }
   }, [])
 
+  const loadPosShift = useCallback(async () => {
+    setShiftLoading(true)
+    try {
+      const s = await shiftApi.getCurrent()
+      setPosShift(s && s.id ? s : null)
+    } catch {
+      setPosShift(null)
+    } finally {
+      setShiftLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchProducts()
     fetchCategories()
-  }, [fetchProducts, fetchCategories])
+    loadPosShift()
+  }, [fetchProducts, fetchCategories, loadPosShift])
+
+  const handleOpenShift = async () => {
+    setOpeningShift(true)
+    try {
+      const s = await shiftApi.openShift()
+      setPosShift(s && s.id ? s : null)
+      showOrderToast('success', 'Shift opened — you can take sales.')
+    } catch (e) {
+      showOrderToast('error', e.message || 'Could not open shift.')
+    } finally {
+      setOpeningShift(false)
+    }
+  }
+
+  const handleCloseShift = useCallback(async () => {
+    if (!posShift?.id || zCloseLoading) return
+    const cartNote =
+      cart.length > 0
+        ? `<p style="margin:0 0 12px;text-align:left">Your cart still has <strong>${cart.length}</strong> line(s). Sales will lock until you open a new shift.</p>`
+        : ''
+    const { isConfirmed } = await Swal.fire({
+      icon: 'warning',
+      title: 'Close shift (Z Report)?',
+      html: `${cartNote}<p style="margin:0;text-align:left">This <strong>saves the Z report</strong>, <strong>closes the register shift</strong>, and downloads the PDF. Use <strong>Open shift</strong> to sell again.</p>`,
+      showCancelButton: true,
+      confirmButtonText: 'Yes, close shift',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b'
+    })
+    if (!isConfirmed) return
+    setZCloseLoading(true)
+    try {
+      const saved = await salesApi.closeZReport()
+      const subtitle = posShift.openedAt
+        ? `Shift #${posShift.id} · ${new Date(posShift.openedAt).toLocaleString()}`
+        : `Shift #${posShift.id}`
+      downloadZReportPdf(saved, `Archived #${saved.id} | ${subtitle}`)
+      await loadPosShift()
+      setCart([])
+      setCartDiscountPercent('')
+      setShowCustomerModal(false)
+      setShowPaymentPopup(false)
+      await Swal.fire({
+        icon: 'success',
+        title: 'Shift closed',
+        text: `Z Report #${saved.id} saved. Open a new shift to continue selling.`,
+        confirmButtonColor: '#0d9488'
+      })
+    } catch (err) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Could not close shift',
+        text: err?.message || 'Z Report failed. Try Sales Analysis or check permissions.',
+        confirmButtonColor: '#0d9488'
+      })
+    } finally {
+      setZCloseLoading(false)
+    }
+  }, [posShift, zCloseLoading, cart.length, loadPosShift])
 
   useEffect(() => {
     return () => {
@@ -96,6 +179,13 @@ function POSPage() {
   }
 
   const addToCart = (product, qty = 1) => {
+    if (posSalesLocked) {
+      showOrderToast(
+        'error',
+        shiftLoading ? 'Checking shift…' : 'Open a shift before adding items (use Open shift above or in the sidebar).'
+      )
+      return
+    }
     const pid = normId(product.id)
     const price = Number(product.pricePerUnit ?? 0)            // selling price (after discount)
     const costPrice = Number(product.purchasedPrice ?? 0)      // original cost price (for display only)
@@ -142,6 +232,7 @@ function POSPage() {
   }
 
   const updateQty = (productId, delta) => {
+    if (posSalesLocked) return
     const pid = normId(productId)
     const product = products.find(p => normId(p.id) === pid)
     const stockAvailable = product ? (product.quantity ?? 0) : 999999
@@ -163,6 +254,7 @@ function POSPage() {
   }
 
   const removeFromCart = (productId) => {
+    if (posSalesLocked) return
     setCart((prev) => prev.filter((c) => c.productId !== normId(productId)))
   }
 
@@ -189,6 +281,13 @@ function POSPage() {
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault()
+    if (posSalesLocked) {
+      showOrderToast(
+        'error',
+        shiftLoading ? 'Checking shift…' : 'Open a shift before scanning or searching products.'
+      )
+      return
+    }
     const q = searchTrimmed
     if (!q) return
     if (searchErrorTimerRef.current) {
@@ -258,6 +357,10 @@ function POSPage() {
 
   const handleNextClick = () => {
     if (cart.length === 0 || isPlacingOrder) return
+    if (!posShift?.id) {
+      showOrderToast('error', 'No open shift. Tap “Open shift” above before taking payment.')
+      return
+    }
     setSelectedCustomerId(null)
     setCustomerSearch('')
     setShowCreateCustomerForm(false)
@@ -314,6 +417,12 @@ function POSPage() {
 
   const doPlaceOrder = async (customerId, paymentInfo) => {
     if (cart.length === 0 || isPlacingOrder) return
+    if (!posShift?.id) {
+      showOrderToast('error', 'No open shift — cannot complete sale.')
+      setShowPaymentPopup(false)
+      setShowCustomerModal(false)
+      return
+    }
     setIsPlacingOrder(true)
     try {
       const saleData = {
@@ -334,6 +443,7 @@ function POSPage() {
       await salesApi.save(saleData)
       showOrderToast('success', 'Order placed successfully!')
       handlePrint()
+      loadPosShift()
       // Full POS reset after successful transaction
       setCart([])
       setPaymentMethod('cash')
@@ -365,11 +475,71 @@ function POSPage() {
           <button type="button" className="pos-order-toast-dismiss" onClick={dismissOrderToast} aria-label="Dismiss">×</button>
         </div>
       )}
-      <POSHeader />
+      <POSHeader
+        openShift={posShift}
+        shiftLoading={shiftLoading}
+        onCloseShift={handleCloseShift}
+        closingShift={zCloseLoading}
+      />
+      <div className={`pos-shift-bar ${posShift ? 'pos-shift-bar--open' : 'pos-shift-bar--closed'}`}>
+        {shiftLoading ? (
+          <span className="pos-shift-bar-text">Checking shift…</span>
+        ) : posShift ? (
+          <>
+            <span className="pos-shift-bar-text">
+              <strong>Shift #{posShift.id}</strong> open · since {posShift.openedAt ? new Date(posShift.openedAt).toLocaleString() : '—'}
+              {posShift.openedBy && ` · ${posShift.openedBy.firstName} ${posShift.openedBy.lastName}`}
+            </span>
+            <span className="pos-shift-bar-hint">Close with Z Report (Sales Analysis) when done.</span>
+          </>
+        ) : (
+          <>
+            <span className="pos-shift-bar-text"><strong>No open shift</strong> — open before selling.</span>
+            <button type="button" className="pos-shift-open-btn" onClick={handleOpenShift} disabled={openingShift}>
+              {openingShift ? 'Opening…' : 'Open shift'}
+            </button>
+          </>
+        )}
+      </div>
       <div className="pos-layout">
-        <POSSidebar />
+        <POSSidebar
+          shift={posShift}
+          shiftLoading={shiftLoading}
+          openingShift={openingShift}
+          onOpenShift={handleOpenShift}
+        />
         <main className="pos-main">
-          <div className="pos-content">
+          <div className={`pos-content${posSalesLocked ? ' pos-content--sales-locked' : ''}`}>
+            {posSalesLocked && (
+              <div
+                className="pos-shift-lock-overlay"
+                role="alertdialog"
+                aria-live="polite"
+                aria-labelledby="pos-shift-lock-title"
+                aria-describedby="pos-shift-lock-desc"
+              >
+                <div className="pos-shift-lock-card">
+                  <h2 id="pos-shift-lock-title" className="pos-shift-lock-title">
+                    {shiftLoading ? 'Checking register…' : 'POS locked'}
+                  </h2>
+                  <p id="pos-shift-lock-desc" className="pos-shift-lock-text">
+                    {shiftLoading
+                      ? 'Please wait while we verify the register shift.'
+                      : 'Open a register shift before scanning, adding to cart, or taking payment. Use Open shift in the bar above or in the left sidebar.'}
+                  </p>
+                  {!shiftLoading && (
+                    <button
+                      type="button"
+                      className="pos-shift-lock-open-btn"
+                      onClick={handleOpenShift}
+                      disabled={openingShift}
+                    >
+                      {openingShift ? 'Opening…' : 'Open shift'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="pos-left">
               <div className="pos-inputs-card">
                 <h3 className="pos-section-label">Scan or search</h3>
@@ -382,16 +552,20 @@ function POSPage() {
                       ref={searchInputRef}
                       type="text"
                       className="pos-search-input"
-                      placeholder="Scan barcode or search by name..."
+                      placeholder={posSalesLocked ? 'Open shift to scan or search…' : 'Scan barcode or search by name...'}
                       value={searchQuery}
                       onChange={handleSearchChange}
                       onFocus={() => setSearchError('')}
                       autoComplete="off"
-                      autoFocus
+                      autoFocus={!posSalesLocked}
+                      disabled={posSalesLocked}
                       aria-label="Scan barcode or search by product name"
+                      aria-disabled={posSalesLocked}
                     />
                   </div>
-                  <button type="submit" className="pos-search-add-btn">Add</button>
+                  <button type="submit" className="pos-search-add-btn" disabled={posSalesLocked}>
+                    Add
+                  </button>
                 </form>
                 {searchError && (
                   <p className="pos-search-error" role="alert">
@@ -406,7 +580,13 @@ function POSPage() {
                     {searchTrimmed ? 'Search results' : showCategoryBoxes ? 'Categories' : 'Products'}
                   </h3>
                   {searchTrimmed ? null : !showCategoryBoxes && (
-                    <button type="button" className="pos-back-categories" onClick={() => setSelectedCategory(null)} title="Back to categories">
+                    <button
+                      type="button"
+                      className="pos-back-categories"
+                      onClick={() => setSelectedCategory(null)}
+                      title="Back to categories"
+                      disabled={posSalesLocked}
+                    >
                       <FontAwesomeIcon icon={faArrowLeft} /> Back to categories
                     </button>
                   )}
@@ -423,6 +603,7 @@ function POSPage() {
                           key={pid}
                           className={`pos-product-card ${inCart ? 'pos-product-in-cart' : ''}`}
                           onClick={() => addToCart(p)}
+                          disabled={posSalesLocked}
                         >
                           {p.categoryId != null && (
                             <span className="pos-product-category-icon" title={p.category || ''}>
@@ -460,6 +641,7 @@ function POSPage() {
                         key={c.id}
                         className="pos-category-box"
                         onClick={() => setSelectedCategory(c.categoryName)}
+                        disabled={posSalesLocked}
                       >
                         <span className="pos-category-box-icon-wrap">
                           <FontAwesomeIcon icon={getCategoryIcon(c.id)} className="pos-category-box-icon" />
@@ -483,6 +665,7 @@ function POSPage() {
                           key={pid}
                           className={`pos-product-card ${inCart ? 'pos-product-in-cart' : ''}`}
                           onClick={() => addToCart(p)}
+                          disabled={posSalesLocked}
                         >
                           {p.categoryId != null && (
                             <span className="pos-product-category-icon" title={p.category || ''}>
@@ -548,9 +731,9 @@ function POSPage() {
                             <div className="pos-item-name">{c.productName}</div>
                             <div className="pos-item-footer">
                               <div className="pos-item-qty-picker">
-                                <button type="button" onClick={() => updateQty(c.productId, -1)}><FontAwesomeIcon icon={faMinus} /></button>
+                                <button type="button" onClick={() => updateQty(c.productId, -1)} disabled={posSalesLocked} aria-label="Decrease quantity"><FontAwesomeIcon icon={faMinus} /></button>
                                 <span>{c.quantity}</span>
-                                <button type="button" onClick={() => updateQty(c.productId, 1)}><FontAwesomeIcon icon={faPlus} /></button>
+                                <button type="button" onClick={() => updateQty(c.productId, 1)} disabled={posSalesLocked} aria-label="Increase quantity"><FontAwesomeIcon icon={faPlus} /></button>
                               </div>
                               <div className="pos-item-price">
                                 <span className="pos-item-price-original">
@@ -567,6 +750,7 @@ function POSPage() {
                                 className="pos-item-remove-btn"
                                 onClick={() => removeFromCart(c.productId)}
                                 title="Remove item"
+                                disabled={posSalesLocked}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
@@ -602,6 +786,7 @@ function POSPage() {
                       value={cartDiscountPercent}
                       onChange={(e) => setCartDiscountPercent(e.target.value.replace(/[^0-9.]/g, ''))}
                       aria-label="Discount percentage"
+                      disabled={posSalesLocked}
                     />
                   </div>
                   <div className="pos-summary-row pos-summary-row--discount">
@@ -617,8 +802,9 @@ function POSPage() {
                 <div className="pos-cart-actions-row">
                   <button
                     className="pos-place-order-btn"
-                    disabled={cart.length === 0 || isPlacingOrder}
+                    disabled={cart.length === 0 || isPlacingOrder || !posShift?.id}
                     onClick={handleNextClick}
+                    title={!posShift?.id ? 'Open a shift first' : ''}
                   >
                     <div className="pos-btn-circle">
                       {isPlacingOrder ? <div className="pos-spinner" /> : <FontAwesomeIcon icon={faChevronRight} />}

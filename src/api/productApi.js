@@ -9,7 +9,7 @@ function fromBackend(p) {
   if (!p) return null
   const rawBarCode = p.barCode ?? p.barcode
   const barcode = rawBarCode != null && rawBarCode !== '' ? String(rawBarCode).trim() : null
-  return {
+  const mapped = {
     ...p,
     barcode,
     category: p.category?.categoryName ?? '',
@@ -21,6 +21,8 @@ function fromBackend(p) {
     lowStock: p.minStockLevel ?? 0,
     discountPercent: p.discountPercentage != null ? Number(p.discountPercentage) : 0
   }
+  delete mapped.unit
+  return mapped
 }
 
 /** Map FE product to BE save/update body */
@@ -33,7 +35,6 @@ function toBackend(body, isUpdate = false) {
     discountPercentage: Number(body.discountPercent ?? body.discountPercentage ?? 0),
     stockQty: Number(body.quantity ?? body.stockQty ?? 0),
     minStockLevel: Number(body.lowStock ?? body.minStockLevel ?? 0),
-    unit: body.unit || 'pcs',
     isActive: body.isActive !== false
   }
   if (isUpdate && body.id) payload.id = body.id

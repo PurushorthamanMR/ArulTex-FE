@@ -6,15 +6,18 @@ import {
     faChartBar,
     faChartLine,
     faTrophy,
-    faDollarSign,
     faExclamationTriangle,
-    faCheck
+    faPrint,
+    faClock
 } from '@fortawesome/free-solid-svg-icons'
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell, PieChart, Pie, Legend
+    BarChart, Bar, Cell
 } from 'recharts'
+import Swal from 'sweetalert2'
 import * as salesApi from '../api/salesApi'
+import * as shiftApi from '../api/shiftApi'
+import { downloadTablePdf, downloadZReportPdf } from '../utils/pdfExport'
 import '../styles/SalesAnalysis.css'
 
 const COLORS = ['#0d9488', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
@@ -25,20 +28,48 @@ function SalesAnalysis() {
     const [activeMetricTab, setActiveMetricTab] = useState('daily')
     const [trendData, setTrendData] = useState({ daily: [], monthly: [], yearly: [] })
     const [topProducts, setTopProducts] = useState([])
-    const [profitability, setProfitability] = useState([])
-    const [lowStock, setLowStock] = useState([])
+    const [reportDateRange, setReportDateRange] = useState({
+        fromDate: new Date().toISOString().slice(0, 10),
+        toDate: new Date().toISOString().slice(0, 10)
+    })
+    const [xReport, setXReport] = useState(null)
+    const [zReport, setZReport] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [zPrintSaving, setZPrintSaving] = useState(false)
+    const [openShift, setOpenShift] = useState(null)
+    /** Default date range — avoids requesting “current shift” before we know shift status */
+    const [useShiftForXZ, setUseShiftForXZ] = useState(false)
+    const [shiftReady, setShiftReady] = useState(false)
+    const [xzError, setXzError] = useState(null)
+
+    const loadShift = useCallback(async () => {
+        try {
+            const s = await shiftApi.getCurrent()
+            setOpenShift(s && s.id ? s : null)
+        } catch {
+            setOpenShift(null)
+        } finally {
+            setShiftReady(true)
+        }
+    }, [])
 
     const fetchData = useCallback(async () => {
         setLoading(true)
         setError(null)
+        setXzError(null)
+        const useShift = shiftReady && Boolean(openShift?.id && useShiftForXZ)
+        const xzParams = useShift
+            ? {
+                useOpenShift: true,
+                fromDate: reportDateRange.fromDate,
+                toDate: reportDateRange.toDate
+            }
+            : { fromDate: reportDateRange.fromDate, toDate: reportDateRange.toDate }
         try {
-            const [trend, top, profit, low] = await Promise.all([
+            const [trend, top] = await Promise.all([
                 salesApi.getTrends(),
-                salesApi.getTopProducts(10),
-                salesApi.getProfitability(),
-                salesApi.getLowStock()
+                salesApi.getTopProducts(10)
             ])
             setTrendData(
                 trend && typeof trend === 'object'
@@ -50,14 +81,35 @@ function SalesAnalysis() {
                     : { daily: [], monthly: [], yearly: [] }
             )
             setTopProducts(Array.isArray(top) ? top : [])
-            setProfitability(Array.isArray(profit) ? profit : [])
-            setLowStock(Array.isArray(low) ? low : [])
         } catch (err) {
-            setError(err.message || 'Failed to load analysis data')
+            setError(err.message || 'Failed to load charts and trends')
+        }
+        try {
+            const [xData, zData] = await Promise.all([
+                salesApi.getXReport(xzParams),
+                salesApi.getZReport(xzParams)
+            ])
+            setXReport(xData && typeof xData === 'object' ? xData : null)
+            setZReport(zData && typeof zData === 'object' ? zData : null)
+            setXzError(null)
+        } catch (err) {
+            setXReport(null)
+            setZReport(null)
+            setXzError(err.message || 'Could not load X/Z reports')
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [reportDateRange, openShift, useShiftForXZ, shiftReady])
+
+    useEffect(() => {
+        if (shiftReady && !openShift?.id && useShiftForXZ) {
+            setUseShiftForXZ(false)
+        }
+    }, [shiftReady, openShift, useShiftForXZ])
+
+    useEffect(() => {
+        loadShift()
+    }, [loadShift])
 
     useEffect(() => {
         fetchData()
@@ -98,19 +150,6 @@ function SalesAnalysis() {
         revenue: Number(tp.totalRevenue)
     }))
 
-    // --- Profitability Chart ---
-    const profitabilityChartData = (profitability || []).map(p => ({
-        name: p.categoryName,
-        value: Math.round(Number(p.profit))
-    }))
-
-    // Best Category
-    const sortedProfit = [...profitabilityChartData].sort((a, b) => b.value - a.value)
-    const bestCat = sortedProfit[0]?.name || 'N/A'
-    const totalRevenue = profitability.reduce((s, p) => s + p.revenue, 0)
-    const totalProfit = profitability.reduce((s, p) => s + p.profit, 0)
-    const avgMargin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0
-
     const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
     const metricTabData = {
@@ -127,6 +166,83 @@ function SalesAnalysis() {
 
     const activeChartData = metricTabData[activeMetricTab]
     const activeColor = metricColors[activeMetricTab]
+    const printRangeText =
+        xReport?.reportScope === 'shift' && xReport?.shiftOpenedAt
+            ? `Shift #${xReport.shiftId} · opened ${new Date(xReport.shiftOpenedAt).toLocaleString()}`
+            : `${xReport?.fromDate || reportDateRange.fromDate} → ${xReport?.toDate || reportDateRange.toDate}`
+
+    const xzScopeLabel =
+        xReport?.reportScope === 'shift' && xReport?.shiftId != null
+            ? `Shift #${xReport.shiftId}`
+            : `${reportDateRange.fromDate} → ${reportDateRange.toDate}`
+
+    const canRunZClose = Boolean(shiftReady && openShift?.id && useShiftForXZ)
+
+    const handlePrintXReport = () => {
+        const rows = [
+            ...((xReport?.payments || []).map((p) => [
+                'Payment',
+                p.paymentMethod,
+                String(p.count),
+                Number(p.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })
+            ])),
+            ...((xReport?.categories || []).map((c) => [
+                'Category',
+                c.categoryName,
+                String(c.quantity),
+                Number(c.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })
+            ])),
+            ['Summary', 'Total Cash Sales', '', Number(xReport?.totalCashSale || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })],
+            ['Summary', 'Total Card Sales', '', Number(xReport?.totalCardSale || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })],
+            ['Summary', 'Transactions', String(xReport?.transactionCount || 0), ''],
+            ['Summary', 'Total Sales', '', Number(xReport?.totalSales || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })],
+            ['Summary', 'Avg Ticket', '', Number(xReport?.avgTransactionValue || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })]
+        ]
+
+        downloadTablePdf({
+            title: 'X Report',
+            subtitle: `Sales Analysis | ${printRangeText}`,
+            columns: ['Section', 'Name', 'Count / Qty', 'Amount (LKR)'],
+            rows,
+            filename: `X_Report_${new Date().toISOString().slice(0, 10)}.pdf`
+        })
+    }
+
+    const handlePrintZReport = async () => {
+        if (!canRunZClose) return
+        const { isConfirmed } = await Swal.fire({
+            icon: 'warning',
+            title: 'Close shift (Z Report)?',
+            html: 'This <strong>saves the Z report</strong>, <strong>closes the register shift</strong> (totals reset for the next period), and downloads the PDF.<br/><br/>New sales will require <strong>Open shift</strong> on POS first.',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, close shift',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b'
+        })
+        if (!isConfirmed) return
+        setZPrintSaving(true)
+        try {
+            const saved = await salesApi.closeZReport()
+            downloadZReportPdf(saved, `Archived #${saved.id} | ${printRangeText}`)
+            await loadShift()
+            await Swal.fire({
+                icon: 'success',
+                title: 'Shift closed',
+                text: `Z Report #${saved.id} saved. Open a new shift on POS to sell again.`,
+                confirmButtonColor: '#0d9488'
+            })
+        } catch (err) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Z Report failed',
+                text: err?.message || 'Could not close shift or save Z report.',
+                confirmButtonColor: '#0d9488'
+            })
+        } finally {
+            setZPrintSaving(false)
+        }
+    }
 
     return (
         <div className="analysis-container">
@@ -137,6 +253,18 @@ function SalesAnalysis() {
                     <p className="page-subtitle">Fancy Shop Performance & Growth Insights</p>
                 </div>
                 <div className="header-actions">
+                    <input
+                        type="date"
+                        className="year-select"
+                        value={reportDateRange.fromDate}
+                        onChange={(e) => setReportDateRange((prev) => ({ ...prev, fromDate: e.target.value }))}
+                    />
+                    <input
+                        type="date"
+                        className="year-select"
+                        value={reportDateRange.toDate}
+                        onChange={(e) => setReportDateRange((prev) => ({ ...prev, toDate: e.target.value }))}
+                    />
                     <select
                         className="year-select"
                         value={selectedYear}
@@ -144,13 +272,89 @@ function SalesAnalysis() {
                     >
                         {years.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
-                    <button type="button" className="btn-refresh" onClick={fetchData} disabled={loading}>
+                    <button
+                        type="button"
+                        className="btn-refresh"
+                        onClick={() => { loadShift(); fetchData() }}
+                        disabled={loading}
+                    >
                         {loading ? '⟳ Updating...' : '⟳ Refresh'}
                     </button>
                 </div>
             </div>
 
-            {error && <div className="analysis-error"><FontAwesomeIcon icon={faExclamationTriangle} /> {error}</div>}
+            {error && (
+                <div className="analysis-error">
+                    <FontAwesomeIcon icon={faExclamationTriangle} /> {error}
+                </div>
+            )}
+
+            <div
+                className={`analysis-card wide sa-register-panel ${openShift ? 'sa-register-panel--open' : 'sa-register-panel--closed'}`}
+            >
+                <div className="sa-register-panel__main">
+                    <div className="sa-register-panel__status">
+                        <span className={`sa-register-dot ${openShift ? 'sa-register-dot--on' : 'sa-register-dot--off'}`} aria-hidden />
+                        <FontAwesomeIcon icon={faClock} className="sa-register-panel__icon" />
+                        <div className="sa-register-panel__text">
+                            {!shiftReady ? (
+                                <p className="sa-register-panel__title">Checking register…</p>
+                            ) : openShift ? (
+                                <>
+                                    <p className="sa-register-panel__title">
+                                        Register open — <strong>Shift #{openShift.id}</strong>
+                                    </p>
+                                    <p className="sa-register-panel__meta">
+                                        Since {openShift.openedAt ? new Date(openShift.openedAt).toLocaleString() : '—'}
+                                        {openShift.openedBy && (
+                                            <>
+                                                {' '}
+                                                · {openShift.openedBy.firstName} {openShift.openedBy.lastName}
+                                            </>
+                                        )}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="sa-register-panel__title">No open shift</p>
+                                    <p className="sa-register-panel__meta">
+                                        Open a shift on <strong>POS</strong> before taking sales. X and Z below use the <strong>date range</strong> in the header.
+                                        <strong> Z Report &amp; close shift</strong> is only available while a shift is open and you choose <strong>Current shift</strong>.
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    <div className="sa-register-panel__scope">
+                        <span className="sa-scope-label">X / Z scope</span>
+                        <div className="sa-mode-segment" role="group" aria-label="X and Z report scope">
+                            <button
+                                type="button"
+                                className={`sa-mode-segment__btn ${!useShiftForXZ ? 'sa-mode-segment__btn--active' : ''}`}
+                                onClick={() => setUseShiftForXZ(false)}
+                            >
+                                <FontAwesomeIcon icon={faCalendarAlt} /> Date range
+                            </button>
+                            <button
+                                type="button"
+                                className={`sa-mode-segment__btn ${useShiftForXZ ? 'sa-mode-segment__btn--active' : ''}`}
+                                disabled={!shiftReady || !openShift?.id}
+                                title={
+                                    !shiftReady
+                                        ? 'Checking shift…'
+                                        : !openShift?.id
+                                            ? 'Open a shift on POS first'
+                                            : 'Totals for the open register shift only'
+                                }
+                                onClick={() => setUseShiftForXZ(true)}
+                            >
+                                <FontAwesomeIcon icon={faChartBar} /> Current shift
+                            </button>
+                        </div>
+                        <p className="sa-scope-hint">Uses the two dates in the page header for <strong>Date range</strong>.</p>
+                    </div>
+                </div>
+            </div>
 
             {/* KPI Summary Cards */}
             <div className="analysis-stats-row">
@@ -291,88 +495,145 @@ function SalesAnalysis() {
                     </div>
                 </section>
 
-                {/* ======= Profitability Analysis ======= */}
-                <section className="analysis-card">
-                    <div className="card-header">
-                        <h3><FontAwesomeIcon icon={faDollarSign} /> Profitability Analysis</h3>
-                        <span className="card-badge orange">By Category</span>
+                {/* ======= X & Z Reports ======= */}
+                <section className="analysis-card wide sa-xz-section">
+                    <div className="card-header sa-xz-header">
+                        <div>
+                            <h3><FontAwesomeIcon icon={faChartBar} /> X Report &amp; Z Report</h3>
+                            <span className="sa-xz-scope-badge" title="Figures shown in tables below">
+                                Showing: {xzScopeLabel}
+                            </span>
+                        </div>
+                        <div className="sa-xz-actions">
+                            <button type="button" className="btn-refresh" onClick={handlePrintXReport}>
+                                <FontAwesomeIcon icon={faPrint} /> Print X Report
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-refresh sa-btn-z-close"
+                                onClick={handlePrintZReport}
+                                disabled={!canRunZClose || zPrintSaving || loading}
+                                title={
+                                    !canRunZClose
+                                        ? 'Open a shift on POS, choose “Current shift”, then close with Z'
+                                        : 'Saves Z archive and closes the register shift'
+                                }
+                            >
+                                <FontAwesomeIcon icon={faPrint} /> {zPrintSaving ? 'Closing…' : 'Z Report & close shift'}
+                            </button>
+                        </div>
                     </div>
-                    {profitabilityChartData.length === 0 ? (
-                        <div className="no-data">No profitability data available</div>
-                    ) : (
-                        <>
-                            <div style={{ height: '220px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={profitabilityChartData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={55}
-                                            outerRadius={85}
-                                            paddingAngle={3}
-                                            dataKey="value"
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                            labelLine={false}
-                                        >
-                                            {profitabilityChartData.map((_, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            formatter={(v) => [formatCurrency(v), 'Profit']}
-                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 25px rgba(0,0,0,0.1)' }}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                            <div className="retail-metrics">
-                                <div className="retail-metric-item">
-                                    <span className="retail-metric-label">Best Category</span>
-                                    <span className="retail-metric-value" style={{ color: COLORS[0], fontSize: '13px' }}>{bestCat}</span>
-                                </div>
-                                <div className="retail-metric-item">
-                                    <span className="retail-metric-label">Total Profit</span>
-                                    <span className="retail-metric-value" style={{ fontSize: '13px' }}>{formatCurrency(totalProfit)}</span>
-                                </div>
-                                <div className="retail-metric-item">
-                                    <span className="retail-metric-label">Avg Margin</span>
-                                    <span className="retail-metric-value" style={{ color: avgMargin >= 20 ? '#059669' : '#dc2626', fontSize: '13px' }}>{avgMargin}%</span>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </section>
-
-                {/* ======= Low Stock Alerts ======= */}
-                <section className="analysis-card wide">
-                    <div className="card-header">
-                        <h3><FontAwesomeIcon icon={faExclamationTriangle} /> Low Stock Alerts</h3>
-                        <span className="card-badge red">{lowStock.length} Items Need Restocking</span>
-                    </div>
-                    {lowStock.length === 0 ? (
-                        <div className="no-data"><FontAwesomeIcon icon={faCheck} /> All inventory levels are healthy</div>
-                    ) : (
-                        <div className="low-stock-grid">
-                            {lowStock.slice(0, 8).map(item => (
-                                <div key={item.id} className="low-stock-item">
-                                    <div className="item-info">
-                                        <span className="item-name">{item.productName}</span>
-                                        <span className="item-cat">{item.category?.categoryName || 'Uncategorized'}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                                        <span className="item-qty-badge">Stock: {item.stockQty}</span>
-                                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Min: {item.minStockLevel}</span>
-                                    </div>
-                                </div>
-                            ))}
+                    {xzError && (
+                        <div className="sa-xz-error">
+                            <FontAwesomeIcon icon={faExclamationTriangle} /> {xzError}
                         </div>
                     )}
-                    {lowStock.length > 8 && (
-                        <p style={{ textAlign: 'center', fontSize: '12px', color: '#dc2626', marginTop: '12px' }}>
-                            + {lowStock.length - 8} more items critically low
+                    <p className="sa-xz-intro">
+                        <strong>X Report</strong> is read-only (any time). <strong>Z Report</strong> ends the shift: saves an archive, <strong>closes the register</strong>, and requires an open shift + <strong>Current shift</strong> scope. Archives: <strong>Reports → Z Report</strong>.
+                    </p>
+                    {xReport?.shiftScopeUnavailable && useShiftForXZ && (
+                        <p className="sa-xz-fallback-notice">
+                            You chose <strong>Current shift</strong>, but there is no open shift — numbers below are for the <strong>selected date range</strong>.
                         </p>
                     )}
+                    <div className="analysis-stats-row" style={{ marginBottom: '16px' }}>
+                        <div className="stat-card primary">
+                            <span className="stat-label">X Report Sales Total</span>
+                            <span className="stat-value">{formatCurrency(xReport?.totalSales || 0)}</span>
+                            <span className="stat-footer">{xReport?.transactionCount || 0} transactions</span>
+                        </div>
+                        <div className="stat-card secondary">
+                            <span className="stat-label">X Report Avg Ticket</span>
+                            <span className="stat-value">{formatCurrency(xReport?.avgTransactionValue || 0)}</span>
+                            <span className="stat-footer">{xReport?.fromDate || reportDateRange.fromDate} to {xReport?.toDate || reportDateRange.toDate}</span>
+                        </div>
+                        <div className="stat-card tertiary">
+                            <span className="stat-label">Z Report Grand Total</span>
+                            <span className="stat-value">{formatCurrency(zReport?.grandTotal || 0)}</span>
+                            <span className="stat-footer">{zReport?.dailyTotals?.length || 0} day records</span>
+                        </div>
+                    </div>
+                    <div className="analysis-stats-row" style={{ marginBottom: '20px' }}>
+                        <div className="stat-card primary">
+                            <span className="stat-label">Total cash sales</span>
+                            <span className="stat-value">{formatCurrency(xReport?.totalCashSale ?? zReport?.totalCashSale ?? 0)}</span>
+                            <span className="stat-footer">X / Z period</span>
+                        </div>
+                        <div className="stat-card secondary">
+                            <span className="stat-label">Total card sales</span>
+                            <span className="stat-value">{formatCurrency(xReport?.totalCardSale ?? zReport?.totalCardSale ?? 0)}</span>
+                            <span className="stat-footer">X / Z period</span>
+                        </div>
+                    </div>
+                    <div className="analysis-grid">
+                        <div className="analysis-table-wrapper">
+                            <table className="analysis-table">
+                                <thead>
+                                    <tr>
+                                        <th colSpan="3">X Report - Payment Breakdown</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Payment</th>
+                                        <th>Count</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(xReport?.payments || []).length === 0 ? (
+                                        <tr><td colSpan="3" className="no-data">No payment data</td></tr>
+                                    ) : (
+                                        (xReport.payments || []).map((p) => (
+                                            <tr key={p.paymentMethod}>
+                                                <td>{p.paymentMethod}</td>
+                                                <td>{p.count}</td>
+                                                <td className="amount-cell">{formatCurrency(p.amount)}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="analysis-table-wrapper">
+                            <table className="analysis-table">
+                                <thead>
+                                    <tr>
+                                        <th colSpan="5">Z Report - Daily Totals</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Txns</th>
+                                        <th>Total</th>
+                                        <th>Cash</th>
+                                        <th>Card</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(zReport?.dailyTotals || []).length === 0 ? (
+                                        <tr><td colSpan="5" className="no-data">No daily totals</td></tr>
+                                    ) : (
+                                        <>
+                                            {(zReport.dailyTotals || []).map((d) => (
+                                                <tr key={d.date}>
+                                                    <td className="date-cell">{d.date}</td>
+                                                    <td>{d.transactionCount}</td>
+                                                    <td className="amount-cell">{formatCurrency(d.totalSales)}</td>
+                                                    <td>{formatCurrency(d.cashSales ?? 0)}</td>
+                                                    <td>{formatCurrency(d.cardSales ?? 0)}</td>
+                                                </tr>
+                                            ))}
+                                            <tr style={{ fontWeight: 800, background: '#f8fafc' }}>
+                                                <td>Period total</td>
+                                                <td>{zReport?.transactionCount ?? 0}</td>
+                                                <td className="amount-cell">{formatCurrency(zReport?.grandTotal ?? 0)}</td>
+                                                <td>{formatCurrency(zReport?.totalCashSale ?? 0)}</td>
+                                                <td>{formatCurrency(zReport?.totalCardSale ?? 0)}</td>
+                                            </tr>
+                                        </>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </section>
 
             </div>
