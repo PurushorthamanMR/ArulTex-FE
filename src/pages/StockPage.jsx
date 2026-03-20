@@ -5,7 +5,7 @@ import { faPen, faSyncAlt, faSearch } from '@fortawesome/free-solid-svg-icons'
 import * as productApi from '../api/productApi'
 import '../styles/StockPage.css'
 
-function StockPage({ onEdit }) {
+function StockPage({ onEdit, hideEditButton = false }) {
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,11 +44,8 @@ function StockPage({ onEdit }) {
       onEdit(product.id)
       return
     }
-    const supplierId = product.supplierId ?? product.supplier?.id ?? ''
-    const params = new URLSearchParams()
-    if (supplierId) params.set('supplierId', String(supplierId))
-    params.set('productName', product.productName || '')
-    navigate(`/purchase?${params.toString()}`)
+    // Stock edit should navigate to product edit page.
+    navigate(`/products/edit/${product.id}`)
   }
 
   const filteredProducts = products.filter((p) => {
@@ -60,6 +57,8 @@ function StockPage({ onEdit }) {
       (p.supplier?.supplierName || '').toLowerCase().includes(q)
     )
   })
+
+  const visibleColumnCount = hideEditButton ? 5 : 6
 
   return (
     <div className="stock-page-container">
@@ -107,14 +106,18 @@ function StockPage({ onEdit }) {
               <th>Category</th>
               <th>Supplier</th>
               <th>Stock Qty</th>
-              <th>Action</th>
+              {!hideEditButton && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="6" className="no-data">Loading...</td></tr>
+              <tr>
+                <td colSpan={visibleColumnCount} className="no-data">Loading...</td>
+              </tr>
             ) : filteredProducts.length === 0 ? (
-              <tr><td colSpan="6" className="no-data">No products found</td></tr>
+              <tr>
+                <td colSpan={visibleColumnCount} className="no-data">No products found</td>
+              </tr>
             ) : (
               filteredProducts.map((p) => (
                 <tr key={p.id}>
@@ -123,16 +126,18 @@ function StockPage({ onEdit }) {
                   <td>{p.category}</td>
                   <td>{p.supplier?.supplierName || 'NoSupplier'}</td>
                   <td>{p.quantity}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="action-icon-btn edit-btn"
-                      title="Edit product"
-                      onClick={() => handleEdit(p)}
-                    >
-                      <FontAwesomeIcon icon={faPen} />
-                    </button>
-                  </td>
+                  {!hideEditButton && (
+                    <td>
+                      <button
+                        type="button"
+                        className="action-icon-btn edit-btn"
+                        title="Edit product"
+                        onClick={() => handleEdit(p)}
+                      >
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

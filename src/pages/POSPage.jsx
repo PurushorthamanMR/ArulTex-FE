@@ -24,6 +24,10 @@ import NewCustomer from './NewCustomer'
 import PosCustomerList from './pos/PosCustomerList'
 import PosCustomerNew from './pos/PosCustomerNew'
 import PosCustomerEdit from './pos/PosCustomerEdit'
+import PosTransactionReport from './pos/PosTransactionReport'
+import PosZReportPage from './pos/PosZReportPage'
+import PosBarcodePage from './pos/PosBarcodePage'
+import PosStockPage from './pos/PosStockPage'
 import '../styles/POSPage.css'
 
 function POSPage() {
@@ -50,7 +54,7 @@ function POSPage() {
   const [cashGiven, setCashGiven] = useState('')
   const [paymentError, setPaymentError] = useState('')
   const [cartDiscountPercent, setCartDiscountPercent] = useState('')
-  const [lastPrintPayment, setLastPrintPayment] = useState(null) // { paymentMethod, cashReceived, balanceAmount }
+  const [lastPrintPayment, setLastPrintPayment] = useState(null) // { paymentMethod, cashReceived, balanceAmount, cardReceived? }
   const [draftInvoiceNo, setDraftInvoiceNo] = useState(() => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`)
   const [posShift, setPosShift] = useState(null)
   const [shiftLoading, setShiftLoading] = useState(true)
@@ -67,7 +71,7 @@ function POSPage() {
 
   const generateNewInvoiceNo = () => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`
 
-  const posPath = location.pathname || ''
+  const posPath = (location.pathname || '').replace(/\/$/, '')
   const userRole = (localStorage.getItem('userRole') || '').toUpperCase()
   const isStaff = userRole === 'STAFF'
   const adminView = (() => {
@@ -75,6 +79,10 @@ function POSPage() {
       if (posPath === '/pos/customer') return { key: 'pos-customer-list', node: <PosCustomerList /> }
       if (posPath === '/pos/customer/new') return { key: 'pos-customer-new', node: <PosCustomerNew /> }
       if (posPath.startsWith('/pos/customer/edit/')) return { key: 'pos-customer-edit', node: <PosCustomerEdit /> }
+      if (posPath === '/pos/transaction') return { key: 'transaction', node: <PosTransactionReport /> }
+      if (posPath === '/pos/z-report') return { key: 'z-report', node: <PosZReportPage /> }
+      if (posPath === '/pos/barcode') return { key: 'barcode', node: <PosBarcodePage /> }
+      if (posPath === '/pos/stock') return { key: 'stock', node: <PosStockPage /> }
       return null
     }
 
@@ -83,7 +91,7 @@ function POSPage() {
     if (posPath === '/pos/transaction') return { key: 'transaction', node: <TransactionReport /> }
     if (posPath === '/pos/z-report') return { key: 'z-report', node: <ZReportPage /> }
     if (posPath === '/pos/barcode') return { key: 'barcode', node: <BarcodePage /> }
-    if (posPath === '/pos/stock') return { key: 'stock', node: <StockPage /> }
+    if (posPath === '/pos/stock') return { key: 'stock', node: <StockPage hideEditButton /> }
     return null
   })()
 
@@ -676,6 +684,7 @@ function POSPage() {
         discountPercentage: discountPercentNum,
         cashReceived: paymentInfo?.cashReceived ?? null,
         balanceAmount: paymentInfo?.balanceAmount ?? null,
+        ...(paymentInfo?.cardReceived != null && { cardReceived: paymentInfo.cardReceived }),
         items: cart.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -705,6 +714,7 @@ function POSPage() {
 
   const handleCustomerConfirm = () => {
     setShowCustomerModal(false)
+    setPaymentMethod('cash')
     setCashGiven('')
     setPaymentError('')
     setShowPaymentPopup(true)
@@ -745,14 +755,32 @@ function POSPage() {
         )}
       </div>
       <div className="pos-layout">
+        {shiftLoading && (
+          <div
+            className="pos-loading-overlay"
+            role="status"
+            aria-live="polite"
+            aria-labelledby="pos-loading-title"
+          >
+            <div className="pos-loading-card">
+              <div className="pos-loading-spinner" aria-hidden="true" />
+              <h2 id="pos-loading-title" className="pos-loading-title">
+                Checking register…
+              </h2>
+              <p className="pos-loading-text">
+                Please wait while we verify the current shift.
+              </p>
+            </div>
+          </div>
+        )}
         <POSSidebar
           shift={posShift}
           shiftLoading={shiftLoading}
           openingShift={openingShift}
           onOpenShift={handleOpenShift}
         />
-        <main className="pos-main">
-          <div className={`pos-content${posSalesLocked ? ' pos-content--sales-locked' : ''}`}>
+        <main className={`pos-main${adminView ? ' pos-main--admin' : ''}`}>
+          <div className={`pos-content${posSalesLocked ? ' pos-content--sales-locked' : ''}${adminView ? ' pos-content--admin' : ''}`}>
             {posSalesLocked && !adminView && (
               <div
                 className="pos-shift-lock-overlay"
@@ -1220,7 +1248,7 @@ function POSPage() {
               <button
                 type="button"
                 className={`pos-payment-popup-tab ${paymentMethod === 'cash' ? 'active' : ''}`}
-                onClick={() => { setPaymentMethod('cash'); setPaymentError(''); }}
+                onClick={() => { setPaymentMethod('cash'); setCashGiven(''); setPaymentError(''); }}
               >
                 Cash
               </button>
@@ -1305,7 +1333,7 @@ function POSPage() {
                     setLastPrintPayment(payment)
                     setShowPaymentPopup(false)
                     doPlaceOrder(selectedCustomerId ?? null, payment)
-                  } else {
+                  } else if (paymentMethod === 'card') {
                     const payment = {
                       paymentMethod: 'card',
                       cashReceived: null,
@@ -1314,6 +1342,8 @@ function POSPage() {
                     setLastPrintPayment(payment)
                     setShowPaymentPopup(false)
                     doPlaceOrder(selectedCustomerId ?? null, payment)
+                  } else {
+                    setPaymentError('Invalid payment method.')
                   }
                 }}
               >
@@ -1400,7 +1430,7 @@ function POSPage() {
                 <>
                   <div className="pos-invoice-payment-row">
                     <span>Payment</span>
-                    <span>{isCash ? 'Cash' : 'Card'}</span>
+                      <span>{isCash ? 'Cash' : 'Card'}</span>
                   </div>
                   {isCash && lastPrintPayment && lastPrintPayment.cashReceived != null && (
                     <>
