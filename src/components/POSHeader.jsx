@@ -11,6 +11,19 @@ import '../styles/Header.css'
 
 const DARK_THEME_KEY = 'arultex-dark-theme'
 
+const getDisplayNameAndRole = () => {
+  const displayName =
+    [localStorage.getItem('userFirstName'), localStorage.getItem('userLastName')]
+      .filter(Boolean)
+      .join(' ') || 'User'
+
+  const rawRole = (localStorage.getItem('userRole') || '').toUpperCase()
+  const displayRole =
+    rawRole === 'DUMMY MANAGER' || rawRole === 'DUMMY_MANAGER' ? 'Manager' : (rawRole || '—')
+
+  return { displayName, displayRole }
+}
+
 /**
  * @param {{
  *   openShift?: { id: number; openedAt?: string } | null
@@ -21,6 +34,13 @@ const DARK_THEME_KEY = 'arultex-dark-theme'
  */
 function POSHeader({ openShift = null, shiftLoading = false, onCloseShift, closingShift = false }) {
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const { displayName, displayRole } = getDisplayNameAndRole()
+  const shiftSinceText =
+    openShift?.openedAt ? new Date(openShift.openedAt).toLocaleString('en-LK') : null
+  const shiftLineText =
+    openShift?.id != null
+      ? `Shift ${openShift.id} open${shiftSinceText ? ` · since ${shiftSinceText}` : ''}`
+      : null
   const [isDarkMode, setIsDarkMode] = useState(() => {
     try {
       return localStorage.getItem(DARK_THEME_KEY) === 'true'
@@ -64,7 +84,20 @@ function POSHeader({ openShift = null, shiftLoading = false, onCloseShift, closi
 
   return (
     <header className="header">
-      <div className="header-left" />
+      <div className="header-left">
+        <div className="pos-header-user">
+          <div className="user-name">{displayName}</div>
+          <div className="user-role">{displayRole}</div>
+        </div>
+      </div>
+
+      <div className="pos-header-center">
+        {openShift?.id && (
+          <div className="pos-header-shift-badge" title={shiftLineText}>
+            <span className="pos-header-shift-badge-main">{shiftLineText}</span>
+          </div>
+        )}
+      </div>
 
       <div className="header-right">
         <button

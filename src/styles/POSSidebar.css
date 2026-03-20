@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .pos-sidebar {
-  width: 70px;
-  min-width: 70px;
+  width: 90px;
+  min-width: 90px;
   flex-shrink: 0;
   background-color: #f8fafc;
   height: 100vh;
@@ -41,7 +41,7 @@
 .pos-sidebar-logo-img {
   height: 44px;
   width: auto;
-  max-width: 54px;
+  max-width: 70px;
   object-fit: contain;
   display: block;
 }
@@ -53,24 +53,28 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  max-width: 54px;
+  max-width: none;
   margin: 0 auto;
-  padding: 12px 8px;
-  background: none;
-  border: none;
+  padding: 14px 10px;
+  min-height: 64px;
+  box-sizing: border-box;
+  background-color: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   color: #800020;
   font-size: 11px;
   font-family: 'Inter', sans-serif;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   border-radius: 8px;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  line-height: 1.1;
 }
 
 .pos-sidebar-item:hover {
   background-color: #fce7e7;
   color: #991b1b;
+  border-color: rgba(153, 27, 27, 0.35);
 }
 
 .pos-sidebar-item:hover .pos-sidebar-icon {
@@ -80,11 +84,13 @@
 .pos-sidebar-item--active {
   background-color: #0d9488;
   color: #ffffff;
+  border-color: #0d9488;
 }
 
 .pos-sidebar-item--active:hover {
   background-color: #0f766e;
   color: #ffffff;
+  border-color: #0f766e;
 }
 
 .pos-sidebar-item--active .pos-sidebar-icon {
@@ -106,6 +112,13 @@
 
 .pos-sidebar-item span {
   pointer-events: none;
+  display: block;
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  text-align: center;
+  font-size: 12px;
 }
 
 .pos-sidebar-bottom {
@@ -140,15 +153,30 @@
   justify-content: center;
   gap: 4px;
   width: 100%;
-  max-width: 54px;
+  max-width: none;
   margin: 0 auto;
   padding: 10px 6px;
+  min-height: 64px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   color: #64748b;
   text-align: center;
   line-height: 1.2;
+}
+
+.pos-sidebar-shift-status span {
+  pointer-events: none;
+  display: block;
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .pos-sidebar-shift-dots {

@@ -2,9 +2,168 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSyncAlt, faPrint, faPencilAlt, faSearch } from '@fortawesome/free-solid-svg-icons'
 import JsBarcode from 'jsbarcode'
+import { renderToStaticMarkup } from 'react-dom/server'
 import * as productApi from '../api/productApi'
 import Swal from 'sweetalert2'
 import '../styles/BarcodePage.css'
+
+// Retail label size: 3cm x 2cm
+const LABEL_WIDTH_MM = 30
+const LABEL_HEIGHT_MM = 20
+const DEFAULT_GRID_COLS = 3
+const DEFAULT_GRID_ROWS = 2
+
+function barcodeValueToDataUrl(barcodeValue) {
+  if (typeof document === 'undefined') return null
+  if (!barcodeValue) return null
+  try {
+    const canvas = document.createElement('canvas')
+    // CODE128 barcodes need enough height for Zebra GT800 scanning.
+    // We generate a crisp bitmap, then let CSS scale it into the exact mm slot size.
+    JsBarcode(canvas, String(barcodeValue), {
+      format: 'CODE128',
+      displayValue: false,
+      margin: 0,
+      width: 2,
+      height: 110,
+      lineColor: '#000000',
+    })
+    return canvas.toDataURL('image/png')
+  } catch {
+    return null
+  }
+}
+
+function BarcodeLabelPrintSheet({ productNameUpper, barcodeValue, columns, rows, labelsCount }) {
+  const safeColumns = Math.max(1, Math.floor(Number(columns || DEFAULT_GRID_COLS)))
+  const safeRows = Math.max(1, Math.floor(Number(rows || DEFAULT_GRID_ROWS)))
+  const totalSlots = safeColumns * safeRows
+  const safeLabelsCount = Math.max(0, Math.min(Math.floor(Number(labelsCount || 0)), totalSlots))
+
+  const dataUrl = barcodeValueToDataUrl(barcodeValue)
+
+  return (
+    <div className="barcode-print-root">
+      <style>{`
+        * { box-sizing: border-box; }
+        @page { size: ${safeColumns * LABEL_WIDTH_MM}mm ${safeRows * LABEL_HEIGHT_MM}mm; margin: 0; }
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: ${safeColumns * LABEL_WIDTH_MM}mm;
+          height: ${safeRows * LABEL_HEIGHT_MM}mm;
+          background: #ffffff;
+        }
+
+        /* Ensure browser/printer doesn't introduce offsets */
+        @media print {
+          html, body { margin: 0 !important; padding: 0 !important; }
+          body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+          }
+        }
+
+        .barcode-print-root {
+          width: ${safeColumns * LABEL_WIDTH_MM}mm;
+          height: ${safeRows * LABEL_HEIGHT_MM}mm;
+          margin: 0;
+          padding: 0;
+        }
+
+        .barcode-label-grid {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          grid-auto-flow: row; /* Ensure left-to-right, then top-to-bottom placement */
+          grid-template-columns: repeat(${safeColumns}, ${LABEL_WIDTH_MM}mm);
+          grid-template-rows: repeat(${safeRows}, ${LABEL_HEIGHT_MM}mm);
+          align-content: start;
+          justify-content: start;
+        }
+
+        .barcode-slot {
+          width: ${LABEL_WIDTH_MM}mm;
+          height: ${LABEL_HEIGHT_MM}mm;
+          overflow: hidden;
+          background: #ffffff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 0;
+          margin: 0;
+        }
+
+        .barcode-name {
+          width: 100%;
+          text-align: center;
+          font-weight: 900;
+          letter-spacing: 0.6px;
+          font-size: 8px;
+          color: #000000;
+          line-height: 1.0;
+          margin-bottom: 0.5mm;
+          padding: 0 1mm;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .barcode-wrap {
+          width: 100%;
+          height: 11mm;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .barcode-slot-image {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: fill;
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: crisp-edges;
+        }
+
+        .barcode-number {
+          width: 100%;
+          text-align: center;
+          font-weight: 800;
+          font-size: 8px;
+          color: #000000;
+          letter-spacing: 1px;
+          font-family: 'Courier New', monospace;
+          line-height: 1.0;
+          margin-top: 0.6mm;
+          padding: 0 2px;
+          word-break: break-all;
+        }
+      `}</style>
+
+      <div className="barcode-label-grid">
+        {Array.from({ length: totalSlots }, (_, slotIndex) => {
+          const shouldRender = slotIndex < safeLabelsCount && dataUrl
+          return (
+            <div className="barcode-slot" key={slotIndex}>
+              {shouldRender ? (
+                <>
+                  <div className="barcode-name">{productNameUpper}</div>
+                  <div className="barcode-wrap">
+                    <img src={dataUrl} alt="Barcode" className="barcode-slot-image" />
+                  </div>
+                  <div className="barcode-number">{barcodeValue}</div>
+                </>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function BarcodeCanvas({ value, className = '' }) {
   const canvasRef = useRef(null)
@@ -17,7 +176,7 @@ function BarcodeCanvas({ value, className = '' }) {
         margin: 8,
         width: 2,
         height: 48,
-        lineColor: '#1e3a5f'
+        lineColor: '#000000'
       })
     } catch {
       // invalid barcode, leave canvas empty
@@ -40,6 +199,11 @@ function BarcodePage() {
   const [editBarcodeValue, setEditBarcodeValue] = useState('')
   const [savingBarcode, setSavingBarcode] = useState(false)
   const [barcodeError, setBarcodeError] = useState('')
+
+  // Label print layouts (sheet/grid)
+  const [labelsNumber, setLabelsNumber] = useState(6)
+  const [layoutColumns, setLayoutColumns] = useState(DEFAULT_GRID_COLS)
+  const [layoutRows, setLayoutRows] = useState(DEFAULT_GRID_ROWS)
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -77,144 +241,154 @@ function BarcodePage() {
     )
   })
 
-  // GS1: 100% = 25.93mm height × 37.29mm width (incl. quiet zones). Generate at ~300dpi equivalent for sharp print.
-  const getBarcodeDataUrl = useCallback((barcodeValue) => {
-    const canvas = document.createElement('canvas')
-    try {
-      const moduleWidth = 2.5 // bar width for CODE128
-      JsBarcode(canvas, barcodeValue, {
-        format: 'CODE128',
-        displayValue: false,
-        // Reduce extra padding so bars fit the slot (quiet zone handled by printer scaling).
-        margin: 0,
-        width: moduleWidth,
-        height: 80,
-        lineColor: '#1e3a5f'
-      })
-      return canvas.toDataURL('image/png')
-    } catch {
-      return null
-    }
-  }, [])
-
   const handlePrintLabel = (product) => {
-    const barcodeValue = product.barCode ? String(product.barCode).trim() : ''
+    const barcodeValue = product.barCode
+      ? String(product.barCode).trim()
+      : (product.barcode ? String(product.barcode).trim() : '')
     if (!barcodeValue) return
-    const barcodeDataUrl = getBarcodeDataUrl(barcodeValue)
-    const imgTag = barcodeDataUrl
-      ? `<img src="${barcodeDataUrl}" alt="Barcode" class="barcode-print-image" />`
-      : ''
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Barcode Label</title>
-          <meta name="description" content="GS1-sized barcode label (100%: 25.93mm × 37.29mm)">
-          <style>
-            * { box-sizing: border-box; }
 
-            /* User requested label:
-               - each label slot: 3cm (30mm) width × 2cm (20mm) height
-               - 3 columns across => page: 90mm × 20mm
-               - margins: none */
-            @page { size: 90mm 20mm; margin: 0; }
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-              width: 90mm;
-              height: 20mm;
-            }
+    const productNameUpper = (product.productName ? String(product.productName) : '').trim().toUpperCase()
 
-            .label-row {
-              width: 90mm;
-              height: 20mm;
-              display: grid;
-              grid-template-columns: repeat(3, 30mm);
-              grid-template-rows: repeat(1, 20mm);
-            }
+    const doPrintSheet = ({ nextLabelsNumber, nextColumns, nextRows }) => {
+      const sheetMarkup = renderToStaticMarkup(
+        <BarcodeLabelPrintSheet
+          productNameUpper={productNameUpper}
+          barcodeValue={barcodeValue}
+          columns={nextColumns}
+          rows={nextRows}
+          labelsCount={nextLabelsNumber}
+        />,
+      )
 
-            .barcode-label {
-              width: 30mm;
-              height: 20mm;
-              padding: 0;
-              margin: 0;
-              border: none;
-              background: transparent;
-              box-shadow: none;
-              display: block;
-            }
+      const sheetW = Math.max(1, Math.floor(Number(nextColumns))) * LABEL_WIDTH_MM
+      const sheetH = Math.max(1, Math.floor(Number(nextRows))) * LABEL_HEIGHT_MM
 
-            .barcode-label .barcode-wrap {
-              width: 100%;
-              height: 100%;
-              margin: 0;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: flex-start; /* bars first, then digits (no spacing gap) */
-              gap: 0;
-            }
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>Barcode Label</title>
+            <style>
+              @page { size: ${sheetW}mm ${sheetH}mm; margin: 0; }
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: ${sheetW}mm;
+                height: ${sheetH}mm;
+                background: #ffffff;
+                overflow: hidden;
+              }
+              body {
+                display: flex;
+                align-items: flex-start;
+                justify-content: flex-start;
+              }
+              .barcode-print-root {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: ${sheetW}mm;
+                height: ${sheetH}mm;
+                margin: 0;
+                padding: 0;
+              }
+            </style>
+          </head>
+          <body>${sheetMarkup}</body>
+        </html>
+      `
 
-            .barcode-label .barcode-print-image {
-              display: block;
-              margin: 0;
-              width: 100%;
-              height: 13mm; /* 20mm total slot height: 13mm bars + 7mm digits */
-              object-fit: fill; /* remove letterboxing/white space */
-              object-position: center;
-            }
+      const approxW = Math.min(1200, 260 + nextColumns * 220)
+      const approxH = Math.min(900, 220 + nextRows * 160)
+      const w = window.open('', '_blank', `width=${approxW},height=${approxH}`)
+      if (w) {
+        w.document.write(printContent)
+        w.document.close()
+        w.focus()
+        setTimeout(() => {
+          w.print()
+          w.close()
+        }, 500)
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: 'Pop-up blocked',
+          text: 'Please allow pop-ups to print the barcode label.'
+        })
+      }
+    }
 
-            .barcode-text {
-              font-size: 7px;
-              font-weight: 800;
-              color: #1e3a5f;
-              line-height: 7mm; /* vertically center within 7mm box */
-              letter-spacing: 0.2px;
-              margin: 0;
-              width: 100%;
-              height: 7mm;
-              display: block;
-              text-align: center;
-              white-space: nowrap; /* keep digits on one line */
-              overflow: visible; /* don't clip; avoid "side" artifacts */
-            }
-          </style>
-        </head>
-        <body>
-          <div class="label-row">
-            <div class="barcode-label">
-              <div class="barcode-wrap">
-                ${imgTag}
-                <div class="barcode-text">${barcodeValue}</div>
-              </div>
-            </div>
-            <div class="barcode-label">
-              <div class="barcode-wrap"></div>
-            </div>
-            <div class="barcode-label">
-              <div class="barcode-wrap"></div>
+    Swal.fire({
+      title: 'Label Print Layouts',
+      icon: 'question',
+      html: `
+        <div style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+          <div>
+            <label for="sw-labels-number" style="display:block; font-weight:700; margin-bottom:6px;">Labels Number</label>
+            <input
+              id="sw-labels-number"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Enter labels number"
+              value=""
+              style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-family:'Courier New', monospace;"
+            />
+            <div id="sw-layout-hint" style="font-size:12px; color:#64748b; margin-top:6px;">
+              Columns: ${DEFAULT_GRID_COLS} | Rows: — | Capacity: —
             </div>
           </div>
-        </body>
-      </html>
-    `
-    const w = window.open('', '_blank', 'width=420,height=320')
-    if (w) {
-      w.document.write(printContent)
-      w.document.close()
-      w.focus()
-      setTimeout(() => {
-        w.print()
-        w.close()
-      }, 900)
-    } else {
-      Swal.fire({
-        icon: 'info',
-        title: 'Pop-up blocked',
-        text: 'Please allow pop-ups to print the barcode label.'
-      })
-    }
+        </div>
+      `,
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Print',
+      cancelButtonText: 'Cancel',
+      didOpen: () => {
+        const root = Swal.getHtmlContainer()
+        const labelsEl = root?.querySelector('#sw-labels-number')
+        const hintEl = root?.querySelector('#sw-layout-hint')
+
+        const recalc = () => {
+          if (!labelsEl || !hintEl) return
+          const v = Number(labelsEl.value)
+          if (!Number.isFinite(v) || v < 1) return
+          const rows = Math.ceil(v / DEFAULT_GRID_COLS)
+          hintEl.textContent = `Columns: ${DEFAULT_GRID_COLS} | Rows: ${rows} | Capacity: ${DEFAULT_GRID_COLS * rows}`
+        }
+
+        if (labelsEl && hintEl) {
+          hintEl.textContent = `Columns: ${DEFAULT_GRID_COLS} | Rows: — | Capacity: —`
+          labelsEl.addEventListener('input', recalc)
+        }
+      },
+      preConfirm: () => {
+        const root = Swal.getHtmlContainer()
+        const labelsVal = root?.querySelector('#sw-labels-number')?.value
+        const nextLabelsNumber = Number(labelsVal)
+
+        if (!Number.isFinite(nextLabelsNumber) || nextLabelsNumber < 1) {
+          Swal.showValidationMessage('Labels Number should be at least 1.')
+          return false
+        }
+
+        const nextColumns = DEFAULT_GRID_COLS
+        const nextRows = Math.ceil(nextLabelsNumber / nextColumns)
+
+        return { nextLabelsNumber, nextColumns, nextRows }
+      }
+    }).then((res) => {
+      if (!res.isConfirmed || !res.value) return
+
+      const { nextLabelsNumber, nextColumns, nextRows } = res.value
+
+      setLabelsNumber(nextLabelsNumber)
+      setLayoutColumns(nextColumns)
+      setLayoutRows(nextRows)
+
+      doPrintSheet({ nextLabelsNumber, nextColumns, nextRows })
+    })
   }
 
   const openEditBarcode = (p) => {
@@ -312,6 +486,7 @@ function BarcodePage() {
                   <td className="product-name-cell">{p.productName}</td>
                   <td>
                     <div className="barcode-label-preview">
+                      <div className="barcode-label-name">{(p.productName ? String(p.productName) : '').trim().toUpperCase()}</div>
                       <BarcodeCanvas value={p.barCode ? String(p.barCode).trim() : ''} className="barcode-preview-canvas" />
                       <div className="barcode-preview-value">
                         {p.barCode ? String(p.barCode).trim() : ''}

@@ -184,6 +184,21 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+.barcode-label-preview .barcode-label-name {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  color: #000000;
+  line-height: 1.05;
+  margin-bottom: 8px;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .barcode-label-preview .barcode-preview-canvas {
   max-width: 100%;
   height: auto;
@@ -194,9 +209,9 @@
   margin-top: 6px;
   font-size: 12px;
   font-weight: 900;
-  color: #1e3a5f;
+  color: #000000;
   font-family: 'Courier New', monospace;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.9px;
   word-break: break-word;
 }
 
@@ -412,4 +427,69 @@
 .barcode-edit-modal-save:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.barcode-layouts-container {
+  margin: 12px 0 18px 0;
+}
+
+.barcode-layouts-toggle {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.barcode-layouts-toggle:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.barcode-layouts-form {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barcode-layouts-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barcode-layouts-row label {
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.barcode-layouts-row input[type="number"] {
+  width: 140px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.barcode-layouts-row input[type="number"]:focus {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+}
+
+.barcode-layouts-hint {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
 }

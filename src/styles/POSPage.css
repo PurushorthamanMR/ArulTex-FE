@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .pos-page {
+  height: 100vh;
   min-height: 100vh;
   background: #fff;
   font-family: 'Inter', sans-serif;
@@ -10,8 +11,13 @@
 
 /* Header overlays main content only; sidebar stays visible with logo at top corner */
 .pos-page .header {
-  left: 70px;
-  width: calc(100% - 70px);
+  left: 90px;
+  /* Keep `right: 0` logic from `Header.css`, but let width be auto so the sidebar offset matches. */
+  right: 0;
+  width: auto;
+  /* Prevent long header content from affecting button alignment. */
+  height: auto;
+  min-height: 60px;
 }
 
 .pos-order-toast {
@@ -82,20 +88,28 @@
 
 .pos-layout {
   display: flex;
-  margin-top: 60px;
+  margin-top: 0;
   position: relative;
 }
 
 .pos-main {
   flex: 1;
-  margin-left: 70px;
+  margin-left: 90px;
   min-height: calc(100vh - 60px);
-  padding: 20px;
+  padding: 14px 20px 20px;
   min-width: 0;
   position: relative;
   z-index: 1;
   /* Enable internal scrolling for POS content area */
-  overflow-y: auto;
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+.pos-main--admin {
+  padding: 60px 20px 20px;
 }
 
 /* Hide scrollbar UI (keep scrolling via wheel/touch) */
@@ -106,6 +120,19 @@
   /* Hide scrollbar UI but keep scrolling enabled */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+/* POS module containers: internal scroll lock */
+.pos-main .pos-category-grid,
+.pos-main .pos-product-grid,
+.pos-main .pos-orders-scroll-area,
+.pos-main .transaction-report-container,
+.pos-main .barcode-page-container,
+.pos-main .stock-page-container,
+.pos-main .pos-customer-container,
+.pos-main .pos-admin-view {
+  overflow: hidden !important;
+  touch-action: none;
 }
 .pos-main::-webkit-scrollbar,
 .pos-category-grid::-webkit-scrollbar,
@@ -121,9 +148,27 @@
   gap: 24px;
   height: calc(100vh - 100px);
   min-height: 0;
+  overflow: hidden;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
+}
+
+/* Admin/New POS modules (Transaction/Z Report/Barcodes/Stock/Customer) */
+.pos-admin-view {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.pos-content--admin {
+  /* Admin/New POS modules full-width */
+  max-width: none;
+  margin: 0;
+  gap: 0;
+  height: auto;
+  overflow: visible;
 }
 
 /* Block all selling until register shift is open */
@@ -189,6 +234,57 @@
   cursor: not-allowed;
 }
 
+/* Global POS loading overlay (prevents interaction during register/shift verification) */
+.pos-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-sizing: border-box;
+}
+
+.pos-loading-card {
+  max-width: 420px;
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.pos-loading-spinner {
+  width: 26px;
+  height: 26px;
+  margin: 0 auto 14px;
+  border: 3px solid #0d9488;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: pos-spin 1s linear infinite;
+}
+
+.pos-loading-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pos-loading-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+}
+
 .pos-product-card:disabled,
 .pos-category-box:disabled {
   opacity: 0.55;
@@ -215,6 +311,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: 100%;
 }
 
 .pos-section-label {
@@ -1699,7 +1796,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 20px 10px 90px;
+  padding: 10px 20px 10px 110px;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   border-bottom: 1px solid #e2e8f0;
