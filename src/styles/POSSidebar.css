@@ -77,6 +77,20 @@
   color: #991b1b;
 }
 
+.pos-sidebar-item--active {
+  background-color: #0d9488;
+  color: #ffffff;
+}
+
+.pos-sidebar-item--active:hover {
+  background-color: #0f766e;
+  color: #ffffff;
+}
+
+.pos-sidebar-item--active .pos-sidebar-icon {
+  color: #ffffff;
+}
+
 .pos-sidebar-item--disabled,
 .pos-sidebar-item:disabled {
   cursor: not-allowed;

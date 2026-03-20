@@ -293,6 +293,62 @@
 }
 
 /* Responsive */
+/* Tight layout for 1064x768 (and smaller) */
+@media (max-width: 1064px) and (max-height: 768px) {
+  .signin-container {
+    padding: 18px;
+  }
+
+  .signin-card {
+    max-width: 390px;
+    overflow-y: auto; /* Prevent the bottom (button) from being clipped */
+  }
+
+  .signin-content {
+    padding: 28px 22px 18px;
+  }
+
+  .signin-logo-wrap {
+    margin-bottom: 20px;
+  }
+
+  .signin-heading {
+    font-size: 24px;
+  }
+
+  .input-group {
+    margin-bottom: 14px;
+  }
+
+  .input-group label {
+    font-size: 12px;
+  }
+
+  .input-field {
+    font-size: 14px;
+    padding: 10px 42px 10px 12px;
+  }
+
+  .forgot-password {
+    margin-bottom: 14px;
+  }
+
+  .error-message {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .signin-button {
+    padding: 10px 18px;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .signin-accent-line {
+    width: 3px;
+  }
+}
+
 @media (max-width: 480px) {
   .signin-container {
     padding: 16px;

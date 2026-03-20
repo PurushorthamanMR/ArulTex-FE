@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import Swal from 'sweetalert2'
 import * as userApi from '../api/userApi'
+import { getPhoneValidationError } from '../utils/phoneValidation'
 import '../styles/NewUser.css'
 
 function NewUser({ initialData, onSave, onBack }) {
@@ -59,8 +60,14 @@ function NewUser({ initialData, onSave, onBack }) {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     try {
+      const phoneError = getPhoneValidationError(formData.mobileNumber)
+      if (phoneError) {
+        setError(phoneError)
+        setLoading(false)
+        return
+      }
+
       const payload = {
         id: formData.id,
         firstName: formData.firstName,

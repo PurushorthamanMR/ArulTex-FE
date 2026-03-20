@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUser,
@@ -21,6 +21,8 @@ import Swal from 'sweetalert2'
 
 function CustomerList() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isInPos = (location.pathname || '').startsWith('/pos/')
   const [activeStatus, setActiveStatus] = useState('Active')
   const [searchQuery, setSearchQuery] = useState('')
   const [customers, setCustomers] = useState([])
@@ -159,7 +161,10 @@ function CustomerList() {
           <button className="action-btn upload-btn" title="Upload">
             <FontAwesomeIcon icon={faArrowUp} />
           </button>
-          <button className="action-btn add-btn" onClick={() => navigate('/customer/new')}>
+          <button
+            className="action-btn add-btn"
+            onClick={() => navigate(isInPos ? '/pos/customer/new' : '/customer/new')}
+          >
             <FontAwesomeIcon icon={faPlus} />
             <span>Add New</span>
           </button>
@@ -244,7 +249,7 @@ function CustomerList() {
                           type="button"
                           className="action-icon-btn edit-btn"
                           title="Edit"
-                          onClick={() => navigate(`/customer/edit/${c.id}`)}
+                        onClick={() => navigate(isInPos ? `/pos/customer/edit/${c.id}` : `/customer/edit/${c.id}`)}
                         >
                           <FontAwesomeIcon icon={faPen} />
                         </button>

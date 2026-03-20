@@ -52,6 +52,34 @@ const router = createBrowserRouter([
         element: <POSPage />
       },
       {
+        path: '/pos/customer',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/customer/new',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/customer/edit/:id',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/transaction',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/z-report',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/barcode',
+        element: <POSPage />
+      },
+      {
+        path: '/pos/stock',
+        element: <POSPage />
+      },
+      {
         path: '/dashboard',
         element: <Dashboard />
       },

@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs'
+import Swal from 'sweetalert2'
 
 /**
  * Common Excel Export Utility (uses ExcelJS – no known high-severity vulnerabilities).
@@ -25,6 +26,11 @@ export async function downloadTableExcel({ title = 'Sheet1', columns = [], rows 
     URL.revokeObjectURL(url)
   } catch (error) {
     console.error('Excel export failed:', error)
-    alert('Failed to export Excel file')
+    // Use SweetAlert2 instead of native alert.
+    Swal.fire({
+      icon: 'error',
+      title: 'Export failed',
+      text: 'Failed to export Excel file'
+    })
   }
 }

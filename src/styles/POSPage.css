@@ -5,7 +5,7 @@
   background: #fff;
   font-family: 'Inter', sans-serif;
   /* Allow page to scroll if content overflows viewport */
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Header overlays main content only; sidebar stays visible with logo at top corner */
@@ -103,24 +103,24 @@
 .pos-category-grid,
 .pos-product-grid,
 .pos-orders-scroll-area {
-  /* Show normal scrollbars so user clearly sees that POS can scroll */
-  scrollbar-width: auto; /* Firefox */
-  -ms-overflow-style: auto; /* IE/Edge legacy */
+  /* Hide scrollbar UI but keep scrolling enabled */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
 }
 .pos-main::-webkit-scrollbar,
 .pos-category-grid::-webkit-scrollbar,
 .pos-product-grid::-webkit-scrollbar,
 .pos-orders-scroll-area::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  display: block; /* Chrome/Safari */
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
 }
 
 .pos-content {
   display: flex;
   gap: 24px;
   height: calc(100vh - 100px);
-  min-height: 420px;
+  min-height: 0;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
@@ -211,6 +211,7 @@
 .pos-left {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -585,6 +586,7 @@
   width: 440px;
   flex-shrink: 0;
   height: 100%;
+  min-height: 0;
 }
 
 .pos-cart-container {
@@ -597,6 +599,7 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  min-height: 0;
   /* Premium leaf pattern background */
   background-image:
     url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10c-30 0-50 20-50 50s20 50 50 50 50-20 50-50-20-50-50-50zm0 80c-20 0-30-10-30-30s10-30 30-30 30 10 30 30-10 30-30 30z' fill='%230d9488' fill-opacity='0.02'/%3E%3C/svg%3E"),
@@ -671,6 +674,7 @@
 
 .pos-orders-scroll-area {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0 20px;
   scrollbar-width: none; /* Firefox */
@@ -1207,6 +1211,7 @@
   border-collapse: collapse;
   font-size: 11px;
   margin: 2px 0;
+  table-layout: fixed; /* keep column widths stable for printing */
 }
 
 .pos-invoice-table th {
@@ -1226,20 +1231,19 @@
 }
 
 .pos-invoice-item-name {
-  max-width: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .pos-invoice-th-qty,
 .pos-invoice-td-qty {
-  width: 28px;
+  width: 12mm;
   text-align: center;
 }
 
 .pos-invoice-th-amt,
 .pos-invoice-td-amt {
-  width: 58px;
+  width: 25mm;
   text-align: right;
   white-space: nowrap;
 }
@@ -1327,14 +1331,25 @@
 
 @media print {
   @page {
+    /* Thermal receipt: keep width fixed, let printer decide height from content */
     size: 80mm auto;
-    margin: 4mm;
+    margin: 0mm; /* avoid extra shift that breaks alignment */
   }
 
   body {
     margin: 0;
     padding: 0;
     background: #fff;
+    width: 80mm; /* lock printable width for receipt */
+  }
+
+  html {
+    width: 80mm; /* keep browser print canvas width stable */
+  }
+
+  .pos-page {
+    min-height: auto !important; /* avoid 100vh/viewport-driven centering */
+    overflow: visible !important;
   }
 
   body * {
@@ -1348,23 +1363,41 @@
 
   .pos-invoice-print {
     display: block !important;
-    position: absolute;
-    left: 0;
+    position: fixed; /* anchor to viewport so it doesn't get pushed down */
+    left: 50%;
     top: 0;
-    width: 100%;
+    width: 80mm !important;
+    right: auto !important;
     padding: 0;
     margin: 0;
     background: #fff;
+    transform: translateX(-50%);
   }
 
   .pos-invoice-paper {
     width: 80mm !important;
     max-width: 80mm !important;
-    margin: 0 auto;
-    padding: 6px 8px;
+    margin: 0 !important; /* keep content inside 80mm box */
+    padding: 0mm 2mm; /* keep inside Epson non-printable area */
     box-sizing: border-box;
-    font-size: 12px;
+    font-size: 12px; /* user requested slightly bigger text */
     line-height: 1.35;
+  }
+
+  .pos-invoice-meta span {
+    white-space: nowrap;
+  }
+
+  .pos-invoice-meta span:nth-child(1) {
+    text-align: left;
+  }
+
+  .pos-invoice-meta span:nth-child(2) {
+    text-align: center;
+  }
+
+  .pos-invoice-meta span:nth-child(3) {
+    text-align: right;
   }
 
   * {
