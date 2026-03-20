@@ -5,7 +5,8 @@ import { faInfoCircle, faDollarSign, faPlus, faChevronDown, faChevronUp } from '
 import * as productApi from '../api/productApi'
 import * as categoryApi from '../api/categoryApi'
 import * as supplierApi from '../api/supplierApi'
-import { getCategoryIcon } from '../utils/categoryIcons'
+import { CATEGORY_ICON_OPTIONS, getCategoryIcon, setStoredIconKey } from '../utils/categoryIcons'
+import { getPhoneValidationError } from '../utils/phoneValidation'
 import '../styles/NewProduct.css'
 
 function NewProduct({ onBack, onSave }) {
@@ -35,6 +36,40 @@ function NewProduct({ onBack, onSave }) {
     discountPercent: '0',
     isActive: true
   })
+
+  // ---- Popups: Add Category / Add Supplier (inline modal) ----
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
+  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false)
+
+  const [addCategoryFormData, setAddCategoryFormData] = useState({
+    categoryName: '',
+    selectedIconKey: 1,
+    isActive: true
+  })
+  const [addCategoryLoading, setAddCategoryLoading] = useState(false)
+  const [addCategoryError, setAddCategoryError] = useState(null)
+
+  const [addSupplierFormData, setAddSupplierFormData] = useState({
+    supplierName: '',
+    email: '',
+    mobileNumber: '',
+    address: '',
+    isActive: true
+  })
+  const [addSupplierLoading, setAddSupplierLoading] = useState(false)
+  const [addSupplierError, setAddSupplierError] = useState(null)
+
+  useEffect(() => {
+    if (!showAddCategoryModal && !showAddSupplierModal) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowAddCategoryModal(false)
+        setShowAddSupplierModal(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showAddCategoryModal, showAddSupplierModal])
 
   // Live product-name suggestions when creating new product
   useEffect(() => {
@@ -111,6 +146,99 @@ function NewProduct({ onBack, onSave }) {
     })
     return () => { cancelled = true }
   }, [id, isEdit])
+
+  const refreshCategories = async () => {
+    try {
+      const list = await categoryApi.getAll()
+      setCategories(Array.isArray(list) ? list : [])
+    } catch (_) {
+      setCategories([])
+    }
+  }
+
+  const refreshSuppliers = async () => {
+    try {
+      const list = await supplierApi.getAll()
+      setSuppliers(Array.isArray(list) ? list : [])
+    } catch (_) {
+      setSuppliers([])
+    }
+  }
+
+  const handleAddCategorySave = async (e) => {
+    e.preventDefault()
+    if (addCategoryLoading) return
+
+    const categoryName = addCategoryFormData.categoryName.trim()
+    if (!categoryName) {
+      setAddCategoryError('Please enter category name')
+      return
+    }
+
+    setAddCategoryLoading(true)
+    setAddCategoryError(null)
+    try {
+      const saved = await categoryApi.save({
+        categoryName,
+        isActive: addCategoryFormData.isActive
+      })
+
+      if (saved?.id != null) {
+        setStoredIconKey(saved.id, addCategoryFormData.selectedIconKey)
+      }
+
+      await refreshCategories()
+      setFormData((prev) => ({
+        ...prev,
+        categoryId: saved?.id != null ? String(saved.id) : prev.categoryId
+      }))
+      setShowAddCategoryModal(false)
+    } catch (err) {
+      setAddCategoryError(err.message || 'Failed to add category')
+    } finally {
+      setAddCategoryLoading(false)
+    }
+  }
+
+  const handleAddSupplierSave = async (e) => {
+    e.preventDefault()
+    if (addSupplierLoading) return
+
+    const supplierName = addSupplierFormData.supplierName.trim()
+    if (!supplierName) {
+      setAddSupplierError('Please enter supplier name')
+      return
+    }
+
+    const phoneError = getPhoneValidationError(addSupplierFormData.mobileNumber)
+    if (phoneError) {
+      setAddSupplierError(phoneError)
+      return
+    }
+
+    setAddSupplierLoading(true)
+    setAddSupplierError(null)
+    try {
+      const saved = await supplierApi.save({
+        supplierName,
+        email: addSupplierFormData.email?.trim() || null,
+        mobileNumber: addSupplierFormData.mobileNumber,
+        address: addSupplierFormData.address?.trim() || null,
+        isActive: addSupplierFormData.isActive
+      })
+
+      await refreshSuppliers()
+      setFormData((prev) => ({
+        ...prev,
+        supplierId: saved?.id != null ? String(saved.id) : prev.supplierId
+      }))
+      setShowAddSupplierModal(false)
+    } catch (err) {
+      setAddSupplierError(err.message || 'Failed to add supplier')
+    } finally {
+      setAddSupplierLoading(false)
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -270,25 +398,62 @@ function NewProduct({ onBack, onSave }) {
                       <option key={c.id} value={c.id}>{c.categoryName}</option>
                     ))}
                   </select>
-                  <button type="button" className="add-category-btn" onClick={(e) => { e.preventDefault(); navigate('/category/new') }}>
-                    <FontAwesomeIcon icon={faPlus} /><span>Add New</span>
+                  <button
+                    type="button"
+                    className="add-category-btn"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setAddCategoryFormData({
+                        categoryName: '',
+                        selectedIconKey: 1,
+                        isActive: true
+                      })
+                      setAddCategoryError(null)
+                      setShowAddCategoryModal(true)
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                    <span>Add New</span>
                   </button>
                 </div>
               </div>
               <div className="form-group">
                 <label htmlFor="supplierId">Supplier</label>
-                <select
-                  id="supplierId"
-                  name="supplierId"
-                  value={formData.supplierId}
-                  onChange={handleInputChange}
-                  className="form-select"
-                >
-                  <option value="">Choose</option>
-                  {suppliers.filter((s) => s.isActive !== false).map((s) => (
-                    <option key={s.id} value={s.id}>{s.supplierName}</option>
-                  ))}
-                </select>
+                <div className="category-wrapper">
+                  <select
+                    id="supplierId"
+                    name="supplierId"
+                    value={formData.supplierId}
+                    onChange={handleInputChange}
+                    className="form-select"
+                  >
+                    <option value="">Choose</option>
+                    {suppliers.filter((s) => s.isActive !== false).map((s) => (
+                      <option key={s.id} value={s.id}>{s.supplierName}</option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    className="add-category-btn"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setAddSupplierFormData({
+                        supplierName: '',
+                        email: '',
+                        mobileNumber: '',
+                        address: '',
+                        isActive: true
+                      })
+                      setAddSupplierError(null)
+                      setShowAddSupplierModal(true)
+                    }}
+                    title="Add new supplier"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                    <span>Add New</span>
+                  </button>
+                </div>
               </div>
               {isEdit && (
                 <div className="form-group">
@@ -366,6 +531,194 @@ function NewProduct({ onBack, onSave }) {
           <button type="submit" className="save-btn" disabled={loading}>{loading ? 'Saving...' : isEdit ? 'Update Product' : 'Save Product'}</button>
         </div>
       </form>
+
+      {showAddCategoryModal && (
+        <div
+          className="np-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="np-add-category-title"
+          onMouseDown={() => setShowAddCategoryModal(false)}
+        >
+          <div className="np-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="np-modal-header">
+              <h2 id="np-add-category-title" className="np-modal-title">Add Category</h2>
+              <button
+                type="button"
+                className="np-modal-close"
+                onClick={() => setShowAddCategoryModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCategorySave}>
+              <div className="np-modal-body">
+                {addCategoryError && <div className="np-modal-error" role="alert">{addCategoryError}</div>}
+
+                <div className="form-group">
+                  <label htmlFor="np-category-name">Category Name</label>
+                  <input
+                    id="np-category-name"
+                    type="text"
+                    className="form-input"
+                    value={addCategoryFormData.categoryName}
+                    onChange={(e) => setAddCategoryFormData((prev) => ({ ...prev, categoryName: e.target.value }))}
+                    placeholder="Enter Category Name"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Icon</label>
+                  <div className="np-icon-picker-grid" role="group" aria-label="Select category icon">
+                    {CATEGORY_ICON_OPTIONS.map(({ iconKey, icon, label }) => (
+                      <button
+                        key={iconKey}
+                        type="button"
+                        className={`np-icon-picker-btn ${addCategoryFormData.selectedIconKey === iconKey ? 'selected' : ''}`}
+                        onClick={() => setAddCategoryFormData((prev) => ({ ...prev, selectedIconKey: iconKey }))}
+                        title={label}
+                        aria-pressed={addCategoryFormData.selectedIconKey === iconKey}
+                      >
+                        <FontAwesomeIcon icon={icon} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    className="form-select"
+                    value={addCategoryFormData.isActive ? 'true' : 'false'}
+                    onChange={(e) => setAddCategoryFormData((prev) => ({ ...prev, isActive: e.target.value === 'true' }))}
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="np-modal-actions">
+                <button type="button" className="cancel-btn" onClick={() => setShowAddCategoryModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="save-btn" disabled={addCategoryLoading}>
+                  {addCategoryLoading ? 'Saving...' : 'Add Category'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAddSupplierModal && (
+        <div
+          className="np-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="np-add-supplier-title"
+          onMouseDown={() => setShowAddSupplierModal(false)}
+        >
+          <div className="np-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="np-modal-header">
+              <h2 id="np-add-supplier-title" className="np-modal-title">Add Supplier</h2>
+              <button
+                type="button"
+                className="np-modal-close"
+                onClick={() => setShowAddSupplierModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleAddSupplierSave}>
+              <div className="np-modal-body">
+                {addSupplierError && <div className="np-modal-error" role="alert">{addSupplierError}</div>}
+
+                <div className="form-group">
+                  <label htmlFor="np-supplier-name">Supplier Name</label>
+                  <input
+                    id="np-supplier-name"
+                    type="text"
+                    className="form-input"
+                    value={addSupplierFormData.supplierName}
+                    onChange={(e) => setAddSupplierFormData((prev) => ({ ...prev, supplierName: e.target.value }))}
+                    placeholder="Enter Supplier Name"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="np-supplier-email">Email</label>
+                  <input
+                    id="np-supplier-email"
+                    type="email"
+                    className="form-input"
+                    value={addSupplierFormData.email}
+                    onChange={(e) => setAddSupplierFormData((prev) => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter Email"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="np-supplier-mobile">Phone / Mobile</label>
+                  <input
+                    id="np-supplier-mobile"
+                    type="tel"
+                    className="form-input"
+                    value={addSupplierFormData.mobileNumber}
+                    onChange={(e) => setAddSupplierFormData((prev) => ({ ...prev, mobileNumber: e.target.value }))}
+                    placeholder="Enter Mobile Number"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="np-supplier-address">Address</label>
+                  <input
+                    id="np-supplier-address"
+                    type="text"
+                    className="form-input"
+                    value={addSupplierFormData.address}
+                    onChange={(e) => setAddSupplierFormData((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="Enter Address"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    className="form-select"
+                    value={addSupplierFormData.isActive ? 'true' : 'false'}
+                    onChange={(e) => setAddSupplierFormData((prev) => ({ ...prev, isActive: e.target.value === 'true' }))}
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="np-modal-actions">
+                <button type="button" className="cancel-btn" onClick={() => setShowAddSupplierModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="save-btn" disabled={addSupplierLoading}>
+                  {addSupplierLoading ? 'Saving...' : 'Add Supplier'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   )

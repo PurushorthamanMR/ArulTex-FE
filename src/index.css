@@ -65,3 +65,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Hide upload button globally (class: "action-btn upload-btn") */
+.action-btn.upload-btn {
+  display: none !important;
+}
+
+/* Hide print button globally (class: "print-btn") */
+.print-btn {
+  display: none !important;
+}
+
+/* But show print button on Barcode Labels page only */
+.barcode-page-container .print-btn {
+  display: inline-flex !important;
+}

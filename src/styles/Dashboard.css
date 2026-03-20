@@ -19,6 +19,16 @@
   min-height: calc(100vh - 60px);
   transition: margin-left 0.3s ease;
   overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+  /* Hide scrollbar UI but keep scrolling enabled */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+.dashboard-main::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .dashboard-container.sidebar-collapsed .dashboard-main {
@@ -39,7 +49,7 @@
 }
 
 .hero-greeting {
-  font-size: 26px;
+  font-size: clamp(20px, 2.3vw, 26px);
   font-weight: 800;
   color: #1e293b;
   margin: 0;
@@ -69,7 +79,7 @@
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(12px, 1.1vw, 14px);
   cursor: pointer;
   transition: all 0.2s;
   border: none;
@@ -160,7 +170,7 @@
 }
 
 .card-value {
-  font-size: 22px;
+  font-size: clamp(18px, 2vw, 22px);
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 4px;
@@ -292,7 +302,7 @@
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: clamp(16px, 1.8vw, 18px);
   font-weight: 700;
   color: #1e293b;
   margin-bottom: 20px;
@@ -309,7 +319,8 @@
   background: #ffffff;
   border-radius: 16px;
   border: 1px solid #f1f5f9;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
@@ -322,7 +333,7 @@
   background: #f8fafc;
   padding: 14px 20px;
   text-align: left;
-  font-size: 12px;
+  font-size: clamp(11px, 1vw, 12px);
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
@@ -332,7 +343,7 @@
 .dashboard-table td {
   padding: 16px 20px;
   border-top: 1px solid #f1f5f9;
-  font-size: 14px;
+  font-size: clamp(12px, 1.05vw, 14px);
   color: #334155;
 }
 
@@ -457,6 +468,112 @@
 
   .shortcuts-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive for all monitors (incl. ~1064x768) */
+@media (max-width: 1100px) {
+  /* Keep sidebar + main aligned */
+  .dashboard-container:not(.sidebar-collapsed) .sidebar {
+    width: 210px;
+  }
+  .dashboard-container:not(.sidebar-collapsed) .dashboard-main {
+    margin-left: 210px;
+  }
+
+  .dashboard-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .shortcut-card {
+    padding: 12px 12px;
+  }
+
+  .shortcut-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .shortcut-label {
+    font-size: 12px;
+  }
+
+  .dashboard-hero {
+    padding: 18px;
+    margin-bottom: 22px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-container:not(.sidebar-collapsed) .sidebar {
+    width: 190px;
+  }
+  .dashboard-container:not(.sidebar-collapsed) .dashboard-main {
+    margin-left: 190px;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .quick-actions {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .action-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero {
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+}
+
+/* Reduce vertical spacing for short-height screens */
+@media (max-height: 800px) {
+  .dashboard-hero {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .dashboard-section {
+    margin-bottom: 22px;
+  }
+  .dashboard-low-stock-card {
+    padding: 18px;
   }
 }
 

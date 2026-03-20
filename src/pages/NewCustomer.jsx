@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import * as customerApi from '../api/customerApi'
+import { getPhoneValidationError } from '../utils/phoneValidation'
 import '../styles/NewCustomer.css'
 
 function NewCustomer() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isInPos = (location.pathname || '').startsWith('/pos/')
   const { id } = useParams()
   const isEdit = Boolean(id)
 
@@ -58,10 +61,20 @@ function NewCustomer() {
     setSaveError(null)
     setLoading(true)
     try {
+      const phoneTrimmed = (formData.phone || '').trim()
+      if (phoneTrimmed) {
+        const phoneError = getPhoneValidationError(phoneTrimmed)
+        if (phoneError) {
+          setSaveError(phoneError)
+          setLoading(false)
+          return
+        }
+      }
+
       if (isEdit) {
         await customerApi.update(id, {
           customerName: formData.customerName,
-          phone: formData.phone,
+          phone: phoneTrimmed || null,
           email: formData.email,
           address: formData.address,
           isActive: formData.isActive
@@ -69,13 +82,13 @@ function NewCustomer() {
       } else {
         await customerApi.save({
           customerName: formData.customerName,
-          phone: formData.phone,
+          phone: phoneTrimmed || null,
           email: formData.email,
           address: formData.address,
           isActive: formData.isActive
         })
       }
-      navigate('/customer')
+      navigate(isInPos ? '/pos/customer' : '/customer')
     } catch (err) {
       setSaveError(err.message || 'Save failed')
     } finally {
@@ -93,7 +106,7 @@ function NewCustomer() {
             <p className="page-subtitle">{isEdit ? 'Update customer' : 'Create new customer'}</p>
           </div>
         </div>
-        <button className="back-btn" type="button" onClick={() => navigate('/customer')}>
+        <button className="back-btn" type="button" onClick={() => navigate(isInPos ? '/pos/customer' : '/customer')}>
           ← Back to Customer
         </button>
       </div>
@@ -161,7 +174,7 @@ function NewCustomer() {
         )}
 
         <div className="form-actions">
-          <button type="button" className="cancel-btn" onClick={() => navigate('/customer')}>
+          <button type="button" className="cancel-btn" onClick={() => navigate(isInPos ? '/pos/customer' : '/customer')}>
             Cancel
           </button>
           <button type="submit" className="save-btn" disabled={loading}>

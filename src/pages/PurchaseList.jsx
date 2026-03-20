@@ -5,6 +5,7 @@ import { faFilePdf, faFileExcel, faSyncAlt, faArrowUp, faPlus, faSearch, faEye, 
 import * as purchaseApi from '../api/purchaseApi'
 import { downloadTablePdf } from '../utils/pdfExport'
 import { downloadTableExcel } from '../utils/excelExport'
+import Swal from 'sweetalert2'
 import '../styles/PurchaseList.css'
 
 function PurchaseList() {
@@ -73,7 +74,18 @@ function PurchaseList() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this purchase? This cannot be undone.')) return
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Delete purchase?',
+      text: 'This cannot be undone.',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6C757D',
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel'
+    })
+
+    if (!result.isConfirmed) return
     setDeletingId(id)
     try {
       await purchaseApi.deletePurchase(id)

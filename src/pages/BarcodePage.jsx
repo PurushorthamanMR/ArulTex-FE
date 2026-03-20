@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSyncAlt, faPrint, faPencilAlt, faSearch } from '@fortawesome/free-solid-svg-icons'
 import JsBarcode from 'jsbarcode'
 import * as productApi from '../api/productApi'
+import Swal from 'sweetalert2'
 import '../styles/BarcodePage.css'
 
 function BarcodeCanvas({ value, className = '' }) {
@@ -84,7 +85,8 @@ function BarcodePage() {
       JsBarcode(canvas, barcodeValue, {
         format: 'CODE128',
         displayValue: false,
-        margin: 12,
+        // Reduce extra padding so bars fit the slot (quiet zone handled by printer scaling).
+        margin: 0,
         width: moduleWidth,
         height: 80,
         lineColor: '#1e3a5f'
@@ -110,35 +112,89 @@ function BarcodePage() {
           <meta name="description" content="GS1-sized barcode label (100%: 25.93mm × 37.29mm)">
           <style>
             * { box-sizing: border-box; }
-            body { font-family: Arial, sans-serif; margin: 0; padding: 24px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-            .barcode-label {
-              background: #fff;
-              border-radius: 8px;
-              padding: 16px 20px;
-              text-align: center;
-              box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-              border: 1px solid #e2e8f0;
+
+            /* User requested label:
+               - each label slot: 3cm (30mm) width × 2cm (20mm) height
+               - 3 columns across => page: 90mm × 20mm
+               - margins: none */
+            @page { size: 90mm 20mm; margin: 0; }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              width: 90mm;
+              height: 20mm;
             }
-            .barcode-label .barcode-wrap { margin-bottom: 10px; }
-            .barcode-label .barcode-print-image { display: block; margin: 0 auto; }
-            @media print {
-              body { padding: 0; background: #fff; }
-              .barcode-label {
-                box-shadow: none; border: 1px solid #ccc;
-                width: 42mm; min-height: 35mm;
-                padding: 3mm 4mm;
-              }
-              .barcode-label .barcode-wrap { margin-bottom: 2mm; }
-              .barcode-label .barcode-print-image {
-                width: 37.29mm; height: 25.93mm;
-                object-fit: contain; object-position: center;
-              }
+
+            .label-row {
+              width: 90mm;
+              height: 20mm;
+              display: grid;
+              grid-template-columns: repeat(3, 30mm);
+              grid-template-rows: repeat(1, 20mm);
+            }
+
+            .barcode-label {
+              width: 30mm;
+              height: 20mm;
+              padding: 0;
+              margin: 0;
+              border: none;
+              background: transparent;
+              box-shadow: none;
+              display: block;
+            }
+
+            .barcode-label .barcode-wrap {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: flex-start; /* bars first, then digits (no spacing gap) */
+              gap: 0;
+            }
+
+            .barcode-label .barcode-print-image {
+              display: block;
+              margin: 0;
+              width: 100%;
+              height: 13mm; /* 20mm total slot height: 13mm bars + 7mm digits */
+              object-fit: fill; /* remove letterboxing/white space */
+              object-position: center;
+            }
+
+            .barcode-text {
+              font-size: 7px;
+              font-weight: 800;
+              color: #1e3a5f;
+              line-height: 7mm; /* vertically center within 7mm box */
+              letter-spacing: 0.2px;
+              margin: 0;
+              width: 100%;
+              height: 7mm;
+              display: block;
+              text-align: center;
+              white-space: nowrap; /* keep digits on one line */
+              overflow: visible; /* don't clip; avoid "side" artifacts */
             }
           </style>
         </head>
         <body>
-          <div class="barcode-label">
-            <div class="barcode-wrap">${imgTag}</div>
+          <div class="label-row">
+            <div class="barcode-label">
+              <div class="barcode-wrap">
+                ${imgTag}
+                <div class="barcode-text">${barcodeValue}</div>
+              </div>
+            </div>
+            <div class="barcode-label">
+              <div class="barcode-wrap"></div>
+            </div>
+            <div class="barcode-label">
+              <div class="barcode-wrap"></div>
+            </div>
           </div>
         </body>
       </html>
@@ -151,9 +207,13 @@ function BarcodePage() {
       setTimeout(() => {
         w.print()
         w.close()
-      }, 300)
+      }, 900)
     } else {
-      alert('Please allow pop-ups to print the barcode label.')
+      Swal.fire({
+        icon: 'info',
+        title: 'Pop-up blocked',
+        text: 'Please allow pop-ups to print the barcode label.'
+      })
     }
   }
 
@@ -253,6 +313,9 @@ function BarcodePage() {
                   <td>
                     <div className="barcode-label-preview">
                       <BarcodeCanvas value={p.barCode ? String(p.barCode).trim() : ''} className="barcode-preview-canvas" />
+                      <div className="barcode-preview-value">
+                        {p.barCode ? String(p.barCode).trim() : ''}
+                      </div>
                     </div>
                   </td>
                   <td>

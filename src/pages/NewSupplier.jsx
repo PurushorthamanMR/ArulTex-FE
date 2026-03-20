@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as supplierApi from '../api/supplierApi'
+import { getPhoneValidationError } from '../utils/phoneValidation'
 import '../styles/NewSupplier.css'
 
 function NewSupplier() {
@@ -52,6 +53,13 @@ function NewSupplier() {
     setSaveError(null)
     setLoading(true)
     try {
+      const phoneError = getPhoneValidationError(formData.mobileNumber)
+      if (phoneError) {
+        setSaveError(phoneError)
+        setLoading(false)
+        return
+      }
+
       const payload = {
         supplierName: formData.supplierName,
         email: formData.email,

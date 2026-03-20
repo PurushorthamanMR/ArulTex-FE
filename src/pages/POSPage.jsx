@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faPlus, faMinus, faTrash, faPrint, faArrowLeft, faChevronRight, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { getCategoryIcon } from '../utils/categoryIcons'
@@ -9,11 +10,24 @@ import * as categoryApi from '../api/categoryApi'
 import * as salesApi from '../api/salesApi'
 import * as shiftApi from '../api/shiftApi'
 import * as customerApi from '../api/customerApi'
+import { getPhoneValidationError } from '../utils/phoneValidation'
 import Swal from 'sweetalert2'
 import { downloadZReportPdf } from '../utils/pdfExport'
+import TransactionReport from './TransactionReport'
+import ZReportPage from './ZReportPage'
+import BarcodePage from './BarcodePage'
+import StockPage from './StockPage'
+import CustomerList from './CustomerList'
+import NewCustomer from './NewCustomer'
+
+// Staff-specific POS management pages (do not reuse dashboard customer components).
+import PosCustomerList from './pos/PosCustomerList'
+import PosCustomerNew from './pos/PosCustomerNew'
+import PosCustomerEdit from './pos/PosCustomerEdit'
 import '../styles/POSPage.css'
 
 function POSPage() {
+  const location = useLocation()
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState(null) // null = show category boxes; string = show products for that category
@@ -45,8 +59,33 @@ function POSPage() {
   const searchInputRef = useRef(null)
   const orderToastTimerRef = useRef(null)
   const searchErrorTimerRef = useRef(null)
+  const barcodeAutoAddTimerRef = useRef(null)
+  const lastAutoAddedBarcodeRef = useRef('')
+  const lastAutoAddedAtRef = useRef(0)
+  const globalBarcodeBufferRef = useRef('')
+  const globalBarcodeTimerRef = useRef(null)
 
   const generateNewInvoiceNo = () => `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-6)}`
+
+  const posPath = location.pathname || ''
+  const userRole = (localStorage.getItem('userRole') || '').toUpperCase()
+  const isStaff = userRole === 'STAFF'
+  const adminView = (() => {
+    if (isStaff) {
+      if (posPath === '/pos/customer') return { key: 'pos-customer-list', node: <PosCustomerList /> }
+      if (posPath === '/pos/customer/new') return { key: 'pos-customer-new', node: <PosCustomerNew /> }
+      if (posPath.startsWith('/pos/customer/edit/')) return { key: 'pos-customer-edit', node: <PosCustomerEdit /> }
+      return null
+    }
+
+    if (posPath === '/pos/customer') return { key: 'customer-list', node: <CustomerList /> }
+    if (posPath.startsWith('/pos/customer/')) return { key: 'customer-edit', node: <NewCustomer /> }
+    if (posPath === '/pos/transaction') return { key: 'transaction', node: <TransactionReport /> }
+    if (posPath === '/pos/z-report') return { key: 'z-report', node: <ZReportPage /> }
+    if (posPath === '/pos/barcode') return { key: 'barcode', node: <BarcodePage /> }
+    if (posPath === '/pos/stock') return { key: 'stock', node: <StockPage /> }
+    return null
+  })()
 
   /** No selling until shift status is known and a shift is open */
   const posSalesLocked = shiftLoading || !posShift?.id
@@ -187,8 +226,14 @@ function POSPage() {
       return
     }
     const pid = normId(product.id)
-    const price = Number(product.pricePerUnit ?? 0)            // selling price (after discount)
-    const costPrice = Number(product.purchasedPrice ?? 0)      // original cost price (for display only)
+    const purchasedPrice = Number(product.purchasedPrice ?? 0) // original unit selling price
+    const discountPercent = Number(product.discountPercent ?? 0)
+    // Cart/receipt must match the UI calculation (final price after product discount).
+    const fallbackPrice = Number(product.pricePerUnit ?? 0)
+    const price = purchasedPrice > 0
+      ? Number(productApi.calcFinalPrice(purchasedPrice, discountPercent))
+      : fallbackPrice
+    const costPrice = purchasedPrice > 0 ? purchasedPrice : fallbackPrice
     const name = normName(product)
 
     // Check if enough stock available
@@ -316,7 +361,14 @@ function POSPage() {
 
     if (product) {
       addToCart(product)
-      setSearchQuery('')
+      // Keep scanned barcode visible in the input.
+      lastAutoAddedBarcodeRef.current = q
+      lastAutoAddedAtRef.current = Date.now()
+      // Re-focus/select so the next scan replaces the existing text.
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select?.()
+      })
     } else {
       setSearchError('No product found for this barcode')
       searchErrorTimerRef.current = setTimeout(() => setSearchError(''), 3000)
@@ -325,11 +377,192 @@ function POSPage() {
   }
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value)
+    const nextValue = e.target.value
+    setSearchQuery(nextValue)
     if (searchError) setSearchError('')
+
+    // Auto-add when an exact barcode scan happens.
+    if (posSalesLocked) return
+
+    const q = String(nextValue || '').trim()
+    if (!q || q.length < 4) return
+    const now = Date.now()
+    if (lastAutoAddedBarcodeRef.current === q && now - lastAutoAddedAtRef.current < 800) return
+    if (/\s/.test(q)) return
+
+    // Fast path: try exact match from existing products list.
+    const localExact = products.find((p) => getProductBarcode(p) === q)
+    if (localExact) {
+      addToCart(localExact)
+      lastAutoAddedBarcodeRef.current = q
+      lastAutoAddedAtRef.current = Date.now()
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select?.()
+      })
+      return
+    }
+
+    // Debounced fallback: scan usually types fast; wait a bit for completion.
+    if (barcodeAutoAddTimerRef.current) clearTimeout(barcodeAutoAddTimerRef.current)
+    barcodeAutoAddTimerRef.current = setTimeout(async () => {
+      if (posSalesLocked) return
+      const currentInputValue = (searchInputRef.current?.value || '').trim()
+      if (currentInputValue !== q) return
+
+      try {
+        const byBarcodeList = await productApi.search({ barCode: q, isActive: true })
+        const exact = Array.isArray(byBarcodeList)
+          ? byBarcodeList.find((p) => getProductBarcode(p) === q)
+          : null
+
+        if (!exact) return
+
+        // Ensure the product exists in the local list for proper UI search results.
+        setProducts((prev) => (prev.some((p) => normId(p.id) === normId(exact.id)) ? prev : [exact, ...prev]))
+
+        addToCart(exact)
+        lastAutoAddedBarcodeRef.current = q
+        lastAutoAddedAtRef.current = Date.now()
+        setSearchError('')
+        requestAnimationFrame(() => {
+          searchInputRef.current?.focus()
+          searchInputRef.current?.select?.()
+        })
+      } catch {
+        // Ignore errors during auto-scan; user can still press Add/Enter to search.
+      }
+    }, 250)
+  }
+
+  const addBarcodeToCart = async (barcode) => {
+    if (posSalesLocked) return
+
+    const q = String(barcode || '').trim()
+    if (!q || q.length < 4) return
+    const now = Date.now()
+    if (lastAutoAddedBarcodeRef.current === q && now - lastAutoAddedAtRef.current < 800) return
+
+    // Prefer local match first (faster + avoids extra requests).
+    const localExact = products.find((p) => getProductBarcode(p) === q)
+    if (localExact) {
+      addToCart(localExact)
+      lastAutoAddedBarcodeRef.current = q
+      lastAutoAddedAtRef.current = Date.now()
+      setSearchQuery(q)
+      setSearchError('')
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select?.()
+      })
+      return
+    }
+
+    // Backend fallback.
+    try {
+      const byBarcodeList = await productApi.search({ barCode: q, isActive: true })
+      const exact = Array.isArray(byBarcodeList)
+        ? byBarcodeList.find((p) => getProductBarcode(p) === q)
+        : null
+
+      if (!exact) {
+        setSearchError('No product found for this barcode')
+        searchErrorTimerRef.current = setTimeout(() => setSearchError(''), 3000)
+        return
+      }
+
+      setProducts((prev) => (prev.some((p) => normId(p.id) === normId(exact.id)) ? prev : [exact, ...prev]))
+      addToCart(exact)
+      lastAutoAddedBarcodeRef.current = q
+      lastAutoAddedAtRef.current = Date.now()
+      setSearchQuery(q)
+      setSearchError('')
+
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select?.()
+      })
+    } catch {
+      // Ignore errors during scanner input; user can still manually search.
+    }
   }
 
   const showCategoryBoxes = selectedCategory === null
+
+  // Global barcode capture:
+  // Many scanners type keystrokes; if the scan input loses focus, cart won't update.
+  // This listener captures the barcode even when focus isn't on `pos-search-input`,
+  // then it auto-adds to cart/bill and re-focuses the input for next scan.
+  useEffect(() => {
+    const isTypingElement = (el) => {
+      if (!el) return false
+      const tag = (el.tagName || '').toLowerCase()
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable
+    }
+
+    const onKeyDown = (e) => {
+      // Only when POS is active and no customer/payment modal is open.
+      if (posSalesLocked) return
+      if (showPaymentPopup || showCustomerModal) return
+
+      // If user is typing into some other input, don't interfere.
+      if (isTypingElement(e.target)) return
+
+      // If focus is already in the POS input, we already handle it via onChange/onSubmit.
+      if (searchInputRef.current && document.activeElement === searchInputRef.current) return
+
+      if (e.key === 'Escape') {
+        globalBarcodeBufferRef.current = ''
+        if (globalBarcodeTimerRef.current) clearTimeout(globalBarcodeTimerRef.current)
+        return
+      }
+
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        if (globalBarcodeTimerRef.current) clearTimeout(globalBarcodeTimerRef.current)
+        const code = globalBarcodeBufferRef.current.trim()
+        globalBarcodeBufferRef.current = ''
+        if (!code || code.length < 4) return
+        addBarcodeToCart(code)
+        return
+      }
+
+      // Accept common barcode characters.
+      if (e.key.length === 1 && /[0-9a-zA-Z-]/.test(e.key)) {
+        globalBarcodeBufferRef.current += e.key
+      } else {
+        return
+      }
+
+      if (globalBarcodeTimerRef.current) clearTimeout(globalBarcodeTimerRef.current)
+      globalBarcodeTimerRef.current = setTimeout(() => {
+        const code = globalBarcodeBufferRef.current.trim()
+        globalBarcodeBufferRef.current = ''
+        if (!code || code.length < 4) return
+        addBarcodeToCart(code)
+      }, 350)
+    }
+
+    const onPaste = (e) => {
+      if (posSalesLocked) return
+      if (showPaymentPopup || showCustomerModal) return
+
+      const text = e.clipboardData?.getData('text') || ''
+      const cleaned = String(text).replace(/[^0-9a-zA-Z]/g, '').trim()
+      if (!cleaned || cleaned.length < 4) return
+
+      // Clear buffer + add immediately (some scanners paste the whole barcode)
+      globalBarcodeBufferRef.current = ''
+      if (globalBarcodeTimerRef.current) clearTimeout(globalBarcodeTimerRef.current)
+      addBarcodeToCart(cleaned)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('paste', onPaste)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('paste', onPaste)
+    }
+  }, [posSalesLocked, showPaymentPopup, showCustomerModal, addBarcodeToCart])
 
   // Totals
   // subtotal: based on sellingPrice (already in lineTotal)
@@ -385,12 +618,22 @@ function POSPage() {
       setCreateCustomerError('Customer name is required.')
       return
     }
+
+    const phoneTrimmed = (newCustomerForm.phone || '').trim()
+    if (phoneTrimmed) {
+      const phoneError = getPhoneValidationError(phoneTrimmed)
+      if (phoneError) {
+        setCreateCustomerError(phoneError)
+        return
+      }
+    }
+
     setCreatingCustomer(true)
     setCreateCustomerError('')
     try {
       const saved = await customerApi.save({
         customerName: name,
-        phone: (newCustomerForm.phone || '').trim() || null,
+        phone: phoneTrimmed || null,
         email: (newCustomerForm.email || '').trim() || null,
         address: (newCustomerForm.address || '').trim() || null,
         isActive: true
@@ -510,7 +753,7 @@ function POSPage() {
         />
         <main className="pos-main">
           <div className={`pos-content${posSalesLocked ? ' pos-content--sales-locked' : ''}`}>
-            {posSalesLocked && (
+            {posSalesLocked && !adminView && (
               <div
                 className="pos-shift-lock-overlay"
                 role="alertdialog"
@@ -540,7 +783,13 @@ function POSPage() {
                 </div>
               </div>
             )}
-            <div className="pos-left">
+            {adminView ? (
+              <div className="pos-admin-view">
+                {adminView.node}
+              </div>
+            ) : (
+              <>
+                <div className="pos-left">
               <div className="pos-inputs-card">
                 <h3 className="pos-section-label">Scan or search</h3>
                 <form onSubmit={handleSearchSubmit} className="pos-search-form">
@@ -697,8 +946,7 @@ function POSPage() {
                   </div>
                 )}
               </div>
-            </div>
-
+                </div>
             <div className="pos-right">
               <div className="pos-cart-container">
                 <div className="pos-cart-header-new">
@@ -818,6 +1066,8 @@ function POSPage() {
                 </div>
               </div>
             </div>
+          </>
+        )}
           </div>
         </main>
       </div>
@@ -1172,7 +1422,6 @@ function POSPage() {
           <div className="pos-invoice-divider" />
 
           <p className="pos-invoice-thanks">Thank you for your purchase</p>
-          <p className="pos-invoice-website">arultex.com</p>
         </div>
       </div>
     </div>
